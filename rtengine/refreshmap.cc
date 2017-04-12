@@ -570,7 +570,44 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     DEMOSAIC,         // EvPixelShiftMotionMethod
     DEMOSAIC,         // EvPixelShiftSmooth
     DEMOSAIC,         // EvPixelShiftLmmse
-    DEMOSAIC          // EvPixelShiftEqualBright
+    DEMOSAIC,          // EvPixelShiftEqualBright
+    LUMINANCECURVE,    //EvLocrgbenaexpose
+    LUMINANCECURVE, //EvlocalrgbEnabled
+    LUMINANCECURVE, //EvlocalrgblocY
+    LUMINANCECURVE, //EvlocalrgblocX
+    LUMINANCECURVE, // EvlocalrgbCenter
+    LUMINANCECURVE, //EvlocalrgbDegree
+    LUMINANCECURVE, //Evlocalrgblightness
+    LUMINANCECURVE, //Evlocalrgbcontrast
+    LUMINANCECURVE, //Evlocalrgbchroma
+    LUMINANCECURVE, //Evlocalrgbtransit
+    LUMINANCECURVE, //EvlocalrgblocYT
+    LUMINANCECURVE, //EvlocalrgblocXL
+    LUMINANCECURVE, //EvlocalrgbSmet
+    LUMINANCECURVE, //Evlocalrgbsensi
+    LUMINANCECURVE, //Evlocalrgbnbspot
+    LUMINANCECURVE, //Evlocalrgbanbspot
+    LUMINANCECURVE, //Evlocalrgbhueref
+    LUMINANCECURVE, //Evlocalrgbchromaref
+    LUMINANCECURVE, //Evlocalrgblumaref
+    LUMINANCECURVE, //Evlocalrgbthres
+    LUMINANCECURVE, //Evlocalrgbproxi
+    LUMINANCECURVE, //Evlocalrgbcircrad
+    LUMINANCECURVE, //EvlocalrgbqualityMethod
+    LUMINANCECURVE, //Evlocalrgbretrab
+    LUMINANCECURVE, //Evlocalrgbexpcomp
+    LUMINANCECURVE, //Evlocalrgbhlcompr
+    LUMINANCECURVE, //Evlocalrgbhlcomprthresh
+    LUMINANCECURVE, //Evlocalrgbblack
+    LUMINANCECURVE, //Evlocalrgbshcompr
+    LUMINANCECURVE, //EvlocalrgbCurve1
+    LUMINANCECURVE, //EvlocalrgbCurve2
+    LUMINANCECURVE, //EvlocalrgbCurveMode1
+    LUMINANCECURVE, //EvlocalrgbCurveMode2
+    ALLNORAW, //EvLocrgbenawb
+    ALLNORAW, //Evlocalrgbtemp
+    ALLNORAW, //Evlocalrgbgreen
+    ALLNORAW //Evlocalrgbequal
 
 };
 

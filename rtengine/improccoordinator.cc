@@ -666,6 +666,14 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         params.crop.mapToResized (pW, pH, scale, x1, x2,  y1, y2);
     }
 
+    //begin Local rgb
+    //why here ? 1) after auto exposure, not to influence auto 2) I can use either Lab and rgb (after conversion) 3) just before all L*a*b* threatment
+
+
+
+    //end local rgb
+
+
     readyphase++;
     LUTu lhist16 (32768);
 

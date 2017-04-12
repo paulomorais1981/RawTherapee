@@ -981,6 +981,284 @@ SSEFUNCTION void CurveFactory::complexCurve (double ecomp, double black, double 
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SSEFUNCTION void CurveFactory::complexCurvelocal (double ecomp, double black, double hlcompr, double hlcomprthresh,
+        double shcompr, double br, double contr,
+        procparams::LocalrgbParams::eTCModeId curveMode, const std::vector<double>& curvePoints,
+        procparams::LocalrgbParams::eTCModeId curveMode2, const std::vector<double>& curvePoints2,
+        LUTu & histogram,
+        LUTf & hlCurve, LUTf & shCurve, LUTf & outCurve,
+        //    LUTu & outBeforeCCurveHistogram,
+        ToneCurve & customToneCurve1,
+        ToneCurve & customToneCurve2,
+        int skip)
+{
+
+    // the curve shapes are defined in sRGB gamma, but the output curves will operate on linear floating point data,
+    // hence we do both forward and inverse gamma conversions here.
+    const float gamma_ = Color::sRGBGammaCurve;
+    const float start = expf (gamma_ * logf ( -0.055 / ((1.0 / gamma_ - 1.0) * 1.055 )));
+    const float slope = 1.055 * powf (start, 1.0 / gamma_ - 1) - 0.055 / start;
+    const float mul = 1.055;
+    const float add = 0.055;
+
+    // a: slope of the curve, black: starting point at the x axis
+    const float a = powf (2.0, ecomp);
+
+    // clear array that stores histogram valid before applying the custom curve
+    // outBeforeCCurveHistogram.clear();
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // tone curve base. a: slope (from exp.comp.), b: black, def_mul: max. x value (can be>1), hr,sr: highlight,shadow recovery
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    std::unique_ptr<DiagonalCurve> brightcurve;
+
+    // check if brightness curve is needed
+    if (br > 0.00001 || br < -0.00001) {
+
+        std::vector<double> brightcurvePoints (9);
+        brightcurvePoints[0] = DCT_NURBS;
+
+        brightcurvePoints[1] = 0.; //black point.  Value in [0 ; 1] range
+        brightcurvePoints[2] = 0.; //black point.  Value in [0 ; 1] range
+
+        if (br > 0) {
+            brightcurvePoints[3] = 0.1; //toe point
+            brightcurvePoints[4] = 0.1 + br / 150.0; //value at toe point
+
+            brightcurvePoints[5] = 0.7; //shoulder point
+            brightcurvePoints[6] = min (1.0, 0.7 + br / 300.0); //value at shoulder point
+        } else {
+            brightcurvePoints[3] = max (0.0, 0.1 - br / 150.0); //toe point
+            brightcurvePoints[4] = 0.1; //value at toe point
+
+            brightcurvePoints[5] = 0.7 - br / 300.0; //shoulder point
+            brightcurvePoints[6] = 0.7; //value at shoulder point
+        }
+
+        brightcurvePoints[7] = 1.; // white point
+        brightcurvePoints[8] = 1.; // value at white point
+
+        brightcurve = std::unique_ptr<DiagonalCurve> (new DiagonalCurve (brightcurvePoints, CURVES_MIN_POLY_POINTS / skip));
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    hlCurve.setClip (LUT_CLIP_BELOW); // used LUT_CLIP_BELOW, because we want to have a baseline of 2^expcomp in this curve. If we don't clip the lut we get wrong values, see Issue 2621 #14 for details
+    float exp_scale = a;
+    float scale = 65536.0;
+    float comp = (max (0.0, ecomp) + 1.0) * hlcompr / 100.0;
+    float shoulder = ((scale / max (1.0f, exp_scale)) * (hlcomprthresh / 200.0)) + 0.1;
+
+    if (comp <= 0.0f) {
+        hlCurve.makeConstant (exp_scale);
+    } else {
+        hlCurve.makeConstant (exp_scale, shoulder + 1);
+
+        float scalemshoulder = scale - shoulder;
+
+#ifdef __SSE2__
+        int i = shoulder + 1;
+
+        if (i & 1) { // original formula, slower than optimized formulas below but only used once or none, so I let it as is for reference
+            // change to [0,1] range
+            float val = (float)i - shoulder;
+            float R = val * comp / (scalemshoulder);
+            hlCurve[i] = xlog (1.0 + R * exp_scale) / R; // don't use xlogf or 1.f here. Leads to errors caused by too low precision
+            i++;
+        }
+
+        vdouble onev = _mm_set1_pd (1.0);
+        vdouble Rv = _mm_set_pd ((i + 1 - shoulder) * (double)comp / scalemshoulder, (i - shoulder) * (double)comp / scalemshoulder);
+        vdouble incrementv = _mm_set1_pd (2.0 * comp / scalemshoulder);
+        vdouble exp_scalev = _mm_set1_pd (exp_scale);
+
+        for (; i < 0x10000; i += 2) {
+            // change to [0,1] range
+            vdouble resultv = xlog (onev + Rv * exp_scalev) / Rv;
+            vfloat resultfv = _mm_cvtpd_ps (resultv);
+            _mm_store_ss (&hlCurve[i], resultfv);
+            resultfv = PERMUTEPS (resultfv, _MM_SHUFFLE (1, 1, 1, 1));
+            _mm_store_ss (&hlCurve[i + 1], resultfv);
+            Rv += incrementv;
+        }
+
+#else
+        float R = comp / scalemshoulder;
+        float increment = R;
+
+        for (int i = shoulder + 1; i < 0x10000; i++) {
+            // change to [0,1] range
+            hlCurve[i] = xlog (1.0 + R * exp_scale) / R; // don't use xlogf or 1.f here. Leads to errors caused by too low precision
+            R += increment;
+        }
+
+#endif
+
+    }
+
+
+    // curve without contrast
+    LUTf dcurve (0x10000);
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // change to [0,1] range
+    shCurve.setClip (LUT_CLIP_ABOVE); // used LUT_CLIP_ABOVE, because the curve converges to 1.0 at the upper end and we don't want to exceed this value.
+    float val = 1.f / 65535.f;
+    float val2 = simplebasecurve (val, black, 0.015 * shcompr);
+    shCurve[0] = CLIPD (val2) / val;
+    // gamma correction
+
+    val = Color::gammatab_srgb[0] / 65535.f;
+
+    // apply brightness curve
+    if (brightcurve) {
+        val = brightcurve->getVal (val);    // TODO: getVal(double) is very slow! Optimize with a LUTf
+    }
+
+    // store result in a temporary array
+    dcurve[0] = CLIPD (val);
+
+    for (int i = 1; i < 0x10000; i++) {
+        float val = i / 65535.f;
+
+        float   val2 = simplebasecurve (val, black, 0.015 * shcompr);
+        shCurve[i] = val2 / val;
+
+        // gamma correction
+        val = Color::gammatab_srgb[i] / 65535.f;
+
+        // apply brightness curve
+        if (brightcurve) {
+            val = CLIPD (brightcurve->getVal (val));   // TODO: getVal(double) is very slow! Optimize with a LUTf
+        }
+
+        // store result in a temporary array
+        dcurve[i] = val;
+    }
+
+    brightcurve = nullptr;
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    // check if contrast curve is needed
+    if (contr > 0.00001 || contr < -0.00001) {
+
+        // compute mean luminance of the image with the curve applied
+        unsigned int sum = 0;
+        float avg = 0;
+
+        for (int i = 0; i <= 0xffff; i++) {
+            float fi = i * hlCurve[i];
+            avg += dcurve[ (int) (shCurve[fi] * fi)] * histogram[i];
+            sum += histogram[i];
+        }
+
+        avg /= sum;
+
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        std::vector<double> contrastcurvePoints (9);
+        contrastcurvePoints[0] = DCT_NURBS;
+
+        contrastcurvePoints[1] = 0; //black point.  Value in [0 ; 1] range
+        contrastcurvePoints[2] = 0; //black point.  Value in [0 ; 1] range
+
+        contrastcurvePoints[3] = avg - avg * (0.6 - contr / 250.0); //toe point
+        contrastcurvePoints[4] = avg - avg * (0.6 + contr / 250.0); //value at toe point
+
+        contrastcurvePoints[5] = avg + (1 - avg) * (0.6 - contr / 250.0); //shoulder point
+        contrastcurvePoints[6] = avg + (1 - avg) * (0.6 + contr / 250.0); //value at shoulder point
+
+        contrastcurvePoints[7] = 1.; // white point
+        contrastcurvePoints[8] = 1.; // value at white point
+
+        const DiagonalCurve contrastcurve (contrastcurvePoints, CURVES_MIN_POLY_POINTS / skip);
+
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        // apply contrast enhancement
+        for (int i = 0; i <= 0xffff; i++) {
+            dcurve[i] = contrastcurve.getVal (dcurve[i]);
+        }
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    // create second curve if needed
+    // bool histNeeded = false;
+    customToneCurve2.Reset();
+
+    if (!curvePoints2.empty() && curvePoints2[0] > DCT_Linear && curvePoints2[0] < DCT_Unchanged) {
+        const DiagonalCurve tcurve (curvePoints2, CURVES_MIN_POLY_POINTS / skip);
+
+        if (!tcurve.isIdentity()) {
+            customToneCurve2.Set (tcurve, gamma_);
+        }
+
+//       if (outBeforeCCurveHistogram ) {
+//           histNeeded = true;
+//       }
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    // create first curve if needed
+    customToneCurve1.Reset();
+
+    if (!curvePoints.empty() && curvePoints[0] > DCT_Linear && curvePoints[0] < DCT_Unchanged) {
+        const DiagonalCurve tcurve (curvePoints, CURVES_MIN_POLY_POINTS / skip);
+
+        if (!tcurve.isIdentity()) {
+            customToneCurve1.Set (tcurve, gamma_);
+        }
+
+//       if (outBeforeCCurveHistogram) {
+//           histNeeded = true;
+//       }
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#ifdef __SSE2__
+    vfloat gamma_v = F2V (gamma_);
+    vfloat startv = F2V (start);
+    vfloat slopev = F2V (slope);
+    vfloat mulv = F2V (mul);
+    vfloat addv = F2V (add);
+    vfloat c65535v = F2V (65535.f);
+
+    for (int i = 0; i <= 0xffff; i += 4) {
+        vfloat valv = LVFU (dcurve[i]);
+        valv = igamma (valv, gamma_v, startv, slopev, mulv, addv);
+        STVFU (outCurve[i], c65535v * valv);
+    }
+
+#else
+
+    for (int i = 0; i <= 0xffff; i++) {
+        float val = dcurve[i];
+        val = igamma (val, gamma_, start, slope, mul, add);
+        outCurve[i] = (65535.f * val);
+    }
+
+#endif
+    /*
+        if (histNeeded) {
+            for (int i = 0; i <= 0xffff; i++) {
+                float fi = i;
+                float hval = hlCurve[i] * fi;
+                hval = dcurve[shCurve[hval] * hval];
+                int hi = (int) (255.f * (hval));
+                outBeforeCCurveHistogram[hi] += histogram[i] ;
+            }
+        }
+        */
+}
+
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

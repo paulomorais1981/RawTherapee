@@ -292,6 +292,47 @@ void ParamsEdited::set (bool v)
     gradient.strength = v;
     gradient.centerX = v;
     gradient.centerY = v;
+
+    localrgb.enabled = v;
+    localrgb.expexpose = v;
+    localrgb.degree = v;
+    localrgb.locY = v;
+    localrgb.locX = v;
+    localrgb.locYT = v;
+    localrgb.locXL = v;
+    localrgb.centerX = v;
+    localrgb.centerY = v;
+    localrgb.circrad = v;
+    localrgb.thres = v;
+    localrgb.proxi = v;
+    localrgb.lightness = v;
+    localrgb.contrast = v;
+    localrgb.chroma = v;
+    localrgb.nbspot = v;
+    localrgb.anbspot = v;
+    localrgb.retrab = v;
+    localrgb.expcomp = v;
+    localrgb.hlcompr = v;
+    localrgb.hlcomprthresh = v;
+    localrgb.black = v;
+    localrgb.shcompr = v;
+
+    localrgb.hueref = v;
+    localrgb.chromaref = v;
+    localrgb.lumaref = v;
+    localrgb.Smethod = v;
+    localrgb.sensi = v;
+    localrgb.qualityMethod = v;
+    localrgb.curve      = v;
+    localrgb.curve2     = v;
+    localrgb.curveMode  = v;
+    localrgb.curveMode2 = v;
+
+    localrgb.expwb = v;
+    localrgb.temp = v;
+    localrgb.green = v;
+    localrgb.equal = v;
+
     locallab.enabled = v;
     locallab.expcolor = v;
     locallab.expblur = v;
@@ -896,6 +937,45 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         gradient.strength = gradient.strength && p.gradient.strength == other.gradient.strength;
         gradient.centerX = gradient.centerX && p.gradient.centerX == other.gradient.centerX;
         gradient.centerY = gradient.centerY && p.gradient.centerY == other.gradient.centerY;
+
+        localrgb.enabled = localrgb.enabled && p.localrgb.enabled == other.localrgb.enabled;
+        localrgb.expexpose = localrgb.expexpose && p.localrgb.expexpose == other.localrgb.expexpose;
+        localrgb.degree = localrgb.degree && p.localrgb.degree == other.localrgb.degree;
+        localrgb.locY = localrgb.locY && p.localrgb.locY == other.localrgb.locY;
+        localrgb.locX = localrgb.locX && p.localrgb.locX == other.localrgb.locX;
+        localrgb.locYT = localrgb.locYT && p.localrgb.locYT == other.localrgb.locYT;
+        localrgb.locXL = localrgb.locXL && p.localrgb.locXL == other.localrgb.locXL;
+        localrgb.Smethod = localrgb.Smethod && p.localrgb.Smethod == other.localrgb.Smethod;
+        localrgb.centerX = localrgb.centerX && p.localrgb.centerX == other.localrgb.centerX;
+        localrgb.centerY = localrgb.centerY && p.localrgb.centerY == other.localrgb.centerY;
+        localrgb.circrad = localrgb.circrad && p.localrgb.circrad == other.localrgb.circrad;
+        localrgb.thres = localrgb.thres && p.localrgb.thres == other.localrgb.thres;
+        localrgb.proxi = localrgb.proxi && p.localrgb.proxi == other.localrgb.proxi;
+        localrgb.lightness = localrgb.lightness && p.localrgb.lightness == other.localrgb.lightness;
+        localrgb.contrast = localrgb.contrast && p.localrgb.contrast == other.localrgb.contrast;
+        localrgb.chroma = localrgb.chroma && p.localrgb.chroma == other.localrgb.chroma;
+        localrgb.sensi = localrgb.sensi && p.localrgb.sensi == other.localrgb.sensi;
+        localrgb.expcomp = localrgb.expcomp && p.localrgb.expcomp == other.localrgb.expcomp;
+        localrgb.hlcompr = localrgb.hlcompr && p.localrgb.hlcompr == other.localrgb.hlcompr;
+        localrgb.hlcomprthresh = localrgb.hlcomprthresh && p.localrgb.hlcomprthresh == other.localrgb.hlcomprthresh;
+        localrgb.black = localrgb.black && p.localrgb.black == other.localrgb.black;
+        localrgb.shcompr = localrgb.shcompr && p.localrgb.shcompr == other.localrgb.shcompr;
+        localrgb.curve = localrgb.curve && p.localrgb.curve == other.localrgb.curve;
+        localrgb.curve2 = localrgb.curve2 && p.localrgb.curve2 == other.localrgb.curve2;
+        localrgb.curveMode = localrgb.curveMode && p.localrgb.curveMode == other.localrgb.curveMode;
+        localrgb.curveMode2 = localrgb.curveMode2 && p.localrgb.curveMode2 == other.localrgb.curveMode2;
+
+        localrgb.nbspot = localrgb.nbspot && p.localrgb.nbspot == other.localrgb.nbspot;
+        localrgb.anbspot = localrgb.anbspot && p.localrgb.anbspot == other.localrgb.anbspot;
+        localrgb.retrab = localrgb.retrab && p.localrgb.retrab == other.localrgb.retrab;
+        localrgb.hueref = localrgb.hueref && p.localrgb.hueref == other.localrgb.hueref;
+        localrgb.chromaref = localrgb.chromaref && p.localrgb.chromaref == other.localrgb.chromaref;
+        localrgb.lumaref = localrgb.lumaref && p.localrgb.lumaref == other.localrgb.lumaref;
+        localrgb.qualityMethod = localrgb.qualityMethod && p.localrgb.qualityMethod == other.localrgb.qualityMethod;
+        localrgb.expwb = localrgb.expwb && p.localrgb.expwb == other.localrgb.expwb;
+        localrgb.temp = localrgb.temp && p.localrgb.temp == other.localrgb.temp;
+        localrgb.green = localrgb.green && p.localrgb.green == other.localrgb.green;
+
         locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
         locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
@@ -2209,6 +2289,154 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (gradient.centerY) {
         toEdit.gradient.centerY   = mods.gradient.centerY;
+    }
+
+    if (localrgb.enabled) {
+        toEdit.localrgb.enabled   = mods.localrgb.enabled;
+    }
+
+    if (localrgb.expexpose) {
+        toEdit.localrgb.expexpose   = mods.localrgb.expexpose;
+    }
+
+    if (localrgb.locY) {
+        toEdit.localrgb.locY  = mods.localrgb.locY;
+    }
+
+    if (localrgb.locX) {
+        toEdit.localrgb.locX  = mods.localrgb.locX;
+    }
+
+    if (localrgb.locYT) {
+        toEdit.localrgb.locYT     = mods.localrgb.locYT;
+    }
+
+    if (localrgb.locXL) {
+        toEdit.localrgb.locXL     = mods.localrgb.locXL;
+    }
+
+    if (localrgb.Smethod) {
+        toEdit.localrgb.Smethod   = mods.localrgb.Smethod;
+    }
+
+    if (localrgb.centerX) {
+        toEdit.localrgb.centerX   = mods.localrgb.centerX;
+    }
+
+    if (localrgb.centerY) {
+        toEdit.localrgb.centerY   = mods.localrgb.centerY;
+    }
+
+    if (localrgb.circrad) {
+        toEdit.localrgb.circrad   = mods.localrgb.circrad;
+    }
+
+    if (localrgb.thres) {
+        toEdit.localrgb.thres   = mods.localrgb.thres;
+    }
+
+    if (localrgb.proxi) {
+        toEdit.localrgb.proxi   = mods.localrgb.proxi;
+    }
+
+    if (localrgb.lightness) {
+        toEdit.localrgb.lightness     = mods.localrgb.lightness;
+    }
+
+    if (localrgb.contrast) {
+        toEdit.localrgb.contrast  = mods.localrgb.contrast;
+    }
+
+    if (localrgb.chroma) {
+        toEdit.localrgb.chroma    = mods.localrgb.chroma;
+    }
+
+    if (localrgb.sensi) {
+        toEdit.localrgb.sensi     = mods.localrgb.sensi;
+    }
+
+    if (localrgb.transit) {
+        toEdit.localrgb.transit     = mods.localrgb.transit;
+    }
+
+    if (localrgb.expcomp) {
+        toEdit.localrgb.expcomp     = mods.localrgb.expcomp;
+    }
+
+    if (localrgb.hlcompr) {
+        toEdit.localrgb.hlcompr     = mods.localrgb.hlcompr;
+    }
+
+    if (localrgb.hlcomprthresh) {
+        toEdit.localrgb.hlcomprthresh     = mods.localrgb.hlcomprthresh;
+    }
+
+    if (localrgb.black) {
+        toEdit.localrgb.black     = mods.localrgb.black;
+    }
+
+    if (localrgb.shcompr) {
+        toEdit.localrgb.shcompr     = mods.localrgb.shcompr;
+    }
+
+    if (localrgb.nbspot) {
+        toEdit.localrgb.nbspot   = mods.localrgb.nbspot;
+    }
+
+    if (localrgb.anbspot) {
+        toEdit.localrgb.anbspot   = mods.localrgb.anbspot;
+    }
+
+    if (localrgb.retrab) {
+        toEdit.localrgb.retrab   = mods.localrgb.retrab;
+    }
+
+    if (localrgb.hueref) {
+        toEdit.localrgb.hueref   = mods.localrgb.hueref;
+    }
+
+    if (localrgb.chromaref) {
+        toEdit.localrgb.chromaref   = mods.localrgb.chromaref;
+    }
+
+    if (localrgb.lumaref) {
+        toEdit.localrgb.lumaref   = mods.localrgb.lumaref;
+    }
+
+    if (localrgb.qualityMethod) {
+        toEdit.localrgb.qualityMethod   = mods.localrgb.qualityMethod;
+    }
+
+    if (localrgb.curve) {
+        toEdit.localrgb.curve      = mods.localrgb.curve;
+    }
+
+    if (localrgb.curve2) {
+        toEdit.localrgb.curve2     = mods.localrgb.curve2;
+    }
+
+    if (localrgb.curveMode) {
+        toEdit.localrgb.curveMode  = mods.localrgb.curveMode;
+    }
+
+    if (localrgb.curveMode2) {
+        toEdit.localrgb.curveMode2 = mods.localrgb.curveMode2;
+    }
+
+    if (localrgb.expwb) {
+        toEdit.localrgb.expwb      = mods.localrgb.expwb;
+    }
+
+    if (localrgb.temp) {
+        toEdit.localrgb.temp      = mods.localrgb.temp;
+    }
+
+    if (localrgb.green) {
+        toEdit.localrgb.green      = mods.localrgb.green;
+    }
+
+    if (localrgb.equal) {
+        toEdit.localrgb.equal      = mods.localrgb.equal;
     }
 
     if (locallab.enabled) {

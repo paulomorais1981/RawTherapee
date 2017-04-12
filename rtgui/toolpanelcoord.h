@@ -54,6 +54,7 @@
 #include "retinex.h"
 #include "gradient.h"
 #include "locallab.h"
+#include "localrgb.h"
 #include "pcvignette.h"
 #include "toolbar.h"
 #include "lensgeom.h"
@@ -103,6 +104,7 @@ protected:
     Vignetting* vignetting;
     Gradient* gradient;
     Locallab* locallab;
+    Localrgb* localrgb;
     Retinex*  retinex;
     PCVignette* pcvignette;
     LensGeometry* lensgeom;
@@ -235,7 +237,7 @@ public:
     // toolpanellistener interface
     void panelChanged   (rtengine::ProcEvent event, const Glib::ustring& descr);
 
-    void imageTypeChanged(bool isRaw, bool isBayer, bool isXtrans);
+    void imageTypeChanged (bool isRaw, bool isBayer, bool isXtrans);
     // profilechangelistener interface
     void profileChange  (const rtengine::procparams::PartialProfile* nparams, rtengine::ProcEvent event, const Glib::ustring& descr, const ParamsEdited* paramsEdited = nullptr);
     void setDefaults    (rtengine::procparams::ProcParams* defparams);

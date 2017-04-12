@@ -414,6 +414,51 @@ class DistortionParamsEdited
 public:
     bool amount;
 };
+
+class LocalrgbParamsEdited
+{
+public:
+    bool enabled;
+    bool degree;
+    bool locY;
+    bool locX;
+    bool locYT;
+    bool locXL;
+    bool centerX;
+    bool centerY;
+    bool circrad;
+    bool thres;
+    bool proxi;
+    bool Smethod;
+    bool expexpose;
+    bool transit;
+    bool lightness;
+    bool contrast;
+    bool chroma;
+    bool nbspot;
+    bool anbspot;
+    bool retrab;
+    bool expcomp;
+    bool hlcompr;
+    bool hlcomprthresh;
+    bool black;
+    bool shcompr;
+    bool hueref;
+    bool chromaref;
+    bool lumaref;
+    bool sensi;
+    bool qualityMethod;
+    bool curve;
+    bool curve2;
+    bool curveMode;
+    bool curveMode2;
+    bool expwb;
+    bool temp;
+    bool green;
+    bool equal;
+
+};
+
 class LocallabParamsEdited
 {
 
@@ -878,6 +923,7 @@ public:
     PerspectiveParamsEdited       perspective;
     GradientParamsEdited          gradient;
     LocallabParamsEdited          locallab;
+    LocalrgbParamsEdited          localrgb;
     PCVignetteParamsEdited        pcvignette;
     CACorrParamsEdited            cacorrection;
     VignettingParamsEdited        vignetting;

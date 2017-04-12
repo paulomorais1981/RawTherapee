@@ -33,7 +33,7 @@ set (NONCLISOURCEFILES
     sensorbayer.cc sensorxtrans.cc preprocess.cc bayerpreprocess.cc bayerprocess.cc bayerrawexposure.cc xtransprocess.cc xtransrawexposure.cc
     darkframe.cc flatfield.cc rawcacorrection.cc rawexposure.cc wavelet.cc
     dirpyrequalizer.cc hsvequalizer.cc defringe.cc
-    popupcommon.cc popupbutton.cc popuptogglebutton.cc sharpenedge.cc sharpenmicro.cc colorappearance.cc locallab.cc
+    popupcommon.cc popupbutton.cc popuptogglebutton.cc sharpenedge.cc sharpenmicro.cc colorappearance.cc locallab.cc localrgb.cc
     filmsimulation.cc prsharpening.cc
     dynamicprofile.cc dynamicprofilepanel.cc)
 

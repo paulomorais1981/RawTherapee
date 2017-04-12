@@ -64,6 +64,7 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc (nullptr), editDataProvider 
     retinex               = Gtk::manage (new Retinex ());
     gradient            = Gtk::manage (new Gradient ());
     locallab            = Gtk::manage (new Locallab ());
+    localrgb            = Gtk::manage (new Localrgb ());
     pcvignette          = Gtk::manage (new PCVignette ());
     perspective         = Gtk::manage (new PerspCorrection ());
     cacorrection        = Gtk::manage (new CACorrection ());
@@ -154,6 +155,8 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc (nullptr), editDataProvider 
     toolPanels.push_back (wavelet);
     addPanel (locallabPanel, locallab);
     toolPanels.push_back (locallab);
+    addPanel (locallabPanel, localrgb);
+    toolPanels.push_back (localrgb);
     addPanel (transformPanel, crop);
     toolPanels.push_back (crop);
     addPanel (transformPanel, resize);
@@ -323,12 +326,13 @@ ToolPanelCoordinator::~ToolPanelCoordinator ()
     delete toolBar;
 }
 
-void ToolPanelCoordinator::imageTypeChanged(bool isRaw, bool isBayer, bool isXtrans)
+void ToolPanelCoordinator::imageTypeChanged (bool isRaw, bool isBayer, bool isXtrans)
 {
     GThreadLock lock;
 
-    if(isRaw) {
-        rawPanelSW->set_sensitive(true);
+    if (isRaw) {
+        rawPanelSW->set_sensitive (true);
+
         if (isBayer) {
             sensorxtrans->FoldableToolPanel::hide();
             sensorbayer->FoldableToolPanel::show();
@@ -346,7 +350,7 @@ void ToolPanelCoordinator::imageTypeChanged(bool isRaw, bool isBayer, bool isXtr
             flatfield->FoldableToolPanel::hide();
         }
     } else {
-        rawPanelSW->set_sensitive(false);
+        rawPanelSW->set_sensitive (false);
     }
 
 }

@@ -860,6 +860,74 @@ public:
     int    centerX;
     int    centerY;
 };
+
+/**
+ * Parameters of the Local rgb
+ */
+class LocalrgbParams
+{
+
+public:
+    enum eTCModeId {
+        TC_MODE_STD,               // Standard modes, the curve is applied on all component individually
+        TC_MODE_WEIGHTEDSTD,       // Weighted standard mode
+        TC_MODE_FILMLIKE,          // Film-like mode, as defined in Adobe's reference code
+        TC_MODE_SATANDVALBLENDING, // Modify the Saturation and Value channel
+        TC_MODE_LUMINANCE,         // Modify the Luminance channel with coefficients from Rec 709's
+        TC_MODE_PERCEPTUAL         // Keep color appearance constant using perceptual modeling
+    };
+
+
+    bool    enabled;
+    double  degree;
+    int     locY;
+    int     locX;
+    int     locYT;
+    int     locXL;
+    int     centerX;
+    int     centerY;
+    int     circrad;
+    int     thres;
+    int     proxi;
+    bool expexpose;
+    int     lightness;
+    int     contrast;
+    int     chroma;
+    Glib::ustring Smethod;
+    Glib::ustring qualityMethod;
+    double      expcomp;
+    std::vector<double>   curve;
+    std::vector<double>   curve2;
+    eTCModeId   curveMode;
+    eTCModeId   curveMode2;
+    int         black;
+    int         shcompr;
+    int         hlcompr;
+    int         hlcomprthresh;
+
+    int     transit;
+    int sensi;
+    double  hueref;
+    double  chromaref;
+    double  lumaref;
+    int     nbspot;
+    int     anbspot;
+    int     retrab;
+    bool expwb;
+    double temp;
+    double green;
+    double equal;
+    LocalrgbParams ()
+    {
+        setDefaults();
+    }
+    void setDefaults();
+
+};
+
+
+
+
 /**
   * Parameters of the Local Lab
   */
@@ -1441,6 +1509,7 @@ public:
     PerspectiveParams       perspective;     ///< Perspective correction parameters
     GradientParams          gradient;        ///< Gradient filter parameters
     LocallabParams          locallab;        ///< Local lab parameters
+    LocalrgbParams          localrgb;        ///< Local rgb parameters
     PCVignetteParams        pcvignette;      ///< Post-crop vignette filter parameters
     CACorrParams            cacorrection;    ///< Lens c/a correction parameters
     VignettingParams        vignetting;      ///< Lens vignetting correction parameters

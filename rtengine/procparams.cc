@@ -905,6 +905,52 @@ void RAWParams::BayerSensor::setPixelShiftDefaults()
     pixelShiftNonGreenAmaze = false;
 }
 
+void LocalrgbParams::setDefaults()
+{
+    enabled = false;
+    degree = 0;
+    locY = 250;
+    locX = 250;
+    locYT = 250;
+    locXL = 250;
+    centerX = 0;
+    centerY = 0;
+    circrad = 18;
+    proxi = 20;
+    thres = 18;
+    lightness = 0;
+    contrast = 0;
+    chroma = 0;
+    sensi = 19;
+    Smethod = "IND";
+    qualityMethod = "enhden";
+    hueref = 1.;
+    chromaref = 50.;
+    lumaref = 50.;
+    nbspot = 1;
+    anbspot = 0;
+    retrab = 500;
+    expexpose = false;
+    transit = 60;
+    expcomp       = 0;
+    black         = 0;
+    hlcompr       = 0;
+    hlcomprthresh = 33;
+    shcompr       = 50;
+    curve.clear ();
+    curve.push_back (DCT_Linear);
+    curve2.clear ();
+    curve2.push_back (DCT_Linear);
+    curveMode     = LocalrgbParams::TC_MODE_STD;
+    curveMode2    = LocalrgbParams::TC_MODE_STD;
+    expwb = false;
+    temp = 6504.;
+    green = 1.;
+    equal = 1.;
+}
+
+
+
 void LocallabParams::setDefaults()
 {
     enabled = false;
@@ -2692,6 +2738,206 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Gradient", "CenterY", gradient.centerY);
         }
 
+        //save Local rgb
+        if (!pedited || pedited->localrgb.enabled) {
+            keyFile.set_boolean ("Localrgb", "Enabled", localrgb.enabled);
+        }
+
+        if (!pedited || pedited->localrgb.expexpose) {
+            keyFile.set_boolean ("Localrgb", "Expexpose", localrgb.expexpose);
+        }
+
+        if (!pedited || pedited->localrgb.locY) {
+            keyFile.set_integer ("Localrgb", "LocY", localrgb.locY);
+        }
+
+        if (!pedited || pedited->localrgb.locX) {
+            keyFile.set_integer ("Localrgb", "LocX", localrgb.locX);
+        }
+
+        if (!pedited || pedited->localrgb.locYT) {
+            keyFile.set_integer ("Localrgb", "LocYT", localrgb.locYT);
+        }
+
+        if (!pedited || pedited->localrgb.locXL) {
+            keyFile.set_integer ("Localrgb", "LocXL", localrgb.locXL);
+        }
+
+        if (!pedited || pedited->localrgb.centerX) {
+            keyFile.set_integer ("Localrgb", "CenterX", localrgb.centerX);
+        }
+
+        if (!pedited || pedited->localrgb.centerY) {
+            keyFile.set_integer ("Localrgb", "CenterY", localrgb.centerY);
+        }
+
+        if (!pedited || pedited->localrgb.circrad) {
+            keyFile.set_integer ("Localrgb", "Circrad", localrgb.circrad);
+        }
+
+        if (!pedited || pedited->localrgb.thres) {
+            keyFile.set_integer ("Localrgb", "Thres", localrgb.thres);
+        }
+
+        if (!pedited || pedited->localrgb.proxi) {
+            keyFile.set_integer ("Localrgb", "Proxi", localrgb.proxi);
+        }
+
+        if (!pedited || pedited->localrgb.lightness) {
+            keyFile.set_integer ("Localrgb", "Lightness", localrgb.lightness);
+        }
+
+        if (!pedited || pedited->localrgb.contrast) {
+            keyFile.set_integer ("Localrgb", "Contrast", localrgb.contrast);
+        }
+
+        if (!pedited || pedited->localrgb.chroma) {
+            keyFile.set_integer ("Localrgb", "Chroma", localrgb.chroma);
+        }
+
+        if (!pedited || pedited->localrgb.Smethod) {
+            keyFile.set_string ("Localrgb", "Smethod", localrgb.Smethod);
+        }
+
+        if (!pedited || pedited->localrgb.nbspot) {
+            keyFile.set_integer ("Localrgb", "Nbspot", localrgb.nbspot);
+        }
+
+        if (!pedited || pedited->localrgb.anbspot) {
+            keyFile.set_integer ("Localrgb", "ANbspot", localrgb.anbspot);
+        }
+
+        if (!pedited || pedited->localrgb.retrab) {
+            keyFile.set_integer ("Localrgb", "Retrab", localrgb.retrab);
+        }
+
+        if (!pedited || pedited->localrgb.hueref) {
+            keyFile.set_double ("Localrgb", "Hueref", localrgb.hueref);
+        }
+
+        if (!pedited || pedited->localrgb.chromaref) {
+            keyFile.set_double ("Localrgb", "Chromaref", localrgb.chromaref);
+        }
+
+        if (!pedited || pedited->localrgb.lumaref) {
+            keyFile.set_double ("Localrgb", "Lumaref", localrgb.lumaref);
+        }
+
+        if (!pedited || pedited->localrgb.transit) {
+            keyFile.set_integer ("Localrgb", "Transit", localrgb.transit);
+        }
+
+        if (!pedited || pedited->localrgb.sensi) {
+            keyFile.set_integer ("Localrgb", "Sensi", localrgb.sensi);
+        }
+
+        if (!pedited || pedited->localrgb.expcomp) {
+            keyFile.set_double ("Localrgb", "Expcomp", localrgb.expcomp);
+        }
+
+        if (!pedited || pedited->localrgb.hlcompr) {
+            keyFile.set_integer ("Localrgb", "Hlcompr", localrgb.hlcompr);
+        }
+
+        if (!pedited || pedited->localrgb.hlcomprthresh) {
+            keyFile.set_integer ("Localrgb", "Hlcomprthresh", localrgb.hlcomprthresh);
+        }
+
+        if (!pedited || pedited->localrgb.black) {
+            keyFile.set_integer ("Localrgb", "Black", localrgb.black);
+        }
+
+        if (!pedited || pedited->localrgb.shcompr) {
+            keyFile.set_integer ("Localrgb", "Shcompr", localrgb.shcompr);
+        }
+
+        if (!pedited || pedited->localrgb.qualityMethod) {
+            keyFile.set_string ("Localrgb", "qualityMethod", localrgb.qualityMethod);
+        }
+
+        if (!pedited || pedited->localrgb.temp) {
+            keyFile.set_double ("Localrgb", "Temp", localrgb.temp);
+        }
+
+        if (!pedited || pedited->localrgb.green) {
+            keyFile.set_double ("Localrgb", "Green", localrgb.green);
+        }
+
+        if (!pedited || pedited->localrgb.equal) {
+            keyFile.set_double ("Localrgb", "Equal", localrgb.equal);
+        }
+
+        if (!pedited || pedited->localrgb.expwb) {
+            keyFile.set_boolean ("Localrgb", "Expwb", localrgb.expwb);
+        }
+
+        if (!pedited || pedited->localrgb.curveMode)  {
+            Glib::ustring method;
+
+            switch (localrgb.curveMode) {
+                case (LocalrgbParams::TC_MODE_STD):
+                    method = "Standard";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_FILMLIKE):
+                    method = "FilmLike";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_SATANDVALBLENDING):
+                    method = "SatAndValueBlending";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_WEIGHTEDSTD):
+                    method = "WeightedStd";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_LUMINANCE):
+                    method = "Luminance";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_PERCEPTUAL):
+                    method = "Perceptual";
+                    break;
+            }
+
+            keyFile.set_string  ("Localrgb", "CurveMode", method);
+        }
+
+        if (!pedited || pedited->localrgb.curveMode2)  {
+            Glib::ustring method;
+
+            switch (localrgb.curveMode2) {
+                case (LocalrgbParams::TC_MODE_STD):
+                    method = "Standard";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_FILMLIKE):
+                    method = "FilmLike";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_SATANDVALBLENDING):
+                    method = "SatAndValueBlending";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_WEIGHTEDSTD):
+                    method = "WeightedStd";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_LUMINANCE):
+                    method = "Luminance";
+                    break;
+
+                case (LocalrgbParams::TC_MODE_PERCEPTUAL):
+                    method = "Perceptual";
+                    break;
+            }
+
+            keyFile.set_string  ("Localrgb", "CurveMode2", method);
+        }
+
+
+
+
         // save Local lab
         if (!pedited || pedited->locallab.enabled) {
             keyFile.set_boolean ("Locallab", "Enabled", locallab.enabled);
@@ -4336,6 +4582,322 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->toneCurve.method = true;
                 }
             }
+        }
+
+        //load Local rgb
+        if (keyFile.has_group ("Localrgb")) {
+            if (keyFile.has_key ("Localrgb", "Enabled"))  {
+                localrgb.enabled  = keyFile.get_boolean ("Localrgb", "Enabled");
+
+                if (pedited) {
+                    pedited->localrgb.enabled = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Expexpose")) {
+                localrgb.expexpose = keyFile.get_boolean ("Localrgb", "Expexpose");
+
+                if (pedited) {
+                    pedited->localrgb.expexpose = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Smethod"))  {
+                localrgb.Smethod  = keyFile.get_string ("Localrgb", "Smethod");
+
+                if (pedited) {
+                    pedited->localrgb.Smethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "LocY"))  {
+                localrgb.locY  = keyFile.get_integer ("Localrgb", "LocY");
+
+                if (pedited) {
+                    pedited->localrgb.locY = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "LocX")) {
+                localrgb.locX = keyFile.get_integer  ("Localrgb", "LocX");
+
+                if (pedited) {
+                    pedited->localrgb.locX = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "LocYT"))  {
+                localrgb.locYT  = keyFile.get_integer ("Localrgb", "LocYT");
+
+                if (pedited) {
+                    pedited->localrgb.locYT = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "LocXL")) {
+                localrgb.locXL = keyFile.get_integer  ("Localrgb", "LocXL");
+
+                if (pedited) {
+                    pedited->localrgb.locXL = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "CenterX"))  {
+                localrgb.centerX  = keyFile.get_integer ("Localrgb", "CenterX");
+
+                if (pedited) {
+                    pedited->localrgb.centerX = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "CenterY"))  {
+                localrgb.centerY  = keyFile.get_integer ("Localrgb", "CenterY");
+
+                if (pedited) {
+                    pedited->localrgb.centerY = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Circrad"))  {
+                localrgb.circrad  = keyFile.get_integer ("Localrgb", "Circrad");
+
+                if (pedited) {
+                    pedited->localrgb.circrad = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Thres"))  {
+                localrgb.thres  = keyFile.get_integer ("Localrgb", "Thres");
+
+                if (pedited) {
+                    pedited->localrgb.thres = true;
+                }
+            }
+
+
+            if (keyFile.has_key ("Localrgb", "Proxi"))  {
+                localrgb.proxi  = keyFile.get_integer ("Localrgb", "Proxi");
+
+                if (pedited) {
+                    pedited->localrgb.proxi = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Chroma"))  {
+                localrgb.chroma  = keyFile.get_integer ("Localrgb", "Chroma");
+
+                if (pedited) {
+                    pedited->localrgb.chroma = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Lightness"))  {
+                localrgb.lightness  = keyFile.get_integer ("Localrgb", "Lightness");
+
+                if (pedited) {
+                    pedited->localrgb.lightness = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Contrast"))  {
+                localrgb.contrast  = keyFile.get_integer ("Localrgb", "Contrast");
+
+                if (pedited) {
+                    pedited->localrgb.contrast = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Sensi"))  {
+                localrgb.sensi  = keyFile.get_integer ("Localrgb", "Sensi");
+
+                if (pedited) {
+                    pedited->localrgb.sensi = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Expcomp"))  {
+                localrgb.expcomp  = keyFile.get_double ("Localrgb", "Expcomp");
+
+                if (pedited) {
+                    pedited->localrgb.expcomp = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Hlcompr"))  {
+                localrgb.hlcompr  = keyFile.get_integer ("Localrgb", "Hlcompr");
+
+                if (pedited) {
+                    pedited->localrgb.hlcompr = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Hlcomprthresh"))  {
+                localrgb.hlcomprthresh  = keyFile.get_integer ("Localrgb", "Hlcomprthresh");
+
+                if (pedited) {
+                    pedited->localrgb.hlcomprthresh = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Black"))  {
+                localrgb.black  = keyFile.get_integer ("Localrgb", "Black");
+
+                if (pedited) {
+                    pedited->localrgb.black = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Shcompr"))  {
+                localrgb.shcompr  = keyFile.get_integer ("Localrgb", "Shcompr");
+
+                if (pedited) {
+                    pedited->localrgb.shcompr = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Nbspot"))  {
+                localrgb.nbspot  = keyFile.get_integer ("Localrgb", "Nbspot");
+
+                if (pedited) {
+                    pedited->localrgb.nbspot = true;
+                }
+            }
+
+
+
+            if (keyFile.has_key ("Localrgb", "ANbspot"))  {
+                localrgb.anbspot  = keyFile.get_integer ("Localrgb", "ANbspot");
+
+                if (pedited) {
+                    pedited->localrgb.anbspot = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Retrab"))  {
+                localrgb.retrab = keyFile.get_integer ("Localrgb", "Retrab");
+
+                if (pedited) {
+                    pedited->localrgb.retrab = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Hueref"))  {
+                localrgb.hueref  = keyFile.get_double ("Localrgb", "Hueref");
+
+                if (pedited) {
+                    pedited->localrgb.hueref = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Chromaref"))  {
+                localrgb.chromaref  = keyFile.get_double ("Localrgb", "Chromaref");
+
+                if (pedited) {
+                    pedited->localrgb.chromaref = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Lumaref"))  {
+                localrgb.lumaref  = keyFile.get_double ("Localrgb", "Lumaref");
+
+                if (pedited) {
+                    pedited->localrgb.lumaref = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Transit"))  {
+                localrgb.transit  = keyFile.get_integer ("Localrgb", "Transit");
+
+                if (pedited) {
+                    pedited->localrgb.transit = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "qualityMethod"))  {
+                localrgb.qualityMethod  = keyFile.get_string ("Localrgb", "qualityMethod");
+
+                if (pedited) {
+                    pedited->localrgb.qualityMethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Expwb")) {
+                localrgb.expwb = keyFile.get_boolean ("Localrgb", "Expwb");
+
+                if (pedited) {
+                    pedited->localrgb.expwb = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Temp"))  {
+                localrgb.temp  = keyFile.get_double ("Localrgb", "Temp");
+
+                if (pedited) {
+                    pedited->localrgb.temp = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Green"))  {
+                localrgb.green  = keyFile.get_double ("Localrgb", "Green");
+
+                if (pedited) {
+                    pedited->localrgb.green = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Equal"))  {
+                localrgb.equal  = keyFile.get_double ("Localrgb", "Equal");
+
+                if (pedited) {
+                    pedited->localrgb.equal = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "CurveMode"))      {
+                Glib::ustring sMode = keyFile.get_string ("Localrgb", "CurveMode");
+
+                if      (sMode == "Standard") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_STD;
+                } else if (sMode == "FilmLike") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_FILMLIKE;
+                } else if (sMode == "SatAndValueBlending") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_SATANDVALBLENDING;
+                } else if (sMode == "WeightedStd") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_WEIGHTEDSTD;
+                } else if (sMode == "Luminance") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_LUMINANCE;
+                } else if (sMode == "Perceptual") {
+                    localrgb.curveMode = LocalrgbParams::TC_MODE_PERCEPTUAL;
+                }
+
+                if (pedited) {
+                    pedited->localrgb.curveMode = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "CurveMode2"))      {
+                Glib::ustring sMode = keyFile.get_string ("Localrgb", "CurveMode2");
+
+                if      (sMode == "Standard") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_STD;
+                } else if (sMode == "FilmLike") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_FILMLIKE;
+                } else if (sMode == "SatAndValueBlending") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_SATANDVALBLENDING;
+                } else if (sMode == "WeightedStd") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_WEIGHTEDSTD;
+                } else if (sMode == "Luminance") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_LUMINANCE;
+                } else if (sMode == "Perceptual") {
+                    localrgb.curveMode2 = LocalrgbParams::TC_MODE_PERCEPTUAL;
+                }
+
+                if (pedited) {
+                    pedited->localrgb.curveMode2 = true;
+                }
+            }
+
+
         }
 
 
@@ -8654,7 +9216,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftMotion"))  {
-                raw.bayersensor.pixelShiftMotion = keyFile.get_integer("RAW Bayer", "PixelShiftMotion");
+                raw.bayersensor.pixelShiftMotion = keyFile.get_integer ("RAW Bayer", "PixelShiftMotion");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftMotion = true;
@@ -8662,15 +9224,15 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftMotionCorrection"))  {
-                raw.bayersensor.pixelShiftMotionCorrection = (RAWParams::BayerSensor::ePSMotionCorrection)keyFile.get_integer("RAW Bayer", "PixelShiftMotionCorrection");
+                raw.bayersensor.pixelShiftMotionCorrection = (RAWParams::BayerSensor::ePSMotionCorrection)keyFile.get_integer ("RAW Bayer", "PixelShiftMotionCorrection");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftMotionCorrection = true;
                 }
             }
- 
+
             if (keyFile.has_key ("RAW Bayer", "PixelShiftMotionCorrectionMethod"))  {
-                raw.bayersensor.pixelShiftMotionCorrectionMethod = (RAWParams::BayerSensor::ePSMotionCorrectionMethod)keyFile.get_integer("RAW Bayer", "PixelShiftMotionCorrectionMethod");
+                raw.bayersensor.pixelShiftMotionCorrectionMethod = (RAWParams::BayerSensor::ePSMotionCorrectionMethod)keyFile.get_integer ("RAW Bayer", "PixelShiftMotionCorrectionMethod");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftMotionCorrectionMethod = true;
@@ -8678,7 +9240,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftStddevFactorGreen"))  {
-                raw.bayersensor.pixelShiftStddevFactorGreen = keyFile.get_double("RAW Bayer", "pixelShiftStddevFactorGreen");
+                raw.bayersensor.pixelShiftStddevFactorGreen = keyFile.get_double ("RAW Bayer", "pixelShiftStddevFactorGreen");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftStddevFactorGreen = true;
@@ -8686,7 +9248,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftStddevFactorRed"))  {
-                raw.bayersensor.pixelShiftStddevFactorRed = keyFile.get_double("RAW Bayer", "pixelShiftStddevFactorRed");
+                raw.bayersensor.pixelShiftStddevFactorRed = keyFile.get_double ("RAW Bayer", "pixelShiftStddevFactorRed");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftStddevFactorRed = true;
@@ -8694,7 +9256,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftStddevFactorBlue"))  {
-                raw.bayersensor.pixelShiftStddevFactorBlue = keyFile.get_double("RAW Bayer", "pixelShiftStddevFactorBlue");
+                raw.bayersensor.pixelShiftStddevFactorBlue = keyFile.get_double ("RAW Bayer", "pixelShiftStddevFactorBlue");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftStddevFactorBlue = true;
@@ -8702,7 +9264,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftEperIso"))  {
-                raw.bayersensor.pixelShiftEperIso = keyFile.get_double("RAW Bayer", "PixelShiftEperIso");
+                raw.bayersensor.pixelShiftEperIso = keyFile.get_double ("RAW Bayer", "PixelShiftEperIso");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftEperIso = true;
@@ -8710,7 +9272,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftNreadIso"))  {
-                raw.bayersensor.pixelShiftNreadIso = keyFile.get_double("RAW Bayer", "PixelShiftNreadIso");
+                raw.bayersensor.pixelShiftNreadIso = keyFile.get_double ("RAW Bayer", "PixelShiftNreadIso");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNreadIso = true;
@@ -8718,7 +9280,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftPrnu"))  {
-                raw.bayersensor.pixelShiftPrnu = keyFile.get_double("RAW Bayer", "PixelShiftPrnu");
+                raw.bayersensor.pixelShiftPrnu = keyFile.get_double ("RAW Bayer", "PixelShiftPrnu");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftPrnu = true;
@@ -8726,7 +9288,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftSigma"))  {
-                raw.bayersensor.pixelShiftSigma = keyFile.get_double("RAW Bayer", "PixelShiftSigma");
+                raw.bayersensor.pixelShiftSigma = keyFile.get_double ("RAW Bayer", "PixelShiftSigma");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftSigma = true;
@@ -8734,7 +9296,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftSum"))  {
-                raw.bayersensor.pixelShiftSum = keyFile.get_double("RAW Bayer", "PixelShiftSum");
+                raw.bayersensor.pixelShiftSum = keyFile.get_double ("RAW Bayer", "PixelShiftSum");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftSum = true;
@@ -8742,7 +9304,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftRedBlueWeight"))  {
-                raw.bayersensor.pixelShiftRedBlueWeight = keyFile.get_double("RAW Bayer", "PixelShiftRedBlueWeight");
+                raw.bayersensor.pixelShiftRedBlueWeight = keyFile.get_double ("RAW Bayer", "PixelShiftRedBlueWeight");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftRedBlueWeight = true;
@@ -8750,7 +9312,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftShowMotion"))  {
-                raw.bayersensor.pixelShiftShowMotion = keyFile.get_boolean("RAW Bayer", "PixelShiftShowMotion");
+                raw.bayersensor.pixelShiftShowMotion = keyFile.get_boolean ("RAW Bayer", "PixelShiftShowMotion");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftShowMotion = true;
@@ -8758,7 +9320,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "PixelShiftShowMotionMaskOnly"))  {
-                raw.bayersensor.pixelShiftShowMotionMaskOnly = keyFile.get_boolean("RAW Bayer", "PixelShiftShowMotionMaskOnly");
+                raw.bayersensor.pixelShiftShowMotionMaskOnly = keyFile.get_boolean ("RAW Bayer", "PixelShiftShowMotionMaskOnly");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftShowMotionMaskOnly = true;
@@ -8766,7 +9328,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftAutomatic"))  {
-                raw.bayersensor.pixelShiftAutomatic = keyFile.get_boolean("RAW Bayer", "pixelShiftAutomatic");
+                raw.bayersensor.pixelShiftAutomatic = keyFile.get_boolean ("RAW Bayer", "pixelShiftAutomatic");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftAutomatic = true;
@@ -8774,7 +9336,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftNonGreenHorizontal"))  {
-                raw.bayersensor.pixelShiftNonGreenHorizontal = keyFile.get_boolean("RAW Bayer", "pixelShiftNonGreenHorizontal");
+                raw.bayersensor.pixelShiftNonGreenHorizontal = keyFile.get_boolean ("RAW Bayer", "pixelShiftNonGreenHorizontal");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNonGreenHorizontal = true;
@@ -8782,7 +9344,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftNonGreenVertical"))  {
-                raw.bayersensor.pixelShiftNonGreenVertical = keyFile.get_boolean("RAW Bayer", "pixelShiftNonGreenVertical");
+                raw.bayersensor.pixelShiftNonGreenVertical = keyFile.get_boolean ("RAW Bayer", "pixelShiftNonGreenVertical");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNonGreenVertical = true;
@@ -8790,7 +9352,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftHoleFill"))  {
-                raw.bayersensor.pixelShiftHoleFill = keyFile.get_boolean("RAW Bayer", "pixelShiftHoleFill");
+                raw.bayersensor.pixelShiftHoleFill = keyFile.get_boolean ("RAW Bayer", "pixelShiftHoleFill");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftHoleFill = true;
@@ -8798,7 +9360,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftMedian"))  {
-                raw.bayersensor.pixelShiftMedian = keyFile.get_boolean("RAW Bayer", "pixelShiftMedian");
+                raw.bayersensor.pixelShiftMedian = keyFile.get_boolean ("RAW Bayer", "pixelShiftMedian");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftMedian = true;
@@ -8806,7 +9368,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftMedian3"))  {
-                raw.bayersensor.pixelShiftMedian3 = keyFile.get_boolean("RAW Bayer", "pixelShiftMedian3");
+                raw.bayersensor.pixelShiftMedian3 = keyFile.get_boolean ("RAW Bayer", "pixelShiftMedian3");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftMedian3 = true;
@@ -8814,7 +9376,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftGreen"))  {
-                raw.bayersensor.pixelShiftGreen = keyFile.get_boolean("RAW Bayer", "pixelShiftGreen");
+                raw.bayersensor.pixelShiftGreen = keyFile.get_boolean ("RAW Bayer", "pixelShiftGreen");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftGreen = true;
@@ -8822,7 +9384,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftBlur"))  {
-                raw.bayersensor.pixelShiftBlur = keyFile.get_boolean("RAW Bayer", "pixelShiftBlur");
+                raw.bayersensor.pixelShiftBlur = keyFile.get_boolean ("RAW Bayer", "pixelShiftBlur");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftBlur = true;
@@ -8830,7 +9392,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftSmoothFactor"))  {
-                raw.bayersensor.pixelShiftSmoothFactor = keyFile.get_double("RAW Bayer", "pixelShiftSmoothFactor");
+                raw.bayersensor.pixelShiftSmoothFactor = keyFile.get_double ("RAW Bayer", "pixelShiftSmoothFactor");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftSmooth = true;
@@ -8838,7 +9400,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftExp0"))  {
-                raw.bayersensor.pixelShiftExp0 = keyFile.get_boolean("RAW Bayer", "pixelShiftExp0");
+                raw.bayersensor.pixelShiftExp0 = keyFile.get_boolean ("RAW Bayer", "pixelShiftExp0");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftExp0 = true;
@@ -8846,7 +9408,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftLmmse"))  {
-                raw.bayersensor.pixelShiftLmmse = keyFile.get_boolean("RAW Bayer", "pixelShiftLmmse");
+                raw.bayersensor.pixelShiftLmmse = keyFile.get_boolean ("RAW Bayer", "pixelShiftLmmse");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftLmmse = true;
@@ -8854,7 +9416,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftEqualBright"))  {
-                raw.bayersensor.pixelShiftEqualBright = keyFile.get_boolean("RAW Bayer", "pixelShiftEqualBright");
+                raw.bayersensor.pixelShiftEqualBright = keyFile.get_boolean ("RAW Bayer", "pixelShiftEqualBright");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftEqualBright = true;
@@ -8862,7 +9424,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftNonGreenCross"))  {
-                raw.bayersensor.pixelShiftNonGreenCross = keyFile.get_boolean("RAW Bayer", "pixelShiftNonGreenCross");
+                raw.bayersensor.pixelShiftNonGreenCross = keyFile.get_boolean ("RAW Bayer", "pixelShiftNonGreenCross");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNonGreenCross = true;
@@ -8870,7 +9432,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftNonGreenCross2"))  {
-                raw.bayersensor.pixelShiftNonGreenCross2 = keyFile.get_boolean("RAW Bayer", "pixelShiftNonGreenCross2");
+                raw.bayersensor.pixelShiftNonGreenCross2 = keyFile.get_boolean ("RAW Bayer", "pixelShiftNonGreenCross2");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNonGreenCross2 = true;
@@ -8878,7 +9440,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("RAW Bayer", "pixelShiftNonGreenAmaze"))  {
-                raw.bayersensor.pixelShiftNonGreenAmaze = keyFile.get_boolean("RAW Bayer", "pixelShiftNonGreenAmaze");
+                raw.bayersensor.pixelShiftNonGreenAmaze = keyFile.get_boolean ("RAW Bayer", "pixelShiftNonGreenAmaze");
 
                 if (pedited) {
                     pedited->raw.bayersensor.pixelShiftNonGreenAmaze = true;
@@ -9286,6 +9848,43 @@ bool ProcParams::operator== (const ProcParams& other)
         && gradient.strength == other.gradient.strength
         && gradient.centerX == other.gradient.centerX
         && gradient.centerY == other.gradient.centerY
+        && localrgb.enabled == other.localrgb.enabled
+        && localrgb.Smethod == other.localrgb.Smethod
+        && localrgb.locY == other.localrgb.locY
+        && localrgb.locX == other.localrgb.locX
+        && localrgb.locYT == other.localrgb.locYT
+        && localrgb.locXL == other.localrgb.locXL
+        && localrgb.centerX == other.localrgb.centerX
+        && localrgb.centerY == other.localrgb.centerY
+        && localrgb.circrad == other.localrgb.circrad
+        && localrgb.thres == other.localrgb.thres
+        && localrgb.proxi == other.localrgb.proxi
+        && localrgb.lightness == other.localrgb.lightness
+        && localrgb.contrast == other.localrgb.contrast
+        && localrgb.chroma == other.localrgb.chroma
+        && localrgb.expexpose == other.localrgb.expexpose
+        && localrgb.sensi == other.localrgb.sensi
+        && localrgb.transit == other.localrgb.transit
+        && localrgb.qualityMethod == other.localrgb.qualityMethod
+        && localrgb.nbspot == other.localrgb.nbspot
+        && localrgb.anbspot == other.localrgb.anbspot
+        && localrgb.retrab == other.localrgb.retrab
+        && localrgb.hueref == other.localrgb.hueref
+        && localrgb.chromaref == other.localrgb.chromaref
+        && localrgb.lumaref == other.localrgb.lumaref
+        && localrgb.expcomp == other.localrgb.expcomp
+        && localrgb.hlcompr == other.localrgb.hlcompr
+        && localrgb.hlcomprthresh == other.localrgb.hlcomprthresh
+        && localrgb.shcompr == other.localrgb.shcompr
+        && localrgb.black == other.localrgb.black
+        && localrgb.curveMode == other.localrgb.curveMode
+        && localrgb.curveMode2 == other.localrgb.curveMode2
+        && localrgb.curve2 == other.localrgb.curve2
+        && localrgb.curve == other.localrgb.curve
+        && localrgb.expwb == other.localrgb.expwb
+        && localrgb.temp == other.localrgb.temp
+        && localrgb.green == other.localrgb.green
+        && localrgb.equal == other.localrgb.equal
         && locallab.enabled == other.locallab.enabled
         && locallab.avoid == other.locallab.avoid
         && locallab.invers == other.locallab.invers
