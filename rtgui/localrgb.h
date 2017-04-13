@@ -36,34 +36,51 @@ private:
     Gtk::HBox *editHBox;
     Gtk::ToggleButton* edit;
 
-    Adjuster* nbspot;
-    Adjuster* multiplier[5];
+    MyExpander* const expexpose;
+    MyExpander* const expsettings;
+    MyExpander* const expwb;
 
-    Adjuster* const degree;
+    Adjuster* nbspot;
+
+    Adjuster* const anbspot;
     Adjuster* const locX;
-    Adjuster* const locY;
     Adjuster* const locXL;
+    Adjuster* const degree;
+    Adjuster* const locY;
     Adjuster* const locYT;
     Adjuster* const centerX;
     Adjuster* const centerY;
     Adjuster* const circrad;
+    Adjuster* const thres;
+    Adjuster* const proxi;
     Adjuster* const lightness;
     Adjuster* const contrast;
     Adjuster* const chroma;
     Adjuster* const sensi;
-    Adjuster* const anbspot;
-    Adjuster* const retrab;
-    Adjuster* const thres;
-    Adjuster* const proxi;
     Adjuster* const transit;
+    Adjuster* const retrab;
+    Adjuster* const expcomp;
+    Adjuster* const hlcompr;
+    Adjuster* const hlcomprthresh;
+    Adjuster* const black;
+    Adjuster* const shcompr;
     Adjuster* const hueref;
     Adjuster* const chromaref;
     Adjuster* const lumaref;
-    Adjuster* const expcomp;
-    Adjuster* const hlcomprthresh;
-    Adjuster* const hlcompr;
-    Adjuster* const black;
-    Adjuster* const shcompr;
+
+    MyComboBoxText*   const Smethod;
+    MyComboBoxText*   const qualityMethod;
+
+    Gtk::Frame* const shapeFrame;
+    Gtk::Frame* const artifFrame;
+    Gtk::Frame* const superFrame;
+
+    Gtk::Label* const labqual;
+    Gtk::Label* const labmS;
+
+    Gtk::HBox* const ctboxS;
+    Gtk::HBox* const qualbox;
+
     Adjuster* temp;
     Adjuster* green;
     Adjuster* equal;
@@ -77,32 +94,20 @@ private:
     DiagonalCurveEditor* shape2;
 
 
-    MyExpander* const expexpose;
-    MyExpander* const expsettings;
-    MyExpander* const expwb;
     Gtk::Button* spotbutton;
 
     sigc::connection enableexposeConn;
     sigc::connection  editConn;
     sigc::connection enablewbConn;
 
-    Gtk::HBox* const ctboxS;
-    Gtk::HBox* const qualbox;
 //   Gtk::HBox* const qualcurvbox;
 
-    Gtk::Frame* const artifFrame;
-    Gtk::Frame* const shapeFrame;
-    Gtk::Frame* const superFrame;
 
 //    Gtk::VBox* const artifVBox;
 //    Gtk::VBox* const shapeVBox;
 //    Gtk::VBox* const colorVBox;
-    MyComboBoxText*   const Smethod;
     sigc::connection  Smethodconn;
-    Gtk::Label* const labmS;
-    MyComboBoxText*   const qualityMethod;
     sigc::connection qualityMethodConn;
-    Gtk::Label* const labqual;
 
 
     int nextdatasp[61];
