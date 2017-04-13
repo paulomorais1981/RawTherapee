@@ -787,6 +787,37 @@ HISTORY_MSG_541;PS Motion correction
 HISTORY_MSG_542;PS Smooth transitions
 HISTORY_MSG_543;PS Use lmmse
 HISTORY_MSG_544;PS Equalize
+HISTORY_MSG_545;locrgb - exposure
+HISTORY_MSG_546;locrgb - enable
+HISTORY_MSG_547;locrgb - Bottom
+HISTORY_MSG_548;locrgb - Right
+HISTORY_MSG_549;locrgb - Center
+HISTORY_MSG_551;locrgb - lightness
+HISTORY_MSG_552;locrgb - contrast
+HISTORY_MSG_553;locrgb - saturation
+HISTORY_MSG_554;locrgb - transition
+HISTORY_MSG_555;locrgb - Top
+HISTORY_MSG_556;locrgb - Left
+HISTORY_MSG_557;locrgb - Shape method
+HISTORY_MSG_558;locrgb - scope
+HISTORY_MSG_559;locrgb - control point
+HISTORY_MSG_564;locrgb - Threshold chroma
+HISTORY_MSG_565;locrgb - iterations
+HISTORY_MSG_566;locrgb - Spot size
+HISTORY_MSG_567;locrgb - Global quality
+HISTORY_MSG_569;locrgb - exposure compensation
+HISTORY_MSG_570;locrgb - highlight compression
+HISTORY_MSG_571;locrgb - highlight compr threshold
+HISTORY_MSG_572;locrgb - black
+HISTORY_MSG_573;locrgb - shadow compression
+HISTORY_MSG_574;locrgb - Tone curve 1
+HISTORY_MSG_575;locrgb - Tone curve 2
+HISTORY_MSG_576;locrgb - Tone curve 1 mode
+HISTORY_MSG_577;locrgb - Tone curve 2 mode
+HISTORY_MSG_578;locrgb - White balance
+HISTORY_MSG_579;locrgb - WB temp
+HISTORY_MSG_580;locrgb - WB tint
+HISTORY_MSG_581;locrgb - WB equalizer
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1814,6 +1845,10 @@ TP_LOCAL_HEIGHT;Bottom
 TP_LOCAL_HEIGHT_T;Top
 TP_LOCAL_WIDTH;Right
 TP_LOCAL_WIDTH_L;Left
+TP_LOCALRGB_CHROMA;Saturation
+TP_LOCALRGB_EXPO;Exposure
+TP_LOCALRGB_LABEL;Local rgb
+TP_LOCALRGB_WB;White balance
 TP_LOCRETI_METHOD_TOOLTIP;Low = Reinforce low light.\nUniform = Equalize action.\nHigh = Reinforce high light.\n
 TP_NEUTRAL;Neutral
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.
