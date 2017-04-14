@@ -307,7 +307,14 @@ protected:
     void process ();
     float colourToningSatLimit;
     float colourToningSatLimitOpacity;
-
+	LUTu vhist16loc; 
+    LUTf hltonecurveloc;
+    LUTf shtonecurveloc;
+    LUTf tonecurveloc;
+//	LUTu histToneCurveloc;
+    ToneCurve customToneCurve1loc;
+    ToneCurve customToneCurve2loc;
+	
 public:
 
     ImProcCoordinator ();

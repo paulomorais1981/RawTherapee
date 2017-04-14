@@ -168,6 +168,10 @@ ImProcCoordinator::ImProcCoordinator ()
       chromar (0),
       lumar (0),
       colourToningSatLimit (0.f), colourToningSatLimitOpacity (0.f),
+
+      vhist16loc (65536), hltonecurveloc (655536), shtonecurveloc (65536), tonecurveloc (65536),
+      //histToneCurveloc(256),
+
       retistrsav (nullptr)
 
 {}
@@ -668,8 +672,27 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     //begin Local rgb
     //why here ? 1) after auto exposure, not to influence auto 2) I can use either Lab and rgb (after conversion) 3) just before all L*a*b* threatment
+    if (params.localrgb.enabled) {
+//only for testing construction...varaibles, etc. does not work at all
+        CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
+                                         params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
+                                         params.localrgb.shcompr, params.localrgb.lightness, params.localrgb.contrast,
+                                         params.localrgb.curveMode, params.localrgb.curve, params.localrgb.curveMode2, params.localrgb.curve2,
+                                         vhist16loc, hltonecurveloc, shtonecurveloc, tonecurveloc, customToneCurve1loc, customToneCurve2loc, 1);
 
 
+        DCPProfile::ApplyState as;
+        DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
+
+        ipf.rgbLocal (oprevi, oprevl, nullptr, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
+                      customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
+        int sp = 1;
+        ipf.Rgb_Local (3, sp, oprevl, oprevl, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
+                       oprevi, oprevl, nullptr, hltonecurveloc, shtonecurveloc, tonecurveloc,
+                       params.localrgb.chroma, customToneCurve1, customToneCurve2,
+                       params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
+
+    }
 
     //end local rgb
 
