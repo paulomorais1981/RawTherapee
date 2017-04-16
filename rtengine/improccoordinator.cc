@@ -39,7 +39,7 @@ namespace rtengine
 extern const Settings* settings;
 
 ImProcCoordinator::ImProcCoordinator ()
-    : orig_prev (nullptr), oprevi (nullptr), oprevl (nullptr), nprevl (nullptr), previmg (nullptr), workimg (nullptr),
+    : orig_prev (nullptr), oprevi (nullptr),  oprevl (nullptr), nprevl (nullptr), previmg (nullptr), workimg (nullptr),
       ncie (nullptr), imgsrc (nullptr), shmap (nullptr), lastAwbEqual (0.), lastAwbTempBias (0.0), ipf (&params, true), monitorIntent (RI_RELATIVE),
       softProof (false), gamutCheck (false), scale (10), highDetailPreprocessComputed (false), highDetailRawComputed (false),
       allocated (false), bwAutoR (-9000.f), bwAutoG (-9000.f), bwAutoB (-9000.f), CAMMean (NAN), coordX (0), coordY (0), localX (0), localY (0),
@@ -537,6 +537,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     progress ("Exposure curve & CIELAB conversion...", 100 * readyphase / numofphases);
 
+    Imagefloat *orirgb = nullptr;
+
+    if (params.localrgb.enabled && params.localrgb.expexpose) {
+        orirgb = new Imagefloat (pW, pH);
+    }
+
     if ((todo & M_RGBCURVE) || (todo & M_CROP)) {
 //        if (hListener) oprevi->calcCroppedHistogram(params, scale, histCropped);
 
@@ -631,6 +637,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
         }
 
+
         // if it's just crop we just need the histogram, no image updates
         if ( todo & M_RGBCURVE ) {
             //initialize rrm bbm ggm different from zero to avoid black screen in some cases
@@ -641,8 +648,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             DCPProfile::ApplyState as;
             DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
 
-            ipf.rgbProc (oprevi, oprevl, nullptr, hltonecurve, shtonecurve, tonecurve, shmap, params.toneCurve.saturation,
+
+            ipf.rgbProc (oprevi, oprevl, orirgb, 3, nullptr, hltonecurve, shtonecurve, tonecurve, shmap, params.toneCurve.saturation,
                          rCurve, gCurve, bCurve, colourToningSatLimit , colourToningSatLimitOpacity, ctColorCurve, ctOpacityCurve, opautili, clToningcurve, cl2Toningcurve, customToneCurve1, customToneCurve2, beforeToneCurveBW, afterToneCurveBW, rrm, ggm, bbm, bwAutoR, bwAutoG, bwAutoB, params.toneCurve.expcomp, params.toneCurve.hlcompr, params.toneCurve.hlcomprthresh, dcpProf, as, histToneCurve);
+
 
             if (params.blackwhite.enabled && params.blackwhite.autoc && abwListener) {
                 if (settings->verbose) {
@@ -672,7 +681,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     //begin Local rgb
     //why here ? 1) after auto exposure, not to influence auto 2) I can use either Lab and rgb (after conversion) 3) just before all L*a*b* threatment
-    if (params.localrgb.enabled) {
+    if (params.localrgb.enabled && params.localrgb.expexpose) {
 //only for testing construction...varaibles, etc. does not work at all
         CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
                                          params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
@@ -684,14 +693,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         DCPProfile::ApplyState as;
         DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
 
-        ipf.rgbLocal (oprevi, oprevl, nullptr, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
+
+        ipf.rgbLocal (oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
                       customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
         int sp = 1;
         ipf.Rgb_Local (3, sp, oprevl, oprevl, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
-                       oprevi, oprevl, nullptr, hltonecurveloc, shtonecurveloc, tonecurveloc,
+                       oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,
                        params.localrgb.chroma, customToneCurve1, customToneCurve2,
                        params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
 
+        delete orirgb;
     }
 
     //end local rgb

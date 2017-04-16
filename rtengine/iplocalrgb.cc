@@ -231,7 +231,7 @@ static void calcTransition (const float lox, const float loy, const float ach, c
 }
 
 void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double &hueref, double &chromaref, double &lumaref,
-                                 Imagefloat* working, LabImage* lab, Imagefloat* origrgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+                                 Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                                  int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
                                  double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn)
 {
@@ -288,6 +288,32 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         //     lco.dy = 1.f - 1.f / multh;
 
         if ((lp.chro != 0 || lp.ligh != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
+            int bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
+            int bfw = int (lp.lx + lp.lxL) + del;
+            const JaggedArray<float> loctemp (bfw, bfh);
+            const JaggedArray<float> bufsh (bfw, bfh, true);
+            const JaggedArray<float> hbuffer (bfw, bfh);
+
+            int yStart = lp.yc - lp.lyT - cy;
+            int yEnd = lp.yc + lp.ly - cy;
+            int xStart = lp.xc - lp.lxL - cx;
+            int xEnd = lp.xc + lp.lx - cx;
+            int begy = lp.yc - lp.lyT;
+            int begx = lp.xc - lp.lxL;
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for (int y = yStart; y < yEnd ; y++) {
+                int loy = cy + y;
+
+                for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
+                    bufsh[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                }
+            }
+
+
+
             float hueplus = hueref + dhue;
             float huemoins = hueref - dhue;
 
@@ -299,6 +325,8 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
             if (huemoins < -rtengine::RT_PI) {
                 huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
             }
+
+
 
         }
 

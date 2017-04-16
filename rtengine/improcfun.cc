@@ -2933,7 +2933,7 @@ filmlike_clip (float *r, float *g, float *b)
 
 
 
-void ImProcFunctions::rgbLocal (Imagefloat* working, LabImage* lab, Imagefloat* origrgb,  LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve, int sat,
+void ImProcFunctions::rgbLocal (Imagefloat* working, LabImage* lab, Imagefloat* orirgb,  LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve, int sat,
                                 const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2, double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn )
 {
     BENCHFUN
@@ -3317,9 +3317,9 @@ void ImProcFunctions::rgbLocal (Imagefloat* working, LabImage* lab, Imagefloat* 
 
                             //in case off futur usage
                             /*
-                            origrgb->r (i,j) = r;
-                            origrgb->g (i,j) = g;
-                            origrgb->b (i,j) = b;
+                            origrgb->r (i, j) = r;
+                            origrgb->g (i, j) = g;
+                            origrgb->b (i, j) = b;
                             */
                             float x = toxyz[0][0] * r + toxyz[0][1] * g + toxyz[0][2] * b;
                             float y = toxyz[1][0] * r + toxyz[1][1] * g + toxyz[1][2] * b;
@@ -3369,15 +3369,15 @@ void ImProcFunctions::rgbLocal (Imagefloat* working, LabImage* lab, Imagefloat* 
 
 
 
-void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+void ImProcFunctions::rgbProc (Imagefloat* working,  LabImage* lab, Imagefloat* orirgb, int call, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                                SHMap* shmap, int sat, LUTf & rCurve, LUTf & gCurve, LUTf & bCurve, float satLimit , float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, bool opautili,  LUTf & clToningcurve, LUTf & cl2Toningcurve,
                                const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2, const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn, LUTu &histToneCurve )
 {
-    rgbProc (working, lab, pipetteBuffer, hltonecurve, shtonecurve, tonecurve, shmap, sat, rCurve, gCurve, bCurve, satLimit , satLimitOpacity, ctColorCurve, ctOpacityCurve, opautili, clToningcurve, cl2Toningcurve, customToneCurve1, customToneCurve2,  customToneCurvebw1, customToneCurvebw2, rrm, ggm, bbm, autor, autog, autob, params->toneCurve.expcomp, params->toneCurve.hlcompr, params->toneCurve.hlcomprthresh, dcpProf, asIn, histToneCurve);
+    rgbProc (working, lab, orirgb, call, pipetteBuffer, hltonecurve, shtonecurve, tonecurve, shmap, sat, rCurve, gCurve, bCurve, satLimit , satLimitOpacity, ctColorCurve, ctOpacityCurve, opautili, clToningcurve, cl2Toningcurve, customToneCurve1, customToneCurve2,  customToneCurvebw1, customToneCurvebw2, rrm, ggm, bbm, autor, autog, autob, params->toneCurve.expcomp, params->toneCurve.hlcompr, params->toneCurve.hlcomprthresh, dcpProf, asIn, histToneCurve);
 }
 
 // Process RGB image and convert to LAB space
-void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, Imagefloat* orirgb, int call, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                                SHMap* shmap, int sat, LUTf & rCurve, LUTf & gCurve, LUTf & bCurve, float satLimit , float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, bool opautili, LUTf & clToningcurve, LUTf & cl2Toningcurve,
                                const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,  const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn, LUTu &histToneCurve )
 {
@@ -3471,6 +3471,8 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
     bool sCurveEnabled = sCurveType > FCT_Linear;
     bool vCurveEnabled = vCurveType > FCT_Linear;
     bool bwlCurveEnabled = bwlCurveType > FCT_Linear;
+
+    bool localexpo = params->localrgb.enabled && params->localrgb.expexpose;
 
     // TODO: We should create a 'skip' value like for CurveFactory::complexsgnCurve (rtengine/curves.cc)
     if (hCurveEnabled) {
@@ -4790,6 +4792,12 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                             float g = gtemp[ti * TS + tj];
                             float b = btemp[ti * TS + tj];
 
+                            if (call == 3  && localexpo) {
+                                orirgb->r (i, j) = r;
+                                orirgb->g (i, j) = g;
+                                orirgb->b (i, j) = b;
+                            }
+
                             float x = toxyz[0][0] * r + toxyz[0][1] * g + toxyz[0][2] * b;
                             float y = toxyz[1][0] * r + toxyz[1][1] * g + toxyz[1][2] * b;
                             float z = toxyz[2][0] * r + toxyz[2][1] * g + toxyz[2][2] * b;
@@ -5237,6 +5245,12 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                 float r = tmpImage->r (i, j);
                 float g = tmpImage->g (i, j);
                 float b = tmpImage->b (i, j);
+
+                if (call == 3 && localexpo) {
+                    orirgb->r (i, j) = r;
+                    orirgb->g (i, j) = g;
+                    orirgb->b (i, j) = b;
+                }
 
                 float x = toxyz[0][0] * r + toxyz[0][1] * g + toxyz[0][2] * b;
                 float y = toxyz[1][0] * r + toxyz[1][1] * g + toxyz[1][2] * b;
