@@ -4147,89 +4147,87 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                     }
 
                 clighmax = 0.f;
-                int yStart = lp.yc - lp.lyT - cy;
-                int yEnd = lp.yc + lp.ly - cy;
-                int xStart = lp.xc - lp.lxL - cx;
-                int xEnd = lp.xc + lp.lx - cx;
-                int begy = lp.yc - lp.lyT;
-                int begx = lp.xc - lp.lxL;
+
+
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
+                #pragma omp parallel for
 #endif
 
-                for (int y = yStart; y < yEnd ; y++) {
-                    int loy = cy + y;
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int (lp.xc - lp.lxL);
+                        int begy = int (lp.yc - lp.lyT);
 
-                    for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
+                        if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufcolorig->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                            bufcolorig->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
+                            bufcolorig->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
 
-                        //     if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                        bufcolorig->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
-                        bufcolorig->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
-                        bufcolorig->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+                            chprov = 0.f;
+                            chpro = 0.f;
 
-                        chprov = 0.f;
-                        chpro = 0.f;
+                            //Chroma curve
+                            if (cclocalcurve  && lp.qualcurvemet != 0) { // C=f(C) curve
+                                float chromat = sqrt (SQR (bufcolorig->a[loy - begy][lox - begx]) +  SQR (bufcolorig->b[loy - begy][lox - begx]));
+                                float ch;
+                                float ampli = 25.f;
+                                ch = (cclocalcurve[chromat * adjustr ])  / ((chromat + 0.00001f) * adjustr); //ch between 0 and 0 50 or more
 
-                        //Chroma curve
-                        if (cclocalcurve  && lp.qualcurvemet != 0) { // C=f(C) curve
-                            float chromat = sqrt (SQR (bufcolorig->a[loy - begy][lox - begx]) +  SQR (bufcolorig->b[loy - begy][lox - begx]));
-                            float ch;
-                            float ampli = 25.f;
-                            ch = (cclocalcurve[chromat * adjustr ])  / ((chromat + 0.00001f) * adjustr); //ch between 0 and 0 50 or more
+                                if (ch <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
+                                    chpro = 99.f * ch - 99.f;
+                                } else {
+                                    chpro = CLIPCHRO (ampli * ch - ampli); //ampli = 25.f arbitrary empirical coefficient between 5 and 50
+                                }
 
-                            if (ch <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
-                                chpro = 99.f * ch - 99.f;
-                            } else {
-                                chpro = CLIPCHRO (ampli * ch - ampli); //ampli = 25.f arbitrary empirical coefficient between 5 and 50
+                                bufchro[loy - begy][lox - begx] = chpro;
+
                             }
 
-                            bufchro[loy - begy][lox - begx] = chpro;
 
-                        }
+                            //slider lightness
+                            clighL = 0.f;
 
+                            if (lp.ligh != 0.f  && lp.curvact) {
+                                float lL;
+                                float lighLnew;
+                                float amplil = 140.f;
+                                float lighL = bufcolorig->L[loy - begy][lox - begx];
+                                calclight (lighL, lp.ligh , lighLnew, true);//replace L-curve
+                                lL = lighLnew / lighL;
 
-                        //slider lightness
-                        clighL = 0.f;
+                                if (lL <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
+                                    clighL = 99.f * lL - 99.f;
+                                } else {
+                                    clighL = CLIPLIG (amplil * lL - amplil); //ampli = 25.f arbitrary empirical coefficient between 5 and 150
+                                }
 
-                        if (lp.ligh != 0.f  && lp.curvact) {
-                            float lL;
-                            float lighLnew;
-                            float amplil = 140.f;
-                            float lighL = bufcolorig->L[loy - begy][lox - begx];
-                            calclight (lighL, lp.ligh , lighLnew, true);//replace L-curve
-                            lL = lighLnew / lighL;
+                                buflightslid[loy - begy][lox - begx] = clighL;
 
-                            if (lL <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
-                                clighL = 99.f * lL - 99.f;
-                            } else {
-                                clighL = CLIPLIG (amplil * lL - amplil); //ampli = 25.f arbitrary empirical coefficient between 5 and 150
                             }
 
-                            buflightslid[loy - begy][lox - begx] = clighL;
+                            cligh = 0.f;
 
-                        }
+                            //luma curve
+                            if (lllocalcurve  && lp.qualcurvemet == 2) {// L=f(L) curve enhanced
+                                float lh;
+                                float amplil = 25.f;
+                                float lighn = bufcolorig->L[loy - begy][lox - begx];
+                                lh = (lllocalcurve[lighn * 1.9f]) / ((lighn + 0.00001f) * 1.9f) ; // / ((lighn) / 1.9f) / 3.61f; //lh between 0 and 0 50 or more
 
-                        cligh = 0.f;
+                                if (lh <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
+                                    cligh = 0.3f * (100.f * lh - 100.f);//0.3 reduce sensibility
+                                } else {
+                                    cligh = CLIPLIG (amplil * lh - amplil);
+                                }
 
-                        //luma curve
-                        if (lllocalcurve  && lp.qualcurvemet == 2) {// L=f(L) curve enhanced
-                            float lh;
-                            float amplil = 25.f;
-                            float lighn = bufcolorig->L[loy - begy][lox - begx];
-                            lh = (lllocalcurve[lighn * 1.9f]) / ((lighn + 0.00001f) * 1.9f) ; // / ((lighn) / 1.9f) / 3.61f; //lh between 0 and 0 50 or more
+                                buflight[loy - begy][lox - begx] = cligh;
 
-                            if (lh <= 1.f) {//convert data curve near values of slider -100 + 100, to be used after to detection shape
-                                cligh = 0.3f * (100.f * lh - 100.f);//0.3 reduce sensibility
-                            } else {
-                                cligh = CLIPLIG (amplil * lh - amplil);
                             }
 
-                            buflight[loy - begy][lox - begx] = cligh;
-
                         }
-
                     }
-                }
 
             }
 
@@ -4482,27 +4480,23 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufgb->b[ir][jr] = 0.f;
                     }
 
-
-                int yStart = lp.yc - lp.lyT - cy;
-                int yEnd = lp.yc + lp.ly - cy;
-                int xStart = lp.xc - lp.lxL - cx;
-                int xEnd = lp.xc + lp.lx - cx;
-                int begy = lp.yc - lp.lyT;
-                int begx = lp.xc - lp.lxL;
-
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
+                #pragma omp parallel for
 #endif
 
-                for (int y = yStart; y < yEnd ; y++) {
-                    int loy = cy + y;
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int (lp.xc - lp.lxL);
+                        int begy = int (lp.yc - lp.lyT);
 
-                    for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
-                        bufgb->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
-                        bufgb->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
-                        bufgb->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+                        if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufgb->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                            bufgb->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
+                            bufgb->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+                        }
                     }
-                }
 
                 tmp1 = new LabImage (bfw, bfh);
                 ImProcFunctions::EPDToneMaplocal (bufgb, tmp1, 5 , 1);
@@ -4526,39 +4520,35 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                 huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
             }
 
-            int yStart = lp.yc - lp.lyT - cy;
-            int yEnd = lp.yc + lp.ly - cy;
-            int xStart = lp.xc - lp.lxL - cx;
-            int xEnd = lp.xc + lp.lx - cx;
-            int begy = lp.yc - lp.lyT;
-            int begx = lp.xc - lp.lxL;
-
 #ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic,16)
+            #pragma omp parallel for
 #endif
 
-            for (int y = yStart; y < yEnd ; y++) {
-                int loy = cy + y;
+            for (int y = 0; y < transformed->H ; y++) //{
+                for (int x = 0; x < transformed->W; x++) {
+                    int lox = cx + x;
+                    int loy = cy + y;
+                    int begx = int (lp.xc - lp.lxL);
+                    int begy = int (lp.yc - lp.lyT);
 
-                for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
+                    if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
 
-                    //       if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                    float rL;
-                    rL = CLIPRET ((tmp1->L[loy - begy][lox - begx] - original->L[y][x]) / 400.f);
-                    /*
-                                            if (rL > maxc) {
-                                                maxc = rL;
-                                            }
+                        float rL;
+                        rL = CLIPRET ((tmp1->L[loy - begy][lox - begx] - original->L[y][x]) / 400.f);
+                        /*
+                                                if (rL > maxc) {
+                                                    maxc = rL;
+                                                }
 
-                                            if (rL < minc) {
-                                                minc = rL;
-                                            }
-                    */
+                                                if (rL < minc) {
+                                                    minc = rL;
+                                                }
+                        */
 
-                    buflight[loy - begy][lox - begx]  = rL;
+                        buflight[loy - begy][lox - begx]  = rL;
 
+                    }
                 }
-            }
 
 //            printf ("min=%2.2f max=%2.2f", minc, maxc);
 
@@ -4620,26 +4610,22 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
 
                     }
 
-                int yStart = lp.yc - lp.lyT - cy;
-                int yEnd = lp.yc + lp.ly - cy;
-                int xStart = lp.xc - lp.lxL - cx;
-                int xEnd = lp.xc + lp.lx - cx;
-                int begy = lp.yc - lp.lyT;
-                int begx = lp.xc - lp.lxL;
 
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
+                #pragma omp parallel for
 #endif
 
-                for (int y = yStart; y < yEnd ; y++) {
-                    int loy = cy + y;
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int (lp.xc - lp.lxL);
+                        int begy = int (lp.yc - lp.lyT);
 
-                    for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
-
-                        // if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                        bufsh[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                        if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufsh[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                        }
                     }
-                }
 
                 loctemp = new float*[bfh];//allocate temp
 
@@ -4648,49 +4634,40 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                 }
 
                 ImProcFunctions::cbdl_local_temp (bufsh, bufsh, loctemp, bfw, bfh, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
-
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
+                #pragma omp parallel for
 #endif
 
-                for (int y = yStart; y < yEnd ; y++) {
-                    int loy = cy + y;
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int (lp.xc - lp.lxL);
+                        int begy = int (lp.yc - lp.lyT);
 
-                    for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
+                        if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            float rL;
+                            rL = CLIPRET ((loctemp[loy - begy][lox - begx] - original->L[y][x]) / 330.f);
+                            /*
+                                                        if (rL > maxc) {
+                                                            maxc = rL;
+                                                        }
 
-                        //   if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                        float rL;
-                        rL = CLIPRET ((loctemp[loy - begy][lox - begx] - original->L[y][x]) / 330.f);
-                        /*
-                                                    if (rL > maxc) {
-                                                        maxc = rL;
-                                                    }
+                                                        if (rL < minc) {
+                                                            minc = rL;
+                                                        }
+                            */
 
-                                                    if (rL < minc) {
-                                                        minc = rL;
-                                                    }
-                        */
+                            buflight[loy - begy][lox - begx]  = rL;
 
-                        buflight[loy - begy][lox - begx]  = rL;
-
+                        }
                     }
-                }
 
 //                printf ("min=%2.2f max=%2.2f", minc, maxc);
 
 
-            } /* else { //call from dcrop.cc
-
-                loctemp = new float*[GH];//allocate temp
-
-                for (int i = 0; i < GH; i++) {
-                    loctemp[i] = new float[GW];
-                }
-
-                ImProcFunctions::cbdl_local_temp (original->L, original->L, loctemp, GW, GH, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
-
             }
-*/
+
 
             // I initialize these variable in case of !
             float hueplus = hueref + dhue;
@@ -4867,25 +4844,23 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufreti->b[ir][jr] = 0.f;
                     }
 
-                int yStart = lp.yc - lp.lyT - cy;
-                int yEnd = lp.yc + lp.ly - cy;
-                int xStart = lp.xc - lp.lxL - cx;
-                int xEnd = lp.xc + lp.lx - cx;
-                int begy = lp.yc - lp.lyT;
-                int begx = lp.xc - lp.lxL;
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
+                #pragma omp parallel for
 #endif
 
-                for (int y = yStart; y < yEnd ; y++) {
-                    int loy = cy + y;
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int (lp.xc - lp.lxL);
+                        int begy = int (lp.yc - lp.lyT);
 
-                    for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
-                        bufreti->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
-                        bufreti->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
-                        bufreti->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+                        if (lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufreti->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                            bufreti->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
+                            bufreti->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+                        }
                     }
-                }
 
 
 
