@@ -32,8 +32,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "../rtgui/cachemanager.h"
-#include "../rtgui/cacheimagedata.h"
+#include "../rtgui/md5helper.h"
 
 
 #undef THREAD_PRIORITY_NORMAL
@@ -1024,12 +1023,9 @@ private:
         if (params.locallab.enabled) {
             MyTime t1, t2;
             t1.set();
-            CacheManager*   cachemgr;
 
-            CacheImageData  cfs;
-            cfs.md5 = cachemgr->getMD5 (imgsrc->getFileName());
-            std::string mdfive = cfs.md5;
-
+            std::string mdfive = getMD5 (imgsrc->getFileName());
+			
             Glib::ustring pop = options.cacheBaseDir + "/mip/";
 
             Glib::ustring datalab;

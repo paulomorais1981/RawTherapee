@@ -2555,7 +2555,7 @@ void ImProcFunctions::Sharp_Local (int call, int sp, float **loctemp, const floa
     const float ahu = 1.f / (2.8f * lp.senssha - 280.f);
     const float bhu = 1.f - ahu * 2.8f * lp.senssha;
 
-    const bool detectHue = lp.senssha < 20.f && lp.qualmet == 1;
+    const bool detectHue = lp.senssha < 20.f && lp.qualmet >= 1;
 #ifdef _OPENMP
     #pragma omp parallel if (multiThread)
 #endif
@@ -2645,6 +2645,10 @@ void ImProcFunctions::Sharp_Local (int call, int sp, float **loctemp, const floa
                     if (lp.senssha < 40.f ) {
                         kch = pow_F (kch, pa * lp.senssha + pb);   //increase under 40
                     }
+                }
+
+                if (lp.senssha >= 99.f) {
+                    kch = 1.f;
                 }
 
                 // algo with detection of hue ==> artifacts for noisy images  ==> denoise before
@@ -4183,7 +4187,9 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufcolorig->L[ir][jr] = 0.f;
                         bufcolorig->a[ir][jr] = 0.f;
                         bufcolorig->b[ir][jr] = 0.f;
-
+                        bufchro[ir][jr] = 0.f;
+                        buflightslid[ir][jr] = 0.f;
+                        buflight[ir][jr] = 0.f;
                     }
 
                 clighmax = 0.f;
@@ -4412,6 +4418,8 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufcontorig->L[ir][jr] = 0.f;
                         //   bufcontorig->a[ir][jr] = 0.f;
                         //   bufcontorig->b[ir][jr] = 0.f;
+                        buflightc[ir][jr] = 0.f;
+
 
                     }
 
@@ -4559,6 +4567,7 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufgb->L[ir][jr] = 0.f;
                         bufgb->a[ir][jr] = 0.f;
                         bufgb->b[ir][jr] = 0.f;
+                        buflight[ir][jr] = 0.f;
                     }
 
                 int begy = lp.yc - lp.lyT;
@@ -4620,8 +4629,7 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
 
                     if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
 
-                        float rL;
-                        rL = CLIPRET ((tmp1->L[loy - begy][lox - begx] - original->L[y][x]) / 400.f);
+                        float rL = CLIPRET ((tmp1->L[loy - begy][lox - begx] - original->L[y][x]) / 400.f);
                         /*
                                                 if (rL > maxc) {
                                                     maxc = rL;
@@ -4935,6 +4943,8 @@ void ImProcFunctions::Lab_Local (int call, int sp, float** shbuffer, LabImage * 
                         bufreti->L[ir][jr] = 0.f;
                         bufreti->a[ir][jr] = 0.f;
                         bufreti->b[ir][jr] = 0.f;
+                        buflight[ir][jr] = 0.f;
+                        bufchro[ir][jr] = 0.f;
                     }
 
                 int begy = lp.yc - lp.lyT;
