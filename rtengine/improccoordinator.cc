@@ -693,8 +693,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
 
 
-        ipf.rgbLocal (oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
-                      customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
+//       ipf.rgbLocal (oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
+//                     customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
         int sp = 1;
         ipf.Rgb_Local (3, sp, oprevl, oprevl, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
                        oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,

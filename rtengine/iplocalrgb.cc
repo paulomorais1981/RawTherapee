@@ -231,9 +231,9 @@ static void calcTransition (const float lox, const float loy, const float ach, c
 }
 
 void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double &hueref, double &chromaref, double &lumaref,
-                                 Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+                                 Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurveloc, LUTf & shtonecurveloc, LUTf & tonecurveloc,
                                  int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
-                                 double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn)
+                                 double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &as)
 {
     if (params->localrgb.enabled) {
         // BENCHFUN
@@ -288,31 +288,6 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         //     lco.dy = 1.f - 1.f / multh;
 
         if ((lp.chro != 0 || lp.ligh != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
-            int bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
-            int bfw = int (lp.lx + lp.lxL) + del;
-            const JaggedArray<float> loctemp (bfw, bfh);
-            const JaggedArray<float> bufsh (bfw, bfh, true);
-            const JaggedArray<float> hbuffer (bfw, bfh);
-
-            int yStart = lp.yc - lp.lyT - cy;
-            int yEnd = lp.yc + lp.ly - cy;
-            int xStart = lp.xc - lp.lxL - cx;
-            int xEnd = lp.xc + lp.lx - cx;
-            int begy = lp.yc - lp.lyT;
-            int begx = lp.xc - lp.lxL;
-#ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic,16)
-#endif
-
-            for (int y = yStart; y < yEnd ; y++) {
-                int loy = cy + y;
-
-                for (int x = xStart, lox = cx + x; x < xEnd; x++, lox++) {
-                    bufsh[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
-                }
-            }
-
-
 
             float hueplus = hueref + dhue;
             float huemoins = hueref - dhue;
@@ -326,7 +301,63 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                 huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
             }
 
+            LabImage *bufexporig = nullptr;
+            Imagefloat* bufworking = nullptr;
+            int bfh = 0.f, bfw = 0.f;
 
+
+            if (call <= 3) { //simpleprocess, dcrop, improccoordinator
+                bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
+                bfw = int (lp.lx + lp.lxL) + del;
+                bufexporig = new LabImage (bfw, bfh);//buffer for data in zone limit
+                bufworking = new Imagefloat (bfw, bfh);
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for (int ir = 0; ir < bfh; ir++) //fill with 0
+                    for (int jr = 0; jr < bfw; jr++) {
+                        bufexporig->L[ir][jr] = 0.f;
+                        bufexporig->a[ir][jr] = 0.f;
+                        bufexporig->b[ir][jr] = 0.f;
+                        bufworking->r (ir, jr) = 0.f;
+                        bufworking->g (ir, jr) = 0.f;
+                        bufworking->b (ir, jr) = 0.f;
+
+                    }
+
+                int begy = lp.yc - lp.lyT;
+                int begx = lp.xc - lp.lxL;
+                int yEn = lp.yc + lp.ly;
+                int xEn = lp.xc + lp.lx;
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+
+                        if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+                            bufworking->r (loy - begy, lox - begx) = working->r (y, x); //fill square buffer with datas
+                            bufworking->g (loy - begy, lox - begx) = working->g (y, x); //fill square buffer with datas
+                            bufworking->b (loy - begy, lox - begx) = working->b (y, x); //fill square buffer with datas
+                        }
+                    }
+            }
+
+
+            ImProcFunctions::rgbLocal (bufworking, bufexporig, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
+                                       customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
+
+
+            if (call <= 3) {
+
+                delete bufworking;
+                delete bufexporig;
+
+            }
 
         }
 
