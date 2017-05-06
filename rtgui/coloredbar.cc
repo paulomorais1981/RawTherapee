@@ -130,9 +130,9 @@ void ColoredBar::updateBackBuffer(Gtk::DrawingArea &drawingArea)
             cr->fill();
         } else {
             // ask the ColorProvider to provide colors :) for each pixels
-            if (colorProvider) { 
-				surface->flush();
-				
+            if (colorProvider) {
+                surface->flush();
+                
                 unsigned char *surfaceData = surface->get_data();
 
                 cr->set_antialias(Cairo::ANTIALIAS_NONE);
@@ -205,7 +205,7 @@ void ColoredBar::updateBackBuffer(Gtk::DrawingArea &drawingArea)
                     break;
                 }
 
-				surface->mark_dirty();				
+                surface->mark_dirty();
             }
         }
 

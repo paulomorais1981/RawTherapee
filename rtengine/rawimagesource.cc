@@ -4621,13 +4621,13 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
                 }
             } else if (ri->get_colors() == 1) {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[ (int) (refwb[0] *  rawData[i][j])]++;
+                    tmphistogram[(int)(refwb[0] * rawData[i][j])]++;
                 }
             } else {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[(int) (refwb[0] *   rawData[i][3 * j + 0])]++;
-                    tmphistogram[(int) (refwb[1] * rawData[i][3 * j + 1])] ++;
-                    tmphistogram[(int) (refwb[2] * rawData[i][3 * j + 2])]++;
+                    tmphistogram[(int)(refwb[0] * rawData[i][3 * j + 0])]++;
+                    tmphistogram[(int)(refwb[1] * rawData[i][3 * j + 1])]++;
+                    tmphistogram[(int)(refwb[2] * rawData[i][3 * j + 2])]++;
                 }
             }
         }
