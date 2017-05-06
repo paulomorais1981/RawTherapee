@@ -288,6 +288,8 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         //     lco.dy = 1.f - 1.f / multh;
 
         if ((lp.chro != 0 || lp.ligh != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
+            int GW = transformed->W;
+            int GH = transformed->H;
 
             float hueplus = hueref + dhue;
             float huemoins = hueref - dhue;
@@ -301,18 +303,34 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                 huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
             }
 
-			LabImage *bufexporig = nullptr;
-			LabImage *bufexpfin = nullptr;
-			Imagefloat* bufworking = nullptr;
+            LabImage *bufexporig = nullptr;
+            LabImage *bufexpfin = nullptr;
+            Imagefloat* bufworking = nullptr;
+            float **buflight = nullptr;
+
             int bfh = 0.f, bfw = 0.f;
+            int Hd, Wd;
+            Hd = GH;
+            Wd = GW;
 
 
             if (call <= 3) { //simpleprocess, dcrop, improccoordinator
                 bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
                 bfw = int (lp.lx + lp.lxL) + del;
+                Hd = bfh;
+                Wd = bfw;
+                float clighL = 1.f;
+
                 bufexporig = new LabImage (bfw, bfh);//buffer for data in zone limit
                 bufexpfin = new LabImage (bfw, bfh);//buffer for data in zone limit
                 bufworking = new Imagefloat (bfw, bfh);
+
+                buflight   = new float*[bfh];//for lightness reti
+
+                for (int i = 0; i < bfh; i++) {
+                    buflight[i] = new float[bfw];
+                }
+
 #ifdef _OPENMP
                 #pragma omp parallel for
 #endif
@@ -328,6 +346,8 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                         bufexpfin->L[ir][jr] = 0.f;
                         bufexpfin->a[ir][jr] = 0.f;
                         bufexpfin->b[ir][jr] = 0.f;
+                        buflight[ir][jr] = 0.f;
+
 
                     }
 
@@ -349,20 +369,79 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                             bufworking->g (loy - begy, lox - begx) = working->g (y, x); //fill square buffer with datas
                             bufworking->b (loy - begy, lox - begx) = working->b (y, x); //fill square buffer with datas
 
-							}
+                            bufexporig->L[loy - begy][lox - begx] = original->L[y][x];//fill square buffer with datas
+                            bufexporig->a[loy - begy][lox - begx] = original->a[y][x];//fill square buffer with datas
+                            bufexporig->b[loy - begy][lox - begx] = original->b[y][x];//fill square buffer with datas
+
+                        }
                     }
+
+
+
+                ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
+                                           customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
+
+
+                //        float maxc = -10000.f;
+                //        float minc = 100000.f;
+
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+
+                        if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+
+                            float lL;
+                            float amplil = 140.f;
+                            float lighL = bufexporig->L[loy - begy][lox - begx];
+                            float lighLnew = bufexpfin->L[loy - begy][lox - begx];
+
+                            if (lighL == 0.f) {
+                                lighL = 0.001f;
+                            }
+
+                            lL = lighLnew / lighL;
+
+                            if (lL <= 1.f) {//convert data near values of slider -100 + 100, to be used after to detection shape
+                                clighL = 99.f * lL - 99.f;
+                            } else {
+                                clighL = CLIPLIG (amplil * lL - amplil); //ampli = 25.f arbitrary empirical coefficient between 5 and 150
+                            }
+
+                            /*
+                                                                if (clighL > maxc) {
+                                                                    maxc = clighL;
+                                                                }
+
+                                                                if (clighL < minc) {
+                                                                    minc = clighL;
+                                                                }
+                            */
+
+                            buflight[loy - begy][lox - begx] = clighL;
+                        }
+                    }
+
+                //       printf ("min=%2.2f max=%2.2f", minc, maxc);
+
             }
-
-
-            ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
-                                       customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
-
 
             if (call <= 3) {
 
                 delete bufworking;
                 delete bufexporig;
                 delete bufexpfin;
+
+                for (int i = 0; i < bfh; i++) {
+                    delete [] buflight[i];
+                }
+
+                delete [] buflight;
 
             }
 
