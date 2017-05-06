@@ -301,8 +301,9 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                 huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
             }
 
-            LabImage *bufexporig = nullptr;
-            Imagefloat* bufworking = nullptr;
+			LabImage *bufexporig = nullptr;
+			LabImage *bufexpfin = nullptr;
+			Imagefloat* bufworking = nullptr;
             int bfh = 0.f, bfw = 0.f;
 
 
@@ -310,6 +311,7 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                 bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
                 bfw = int (lp.lx + lp.lxL) + del;
                 bufexporig = new LabImage (bfw, bfh);//buffer for data in zone limit
+                bufexpfin = new LabImage (bfw, bfh);//buffer for data in zone limit
                 bufworking = new Imagefloat (bfw, bfh);
 #ifdef _OPENMP
                 #pragma omp parallel for
@@ -323,6 +325,9 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                         bufworking->r (ir, jr) = 0.f;
                         bufworking->g (ir, jr) = 0.f;
                         bufworking->b (ir, jr) = 0.f;
+                        bufexpfin->L[ir][jr] = 0.f;
+                        bufexpfin->a[ir][jr] = 0.f;
+                        bufexpfin->b[ir][jr] = 0.f;
 
                     }
 
@@ -343,12 +348,13 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                             bufworking->r (loy - begy, lox - begx) = working->r (y, x); //fill square buffer with datas
                             bufworking->g (loy - begy, lox - begx) = working->g (y, x); //fill square buffer with datas
                             bufworking->b (loy - begy, lox - begx) = working->b (y, x); //fill square buffer with datas
-                        }
+
+							}
                     }
             }
 
 
-            ImProcFunctions::rgbLocal (bufworking, bufexporig, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
+            ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
                                        customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
 
 
@@ -356,6 +362,7 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
 
                 delete bufworking;
                 delete bufexporig;
+                delete bufexpfin;
 
             }
 
