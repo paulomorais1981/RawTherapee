@@ -38,7 +38,7 @@ namespace rtengine
 extern const Settings* settings;
 
 ImProcCoordinator::ImProcCoordinator ()
-    : orig_prev (nullptr), oprevi (nullptr),  oprevl (nullptr), nprevl (nullptr), previmg (nullptr), workimg (nullptr),
+    : orig_prev (nullptr), oprevi (nullptr),  oprevl (nullptr), nprevl (nullptr), nprloc (nullptr), previmg (nullptr), workimg (nullptr),
       ncie (nullptr), imgsrc (nullptr), shmap (nullptr), lastAwbEqual (0.), lastAwbTempBias (0.0), ipf (&params, true), monitorIntent (RI_RELATIVE),
       softProof (false), gamutCheck (false), scale (10), highDetailPreprocessComputed (false), highDetailRawComputed (false),
       allocated (false), bwAutoR (-9000.f), bwAutoG (-9000.f), bwAutoB (-9000.f), CAMMean (NAN), coordX (0), coordY (0), localX (0), localY (0),
@@ -540,6 +540,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     if (params.localrgb.enabled && params.localrgb.expexpose) {
         orirgb = new Imagefloat (pW, pH);
+        nprloc = new LabImage (pW, pH);
+
     }
 
     if ((todo & M_RGBCURVE) || (todo & M_CROP)) {
@@ -691,12 +693,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
         DCPProfile::ApplyState as;
         DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
+        nprloc->CopyFrom (oprevl);
 
 
 //       ipf.rgbLocal (oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
 //                     customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
         int sp = 1;
-        ipf.Rgb_Local (3, sp, oprevl, oprevl, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
+        ipf.Rgb_Local (3, sp, nprloc, nprloc, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
                        oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,
                        params.localrgb.chroma, customToneCurve1, customToneCurve2,
                        params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
@@ -750,7 +753,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     //scale = 1;
     if (todo & (M_LUMINANCE + M_COLOR) ) {
-        nprevl->CopyFrom (oprevl);
+        if (params.localrgb.enabled && params.localrgb.expexpose) {
+            nprevl->CopyFrom (nprloc);
+            delete nprloc;
+        }   else {
+            nprevl->CopyFrom (oprevl);
+        }
+
         int maxspot = settings->nspot + 1;
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
 
@@ -2769,6 +2778,8 @@ void ImProcCoordinator::freeAll ()
         oprevi    = nullptr;
         delete orig_prev;
         orig_prev = nullptr;
+
+
         delete oprevl;
         oprevl    = nullptr;
         delete nprevl;

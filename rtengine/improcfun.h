@@ -305,6 +305,9 @@ public:
     void Sharp_Local (int call, int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
     void InverseSharp_Local (int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
 
+	
+	void Expose_Local (int call, float **buflight, float **bufchro, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params & lp, LabImage * original, LabImage * transformed, const LabImage * const tmp1, int cx, int cy);
+	
     void Rgb_Local (int call, int sp, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double &hueref, double &chromaref, double &lumaref,
                     Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                     int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,

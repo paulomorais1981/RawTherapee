@@ -57,9 +57,11 @@ private:
 
 protected:
     Imagefloat *orig_prev;
+
     Imagefloat *oprevi;
     LabImage *oprevl;
     LabImage *nprevl;
+    LabImage *nprloc;
     Image8 *previmg;  // displayed image in monitor color space, showing the output profile as well (soft-proofing enabled, which then correspond to workimg) or not
     Image8 *workimg;  // internal image in output color space for analysis
     CieImage *ncie;
@@ -279,7 +281,7 @@ protected:
     LUTi thresholds;
     LUTi sensicbs;
     LUTi activlums;
-    int versionmip;	
+    int versionmip;
     LUTi strens;
     LUTi gammas;
     LUTi estops;
@@ -307,14 +309,14 @@ protected:
     void process ();
     float colourToningSatLimit;
     float colourToningSatLimitOpacity;
-	LUTu vhist16loc; 
+    LUTu vhist16loc;
     LUTf hltonecurveloc;
     LUTf shtonecurveloc;
     LUTf tonecurveloc;
-//	LUTu histToneCurveloc;
+//  LUTu histToneCurveloc;
     ToneCurve customToneCurve1loc;
     ToneCurve customToneCurve2loc;
-	
+
 public:
 
     ImProcCoordinator ();
