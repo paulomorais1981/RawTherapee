@@ -802,7 +802,7 @@ void Crop::update (int todo)
         int sp = 1;
         parent->ipf.Rgb_Local (1, sp, laboCroploc, laboCroploc,  trafx / skip, trafy / skip, cropx / skip, cropy / skip, skips (parent->fw, skip), skips (parent->fh, skip), parent->fw, parent->fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
                                baseCrop, laboCroploc, orirgb, parent->hltonecurveloc, parent->shtonecurveloc, parent->tonecurveloc,
-                               params.localrgb.chroma, parent->customToneCurve1, parent->customToneCurve2,
+                               params.localrgb.chroma, parent->customToneCurve1loc, parent->customToneCurve2loc,
                                params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
 
         delete orirgb;
