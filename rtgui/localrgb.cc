@@ -1394,6 +1394,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     hlcomprthresh->setValue (pp->localrgb.hlcomprthresh);
     black->setValue (pp->localrgb.black);
     shcompr->setValue (pp->localrgb.shcompr);
+    shcompr->set_sensitive (! ((int)black->getValue () == 0));  //at black=0 shcompr value has no effect
+
     expexpose->setEnabled (pp->localrgb.expexpose);
     shape->setCurve (pp->localrgb.curve);
     shape2->setCurve (pp->localrgb.curve2);
@@ -2157,6 +2159,8 @@ void Localrgb::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocalrgbhlcomprthresh, hlcomprthresh->getTextValue());
         } else if (a == black) {
             listener->panelChanged (Evlocalrgbblack, black->getTextValue());
+            shcompr->set_sensitive (! ((int)black->getValue () == 0));  //at black=0 shcompr value has no effect
+
         } else if (a == shcompr) {
             listener->panelChanged (Evlocalrgbshcompr, shcompr->getTextValue());
         } else if (a == transit) {

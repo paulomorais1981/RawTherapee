@@ -250,14 +250,13 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         struct local_params lp;
         calcLocalParams (oW, oH, params->localrgb, lp);
 
-        // const float radius = lp.rad / (sk * 1.4f); //0 to 70 ==> see skip
-
         double ave = 0.;
         int n = 0;
         float av = 0;
         int levred;
         bool noiscfactiv = false;
 
+        // no activ actually because in Locallab ==> todo
         if (lp.qualmet == 2) { //suppress artifacts with quality enhanced
             levred = 4;
             noiscfactiv = true;
@@ -283,13 +282,8 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
 
         float mult = (float)fabs (lp.cont) * (maxl - 1.f) / 100.f + 1.f;
 
-        //     lco.dx = 1.f - 1.f / mult;
 
-        //     lco.dy = 1.f - 1.f / multh;
-
-        if ((lp.chro != 0 || lp.ligh != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
-            int GW = transformed->W;
-            int GH = transformed->H;
+        if ((lp.chro != 0 || lp.ligh != 0.f || lp.cont != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
 
             float hueplus = hueref + dhue;
             float huemoins = hueref - dhue;
@@ -310,31 +304,24 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
             float **bufl_ab = nullptr;
 
             int bfh = 0.f, bfw = 0.f;
-            int Hd, Wd;
-            Hd = GH;
-            Wd = GW;
 
 
             if (call <= 3) { //simpleprocess, dcrop, improccoordinator
                 bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
                 bfw = int (lp.lx + lp.lxL) + del;
-                Hd = bfh;
-                Wd = bfw;
-                float clighL = 1.f;
-                float clLab = 1.f;
 
 
                 bufexporig = new LabImage (bfw, bfh);//buffer for data in zone limit
                 bufexpfin = new LabImage (bfw, bfh);//buffer for data in zone limit
                 bufworking = new Imagefloat (bfw, bfh);
 
-                buflight   = new float*[bfh];//for lightness reti
+                buflight   = new float*[bfh];//for lightness
 
                 for (int i = 0; i < bfh; i++) {
                     buflight[i] = new float[bfw];
                 }
 
-                bufl_ab   = new float*[bfh];//for lightness reti
+                bufl_ab   = new float*[bfh];//for chroma
 
                 for (int i = 0; i < bfh; i++) {
                     bufl_ab[i] = new float[bfw];
@@ -410,29 +397,6 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                             float amplil = 140.f;
                             float lighL = bufexporig->L[loy - begy][lox - begx];
                             float lighLnew = bufexpfin->L[loy - begy][lox - begx];
-                            /*
-                                                        if (lighL == 0.f) {
-                                                            lighL = 0.001f;
-                                                        }
-
-                                                        lL = lighLnew / lighL;
-
-                                                        if (lL <= 1.f) {//convert data near values of slider -100 + 100, to be used after to detection shape
-                                                            clighL = 99.f * lL - 99.f;
-                                                        } else {
-                                                            clighL = CLIPLIG (amplil * lL - amplil); //ampli = 25.f arbitrary empirical coefficient between 5 and 150
-                                                        }
-                            */
-                            /*
-                                                                if (clighL > maxc) {
-                                                                    maxc = clighL;
-                                                                }
-
-                                                                if (clighL < minc) {
-                                                                    minc = clighL;
-                                                                }
-                            */
-//clighL = 1.f;
                             float rL;
                             rL = CLIPRET ((bufexpfin->L[loy - begy][lox - begx] - bufexporig->L[loy - begy][lox - begx]) / 328.f);
 
