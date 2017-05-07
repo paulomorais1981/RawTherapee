@@ -50,7 +50,7 @@ namespace rtengine
 extern const Settings* settings;
 
 Crop::Crop (ImProcCoordinator* parent, EditDataProvider *editDataProvider, bool isDetailWindow)
-    : PipetteBuffer (editDataProvider), origCrop (nullptr), laboCrop (nullptr), labnCrop (nullptr),
+    : PipetteBuffer (editDataProvider), origCrop (nullptr), laboCrop (nullptr),  laboCroploc (nullptr), labnCrop (nullptr),
       cropImg (nullptr), cbuf_real (nullptr),   cshmap (nullptr), shbuf_real (nullptr), transCrop (nullptr), cieCrop (nullptr), cbuffer (nullptr), shbuffer (nullptr),
       updating (false), newUpdatePending (false), skip (10),
       cropx (0), cropy (0), cropw (-1), croph (-1),
@@ -772,6 +772,13 @@ void Crop::update (int todo)
                    baseCrop->b[(int)(xref/skip)][(int)(yref/skip)]/256,
                    parent->imgsrc->getGamma());
         }*/
+    Imagefloat *orirgb = nullptr;
+
+    if (params.localrgb.enabled && params.localrgb.expexpose) {
+        orirgb = new Imagefloat (cropw, croph);
+        laboCroploc = new LabImage (cropw, croph);
+
+    }
 
     if (todo & M_RGBCURVE) {
         double rrm, ggm, bbm;
@@ -783,6 +790,24 @@ void Crop::update (int todo)
                              params.toneCurve.saturation, parent->rCurve, parent->gCurve, parent->bCurve, parent->colourToningSatLimit , parent->colourToningSatLimitOpacity, parent->ctColorCurve, parent->ctOpacityCurve, parent->opautili, parent->clToningcurve, parent->cl2Toningcurve,
                              parent->customToneCurve1, parent->customToneCurve2, parent->beforeToneCurveBW, parent->afterToneCurveBW, rrm, ggm, bbm,
                              parent->bwAutoR, parent->bwAutoG, parent->bwAutoB, dcpProf, as, histToneCurve);
+    }
+
+
+
+    if (params.localrgb.enabled && params.localrgb.expexpose) {
+        DCPProfile::ApplyState as;
+        DCPProfile *dcpProf = parent->imgsrc->getDCP (params.icm, parent->currWB, as);
+        laboCroploc->CopyFrom (laboCrop);
+
+        int sp = 1;
+        parent->ipf.Rgb_Local (1, sp, laboCroploc, laboCroploc,  trafx / skip, trafy / skip, cropx / skip, cropy / skip, skips (parent->fw, skip), skips (parent->fh, skip), parent->fw, parent->fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
+                               baseCrop, laboCroploc, orirgb, parent->hltonecurveloc, parent->shtonecurveloc, parent->tonecurveloc,
+                               params.localrgb.chroma, parent->customToneCurve1, parent->customToneCurve2,
+                               params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
+
+        delete orirgb;
+
+
     }
 
     /*xref=000;yref=000;
@@ -806,8 +831,13 @@ void Crop::update (int todo)
     if (todo & (M_LUMINANCE + M_COLOR)) { //
         //if (tutu) { //
         //I made a little change here. Rather than have luminanceCurve (and others) use in/out lab images, we can do more if we copy right here.
-        labnCrop->CopyFrom (laboCrop);
 
+        if (params.localrgb.enabled && params.localrgb.expexpose) {
+            labnCrop->CopyFrom (laboCroploc);
+            delete laboCroploc;
+        } else {
+            labnCrop->CopyFrom (laboCrop);
+        }
 
         //parent->ipf.luminanceCurve (labnCrop, labnCrop, parent->lumacurve);
         bool utili = parent->utili;

@@ -149,7 +149,7 @@ Localrgb::Localrgb ():
     sensi (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSI"), 0, 100, 1, 19))),
     transit (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_TRANSIT"), 5, 95, 1, 60))),
     retrab (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_RETRAB"), 0, 10000, 1, 500))),
-    expcomp (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_EXPCOMP"), -5, 12, 0.05, 0))),
+    expcomp (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_EXPCOMP"), -4, 4, 0.05, 0))),
     hlcompr (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRHIGHLIGHTS"), 0, 500, 1, 0))),
     hlcomprthresh (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRHIGHLIGHTSTHRESHOLD"), 0, 100, 1, 33))),
     black (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_BLACKLEVEL"), -16384, 32768, 50, 0))),
