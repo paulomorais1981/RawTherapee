@@ -618,6 +618,330 @@ float calculate_scale_mul (float scale_mul[4], const float pre_mul_[4], const fl
     return gain;
 }
 
+void RawImageSource::getImage_local (int begx, int begy, int yEn, int xEn, int cx, int cy, const ColorTemp &ctemploc, int tran, Imagefloat* image, Imagefloat* bufimage,  const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw )
+{
+    MyMutex::MyLock lock (getImageMutex);
+    //  printf ("ok getimalocal\n");
+    tran = defTransform (tran);
+    // compute channel multipliers
+    double r, g, b;
+    float rm, gm, bm;
+
+    if (ctemploc.getTemp() < 0) {
+        // no white balance, ie revert the pre-process white balance to restore original unbalanced raw camera color
+        rm = ri->get_pre_mul (0);
+        gm = ri->get_pre_mul (1);
+        bm = ri->get_pre_mul (2);
+    } else {
+        ctemploc.getMultipliers (r, g, b);
+        rm = imatrices.cam_rgb[0][0] * r + imatrices.cam_rgb[0][1] * g + imatrices.cam_rgb[0][2] * b;
+        gm = imatrices.cam_rgb[1][0] * r + imatrices.cam_rgb[1][1] * g + imatrices.cam_rgb[1][2] * b;
+        bm = imatrices.cam_rgb[2][0] * r + imatrices.cam_rgb[2][1] * g + imatrices.cam_rgb[2][2] * b;
+    }
+
+    if (true) {
+        // adjust gain so the maximum raw value of the least scaled channel just hits max
+        const float new_pre_mul[4] = { ri->get_pre_mul (0) / rm, ri->get_pre_mul (1) / gm, ri->get_pre_mul (2) / bm, ri->get_pre_mul (3) / gm };
+        float new_scale_mul[4];
+
+        bool isMono = (ri->getSensorType() == ST_FUJI_XTRANS && raw.xtranssensor.method == RAWParams::XTransSensor::methodstring[RAWParams::XTransSensor::mono])
+                      || (ri->getSensorType() == ST_BAYER && raw.bayersensor.method == RAWParams::BayerSensor::methodstring[RAWParams::BayerSensor::mono]);
+        float gain = calculate_scale_mul (new_scale_mul, new_pre_mul, c_white, cblacksom, isMono, ri->get_colors());
+        rm = new_scale_mul[0] / scale_mul[0] * gain;
+        gm = new_scale_mul[1] / scale_mul[1] * gain;
+        bm = new_scale_mul[2] / scale_mul[2] * gain;
+        //fprintf(stderr, "camera gain: %f, current wb gain: %f, diff in stops %f\n", camInitialGain, gain, log2(camInitialGain) - log2(gain));
+    } else {
+        // old scaling: used a fixed reference gain based on camera (as-shot) white balance
+
+        // how much we need to scale each channel to get our new white balance
+        rm = refwb_red / rm;
+        gm = refwb_green / gm;
+        bm = refwb_blue / bm;
+        // normalize so larger multiplier becomes 1.0
+        float minval = min (rm, gm, bm);
+        rm /= minval;
+        gm /= minval;
+        bm /= minval;
+        // multiply with reference gain, ie as-shot WB
+        rm *= camInitialGain;
+        gm *= camInitialGain;
+        bm *= camInitialGain;
+    }
+
+    defGain = 0.0;
+    // compute image area to render in order to provide the requested part of the image
+    int sx1, sy1, imwidth, imheight, fw, d1xHeightOdd = 0;
+    transformRect (pp, tran, sx1, sy1, imwidth, imheight, fw);
+
+    // check possible overflows
+    int maximwidth, maximheight;
+
+    if ((tran & TR_ROT) == TR_R90 || (tran & TR_ROT) == TR_R270) {
+        maximwidth = image->getHeight();
+        maximheight = image->getWidth();
+    } else {
+        maximwidth = image->getWidth();
+        maximheight = image->getHeight();
+    }
+
+    if (d1x) {
+        // D1X has only half of the required rows
+        // we interpolate the missing ones later to get correct aspect ratio
+        // if the height is odd we also have to add an additional row to avoid a black line
+        d1xHeightOdd = maximheight & 1;
+        maximheight /= 2;
+        imheight = maximheight;
+    }
+
+    // correct if overflow (very rare), but not fuji because it is corrected in transline
+    if (!fuji && imwidth > maximwidth) {
+        imwidth = maximwidth;
+    }
+
+    if (!fuji && imheight > maximheight) {
+        imheight = maximheight;
+    }
+
+    if (fuji) { // zero image to avoid access to uninitialized values in further processing because fuji super-ccd processing is not clean...
+        for (int i = 0; i < image->getHeight(); ++i) {
+            for (int j = 0; j < image->getWidth(); ++j) {
+                image->r (i, j) = image->g (i, j) = image->b (i, j) = 0;
+            }
+        }
+    }
+
+    int maxx = this->W, maxy = this->H, skip = pp.getSkip();
+
+    // raw clip levels after white balance
+    hlmax[0] = clmax[0] * rm;
+    hlmax[1] = clmax[1] * gm;
+    hlmax[2] = clmax[2] * bm;
+
+    const bool doClip = (chmax[0] >= clmax[0] || chmax[1] >= clmax[1] || chmax[2] >= clmax[2]) && !hrp.hrenabled;
+
+    float area = skip * skip;
+    rm /= area;
+    gm /= area;
+    bm /= area;
+    bool doHr = (hrp.hrenabled && hrp.method != "Color");
+#ifdef _OPENMP
+    #pragma omp parallel if(!d1x)       // omp disabled for D1x to avoid race conditions (see Issue 1088 http://code.google.com/p/rawtherapee/issues/detail?id=1088)
+    {
+#endif
+        // render the requested image part
+        float line_red[imwidth] ALIGNED16;
+        float line_grn[imwidth] ALIGNED16;
+        float line_blue[imwidth] ALIGNED16;
+
+#ifdef _OPENMP
+        #pragma omp for schedule(dynamic,16)
+#endif
+
+        for (int ix = 0; ix < imheight; ix++) {
+            int i = sy1 + skip * ix;
+
+            if (i >= maxy - skip) {
+                i = maxy - skip - 1;    // avoid trouble
+            }
+
+            if (ri->getSensorType() == ST_BAYER || ri->getSensorType() == ST_FUJI_XTRANS || ri->get_colors() == 1) {
+                for (int j = 0, jx = sx1; j < imwidth; j++, jx += skip) {
+                    jx = std::min (jx, maxx - skip - 1); // avoid trouble
+
+                    float rtot = 0.f, gtot = 0.f, btot = 0.f;
+
+                    for (int m = 0; m < skip; m++)
+                        for (int n = 0; n < skip; n++) {
+                            rtot += red[i + m][jx + n];
+                            gtot += green[i + m][jx + n];
+                            btot += blue[i + m][jx + n];
+                        }
+
+                    rtot *= rm;
+                    gtot *= gm;
+                    btot *= bm;
+
+                    if (doClip) {
+                        // note: as hlmax[] can be larger than CLIP and we can later apply negative
+                        // exposure this means that we can clip away local highlights which actually
+                        // are not clipped. We have to do that though as we only check pixel by pixel
+                        // and don't know if this will transition into a clipped area, if so we need
+                        // to clip also surrounding to make a good colour transition
+                        rtot = CLIP (rtot);
+                        gtot = CLIP (gtot);
+                        btot = CLIP (btot);
+                    }
+
+                    line_red[j] = rtot;
+                    line_grn[j] = gtot;
+                    line_blue[j] = btot;
+                }
+            } else {
+                for (int j = 0, jx = sx1; j < imwidth; j++, jx += skip) {
+                    if (jx > maxx - skip) {
+                        jx = maxx - skip - 1;
+                    }
+
+                    float rtot, gtot, btot;
+                    rtot = gtot = btot = 0;
+
+                    for (int m = 0; m < skip; m++)
+                        for (int n = 0; n < skip; n++) {
+                            rtot += rawData[i + m][ (jx + n) * 3 + 0];
+                            gtot += rawData[i + m][ (jx + n) * 3 + 1];
+                            btot += rawData[i + m][ (jx + n) * 3 + 2];
+                        }
+
+                    rtot *= rm;
+                    gtot *= gm;
+                    btot *= bm;
+
+                    if (doClip) {
+                        rtot = CLIP (rtot);
+                        gtot = CLIP (gtot);
+                        btot = CLIP (btot);
+                    }
+
+                    line_red[j] = rtot;
+                    line_grn[j] = gtot;
+                    line_blue[j] = btot;
+
+                }
+            }
+
+            //process all highlight recovery other than "Color"
+            if (doHr) {
+                hlRecovery (hrp.method, line_red, line_grn, line_blue, imwidth, hlmax);
+            }
+
+            if (d1x) {
+                transLineD1x (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight, d1xHeightOdd, doClip);
+            } else if (fuji) {
+                transLineFuji (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight, fw);
+            } else {
+                transLineStandard (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight);
+            }
+        }
+
+#ifdef _OPENMP
+    }
+#endif
+
+//provisory calculation to test, we must optimize that above and after
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+    for (int y = 0; y < image->getHeight() ; y++) //{
+        for (int x = 0; x < image->getWidth(); x++) {
+            int lox = cx + x;
+            int loy = cy + y;
+
+            if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+                bufimage->r (loy - begy, lox - begx) = image->r (y, x);
+                bufimage->g (loy - begy, lox - begx) = image->g (y, x);
+                bufimage->b (loy - begy, lox - begx) = image->b (y, x);
+            }
+        }
+
+
+    if (fuji) {
+        int a = ((tran & TR_ROT) == TR_R90 && image->getWidth() % 2 == 0) || ((tran & TR_ROT) == TR_R180 && image->getHeight() % 2 + image->getWidth() % 2 == 1) || ((tran & TR_ROT) == TR_R270 && image->getHeight() % 2 == 0);
+
+        // first row
+        for (int j = 1 + a; j < image->getWidth() - 1; j += 2) {
+            image->r (0, j) = (image->r (1, j) + image->r (0, j + 1) + image->r (0, j - 1)) / 3;
+            image->g (0, j) = (image->g (1, j) + image->g (0, j + 1) + image->g (0, j - 1)) / 3;
+            image->b (0, j) = (image->b (1, j) + image->b (0, j + 1) + image->b (0, j - 1)) / 3;
+        }
+
+        // other rows
+        for (int i = 1; i < image->getHeight() - 1; i++) {
+            for (int j = 2 - (a + i + 1) % 2; j < image->getWidth() - 1; j += 2) {
+                // edge-adaptive interpolation
+                double dh = (ABS (image->r (i, j + 1) - image->r (i, j - 1)) + ABS (image->g (i, j + 1) - image->g (i, j - 1)) + ABS (image->b (i, j + 1) - image->b (i, j - 1))) / 1.0;
+                double dv = (ABS (image->r (i + 1, j) - image->r (i - 1, j)) + ABS (image->g (i + 1, j) - image->g (i - 1, j)) + ABS (image->b (i + 1, j) - image->b (i - 1, j))) / 1.0;
+                double eh = 1.0 / (1.0 + dh);
+                double ev = 1.0 / (1.0 + dv);
+                image->r (i, j) = (eh * (image->r (i, j + 1) + image->r (i, j - 1)) + ev * (image->r (i + 1, j) + image->r (i - 1, j))) / (2.0 * (eh + ev));
+                image->g (i, j) = (eh * (image->g (i, j + 1) + image->g (i, j - 1)) + ev * (image->g (i + 1, j) + image->g (i - 1, j))) / (2.0 * (eh + ev));
+                image->b (i, j) = (eh * (image->b (i, j + 1) + image->b (i, j - 1)) + ev * (image->b (i + 1, j) + image->b (i - 1, j))) / (2.0 * (eh + ev));
+            }
+
+            // first pixel
+            if (2 - (a + i + 1) % 2 == 2) {
+                image->r (i, 0) = (image->r (i + 1, 0) + image->r (i - 1, 0) + image->r (i, 1)) / 3;
+                image->g (i, 0) = (image->g (i + 1, 0) + image->g (i - 1, 0) + image->g (i, 1)) / 3;
+                image->b (i, 0) = (image->b (i + 1, 0) + image->b (i - 1, 0) + image->b (i, 1)) / 3;
+            }
+
+            // last pixel
+            if (2 - (a + i + image->getWidth()) % 2 == 2) {
+                image->r (i, image->getWidth() - 1) = (image->r (i + 1, image->getWidth() - 1) + image->r (i - 1, image->getWidth() - 1) + image->r (i, image->getWidth() - 2)) / 3;
+                image->g (i, image->getWidth() - 1) = (image->g (i + 1, image->getWidth() - 1) + image->g (i - 1, image->getWidth() - 1) + image->g (i, image->getWidth() - 2)) / 3;
+                image->b (i, image->getWidth() - 1) = (image->b (i + 1, image->getWidth() - 1) + image->b (i - 1, image->getWidth() - 1) + image->b (i, image->getWidth() - 2)) / 3;
+            }
+        }
+
+        // last row
+        int b = (a == 1 && image->getHeight() % 2) || (a == 0 && image->getHeight() % 2 == 0);
+
+        for (int j = 1 + b; j < image->getWidth() - 1; j += 2) {
+            image->r (image->getHeight() - 1, j) = (image->r (image->getHeight() - 2, j) + image->r (image->getHeight() - 1, j + 1) + image->r (image->getHeight() - 1, j - 1)) / 3;
+            image->g (image->getHeight() - 1, j) = (image->g (image->getHeight() - 2, j) + image->g (image->getHeight() - 1, j + 1) + image->g (image->getHeight() - 1, j - 1)) / 3;
+            image->b (image->getHeight() - 1, j) = (image->b (image->getHeight() - 2, j) + image->b (image->getHeight() - 1, j + 1) + image->b (image->getHeight() - 1, j - 1)) / 3;
+        }
+
+//is it good ??
+#ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+        for (int y = 0; y < image->getHeight() ; y++) //{
+            for (int x = 0; x < image->getWidth(); x++) {
+                int lox = cx + x;
+                int loy = cy + y;
+
+                if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+                    bufimage->r (loy - begy, lox - begx) = image->r (y, x);
+                    bufimage->g (loy - begy, lox - begx) = image->g (y, x);
+                    bufimage->b (loy - begy, lox - begx) = image->b (y, x);
+                }
+            }
+
+    }
+
+    // Flip if needed
+    if (tran & TR_HFLIP) {
+        hflip (bufimage);
+    }
+
+    if (tran & TR_VFLIP) {
+        vflip (bufimage);
+    }
+
+    // Colour correction (only when running on full resolution)
+    if (pp.getSkip() == 1) {
+        switch (ri->getSensorType()) {
+            case ST_BAYER:
+                processFalseColorCorrection (bufimage, raw.bayersensor.ccSteps);
+                break;
+
+            case ST_FUJI_XTRANS:
+                processFalseColorCorrection (bufimage, raw.xtranssensor.ccSteps);
+                break;
+
+            case ST_FOVEON:
+            case ST_NONE:
+                break;
+        }
+    }
+
+
+}
+
+
 void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* image, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw )
 {
     MyMutex::MyLock lock (getImageMutex);
@@ -4621,13 +4945,13 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
                 }
             } else if (ri->get_colors() == 1) {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[(int)(refwb[0] * rawData[i][j])]++;
+                    tmphistogram[ (int) (refwb[0] * rawData[i][j])]++;
                 }
             } else {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[(int)(refwb[0] * rawData[i][3 * j + 0])]++;
-                    tmphistogram[(int)(refwb[1] * rawData[i][3 * j + 1])]++;
-                    tmphistogram[(int)(refwb[2] * rawData[i][3 * j + 2])]++;
+                    tmphistogram[ (int) (refwb[0] * rawData[i][3 * j + 0])]++;
+                    tmphistogram[ (int) (refwb[1] * rawData[i][3 * j + 1])]++;
+                    tmphistogram[ (int) (refwb[2] * rawData[i][3 * j + 2])]++;
                 }
             }
         }

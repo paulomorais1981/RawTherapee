@@ -609,6 +609,8 @@ enum ProcEvent {
     Evlocalrgbtemp = 579,
     Evlocalrgbgreen = 580,
     Evlocalrgbequal = 581,
+    EvlocalrgbwbMethod = 582,
+
     NUMOFEVENTS
 
 

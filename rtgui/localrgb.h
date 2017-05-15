@@ -24,13 +24,16 @@ class Localrgb :
     public rtengine::localListener,
     public CurveListener,
     public EditSubscriber,
-    public ColorProvider
+    public ColorProvider,
+    public rtengine::localrgbListener
 
 {
 private:
     int lastObject;
     void foldAllButMe (GdkEventButton* event, MyExpander *expander);
     void enableToggled (MyExpander *expander);
+
+    IdleRegister idle_register;
 
 //protected:
     Gtk::HBox *editHBox;
@@ -70,6 +73,8 @@ private:
 
     MyComboBoxText*   const Smethod;
     MyComboBoxText*   const qualityMethod;
+    MyComboBoxText*   const wbMethod;
+
 
     Gtk::Frame* const shapeFrame;
     Gtk::Frame* const artifFrame;
@@ -84,6 +89,7 @@ private:
     Adjuster* temp;
     Adjuster* green;
     Adjuster* equal;
+    Gtk::Label* ttLabels;
 
     MyComboBoxText* toneCurveMode;
     MyComboBoxText* toneCurveMode2;
@@ -108,6 +114,7 @@ private:
 //    Gtk::VBox* const colorVBox;
     sigc::connection  Smethodconn;
     sigc::connection qualityMethodConn;
+    sigc::connection wbMethodConn;
 
 
     int nextdatasp[61];
@@ -120,7 +127,9 @@ private:
     std::string nextlh_str2;
     std::string nextcc_str;
     std::string nextcc_str2;
-
+    double nexttemp;
+    double nexttint;
+    double nextequal;
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -175,12 +184,16 @@ public:
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
     void qualityMethodChanged();
+    void wbMethodChanged();
     void qualitycurveMethodChanged();
     void lumaneutralPressed ();
     void lumacontrastPlusPressed ();
     void lumacontrastMinusPressed ();
     void neutral_pressed       ();
     virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
+    void temptintChanged (double ctemp, double ctint, double cequal);
+    bool temptintComputed_ ();
+    void updateLabel      ();
 
     // EditSubscriber interface
     CursorShape getCursor (int objectID);

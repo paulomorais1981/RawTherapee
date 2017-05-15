@@ -90,7 +90,7 @@ ImProcCoordinator::ImProcCoordinator ()
       fw (0), fh (0), tr (0),
       fullw (1), fullh (1),
       pW (-1), pH (-1),
-      plistener (nullptr), awbListener (nullptr), imageListener (nullptr), aeListener (nullptr), acListener (nullptr), abwListener (nullptr),  aloListener (nullptr), actListener (nullptr), adnListener (nullptr), awavListener (nullptr), dehaListener (nullptr), frameCountListener (nullptr), imageTypeListener (nullptr), hListener (nullptr),
+      plistener (nullptr), awbListener (nullptr), imageListener (nullptr), aeListener (nullptr), acListener (nullptr), abwListener (nullptr),  aloListener (nullptr), alorgbListener (nullptr), actListener (nullptr), adnListener (nullptr), awavListener (nullptr), dehaListener (nullptr), frameCountListener (nullptr), imageTypeListener (nullptr), hListener (nullptr),
       resultValid (false), lastOutputProfile ("BADFOOD"), lastOutputIntent (RI__COUNT), lastOutputBPC (false), thread (nullptr), changeSinceLast (0), updaterRunning (false), destroying (false), utili (false), autili (false),
       butili (false), ccutili (false), cclutili (false), clcutili (false), opautili (false),  wavcontlutili (false),
       dataspot (nullptr), retistr (nullptr), llstr (nullptr), lhstr (nullptr), ccstr (nullptr),
@@ -417,6 +417,51 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
         imgsrc->getImage (currWB, tr, orig_prev, pp, params.toneCurve, params.icm, params.raw);
         denoiseInfoStore.valid = false;
+
+        Imagefloat *imageoriginal = nullptr;
+        Imagefloat *imagetransformed = nullptr;
+        Imagefloat *improv = nullptr;
+
+        if (params.localrgb.enabled && params.localrgb.expwb) {
+
+            if (alorgbListener) {
+                alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal);
+            }
+
+            currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
+
+            imageoriginal = new Imagefloat (pW, pH);
+            imagetransformed = new Imagefloat (pW, pH);
+            improv = new Imagefloat (pW, pH);
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int ir = 0; ir < pH; ir++)
+                for (int jr = 0; jr < pW; jr++) {
+                    imagetransformed->r (ir, jr) = imageoriginal->r (ir, jr) = orig_prev->r (ir, jr);
+                    imagetransformed->g (ir, jr) = imageoriginal->g (ir, jr) = orig_prev->g (ir, jr);
+                    imagetransformed->b (ir, jr) = imageoriginal->b (ir, jr) = orig_prev->b (ir, jr);
+                }
+
+            ipf.WB_Local (imgsrc, 3, 1, 0, 0, 0, 0, pW, pH, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw);
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int ir = 0; ir < pH; ir++)
+                for (int jr = 0; jr < pW; jr++) {
+                    orig_prev->r (ir, jr) = imagetransformed->r (ir, jr);
+                    orig_prev->g (ir, jr) = imagetransformed->g (ir, jr);
+                    orig_prev->b (ir, jr) = imagetransformed->b (ir, jr);
+                }
+
+            delete imageoriginal;
+            delete imagetransformed;
+            delete improv;
+
+        }
+
         //ColorTemp::CAT02 (orig_prev, &params) ;
         //   printf("orig_prevW=%d\n  scale=%d",orig_prev->width, scale);
         /* Issue 2785, disabled some 1:1 tools
@@ -683,7 +728,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
     //begin Local rgb
     //why here ? 1) after auto exposure, not to influence auto 2) I can use either Lab and rgb (after conversion) 3) just before all L*a*b* threatment
     if (params.localrgb.enabled && params.localrgb.expexpose) {
-//only for testing construction...varaibles, etc. does not work at all
         CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
                                          params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
                                          params.localrgb.shcompr, params.localrgb.lightness, params.localrgb.contrast,
@@ -696,8 +740,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         nprloc->CopyFrom (oprevl);
 
 
-//       ipf.rgbLocal (oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, params.localrgb.chroma,
-//                     customToneCurve1, customToneCurve2, params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
         int sp = 1;
         ipf.Rgb_Local (3, sp, nprloc, nprloc, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
                        oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,

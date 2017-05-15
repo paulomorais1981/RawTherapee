@@ -574,16 +574,16 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     LUMINANCECURVE,   // Evlocallablumaref
     LUMINANCECURVE,    //EvLocrgbenaexpose
     LUMINANCECURVE, //EvlocalrgbEnabled
-    LUMINANCECURVE, //EvlocalrgblocY
-    LUMINANCECURVE, //EvlocalrgblocX
-    LUMINANCECURVE, // EvlocalrgbCenter
+    ALLNORAW, //EvlocalrgblocY
+    ALLNORAW, //EvlocalrgblocX
+    ALLNORAW, // EvlocalrgbCenter
     LUMINANCECURVE, //EvlocalrgbDegree
     LUMINANCECURVE, //Evlocalrgblightness
     LUMINANCECURVE, //Evlocalrgbcontrast
     LUMINANCECURVE, //Evlocalrgbchroma
-    LUMINANCECURVE, //Evlocalrgbtransit
-    LUMINANCECURVE, //EvlocalrgblocYT
-    LUMINANCECURVE, //EvlocalrgblocXL
+    ALLNORAW, //Evlocalrgbtransit
+    ALLNORAW, //EvlocalrgblocYT
+    ALLNORAW, //EvlocalrgblocXL
     LUMINANCECURVE, //EvlocalrgbSmet
     LUMINANCECURVE, //Evlocalrgbsensi
     LUMINANCECURVE, //Evlocalrgbnbspot
@@ -608,7 +608,8 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     ALLNORAW, //EvLocrgbenawb
     ALLNORAW, //Evlocalrgbtemp
     ALLNORAW, //Evlocalrgbgreen
-    ALLNORAW //Evlocalrgbequal
+    ALLNORAW, //Evlocalrgbequal
+    ALLNORAW //EvlocalrgbwbMethod
 
 };
 

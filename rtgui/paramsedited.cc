@@ -327,6 +327,7 @@ void ParamsEdited::set (bool v)
     localrgb.curve2     = v;
     localrgb.curveMode  = v;
     localrgb.curveMode2 = v;
+    localrgb.wbMethod = v;
 
     localrgb.expwb = v;
     localrgb.temp = v;
@@ -976,6 +977,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         localrgb.expwb = localrgb.expwb && p.localrgb.expwb == other.localrgb.expwb;
         localrgb.temp = localrgb.temp && p.localrgb.temp == other.localrgb.temp;
         localrgb.green = localrgb.green && p.localrgb.green == other.localrgb.green;
+        localrgb.wbMethod = localrgb.wbMethod && p.localrgb.wbMethod == other.localrgb.wbMethod;
 
         locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
@@ -2407,6 +2409,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (localrgb.qualityMethod) {
         toEdit.localrgb.qualityMethod   = mods.localrgb.qualityMethod;
+    }
+
+    if (localrgb.wbMethod) {
+        toEdit.localrgb.wbMethod   = mods.localrgb.wbMethod;
     }
 
     if (localrgb.curve) {

@@ -72,6 +72,8 @@ protected:
 
     ColorTemp currWB;
     ColorTemp autoWB;
+    ColorTemp currWBloc;
+
 
     double lastAwbEqual;
     double lastAwbTempBias;
@@ -172,6 +174,7 @@ protected:
     AutoCamListener* acListener;
     AutoBWListener* abwListener;
     localListener* aloListener;
+    localrgbListener* alorgbListener;
     AutoColorTonListener* actListener;
     AutoChromaListener* adnListener;
     WaveletListener* awavListener;
@@ -427,6 +430,11 @@ public:
     {
         aloListener = alo;
     }
+    void setlocalrgbListener   (localrgbListener* alorgb)
+    {
+        alorgbListener = alorgb;
+    }
+
 
     void setAutoWBListener   (AutoWBListener* awb)
     {

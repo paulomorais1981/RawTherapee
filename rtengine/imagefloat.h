@@ -50,6 +50,12 @@ public:
     Image16*             to16();
 
     virtual void         getStdImage (ColorTemp ctemp, int tran, Imagefloat* image, PreviewProps pp, bool first, procparams::ToneCurveParams hrp);
+    virtual void         getStdImageloc (int begx, int begy, int yEn, int xEn, int cx, int cy, ColorTemp ctemp, int tran, Imagefloat* image, Imagefloat* bufimage, PreviewProps pp, bool first, procparams::ToneCurveParams hrp);
+
+    void getImage_local    (const ColorTemp &ctemp, int tran, Imagefloat* image, Imagefloat* bufimage, const struct local_params & lp, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw);
+//    void getImage_local    (const ColorTemp &ctemp, int tran, Imagefloat* image, Imagefloat* bufimage, const struct local_params & lp, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw);
+    void        getImage    (const ColorTemp &ctemp, int tran, Imagefloat* image, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw);
+
 
     virtual const char*  getType     () const
     {
@@ -57,7 +63,7 @@ public:
     }
     virtual int          getBPS      ()
     {
-        return 8 * sizeof(float);
+        return 8 * sizeof (float);
     }
     virtual void         getScanline (int row, unsigned char* buffer, int bps);
     virtual void         setScanline (int row, unsigned char* buffer, int bps, float *minValue = nullptr, float *maxValue = nullptr);
@@ -73,7 +79,7 @@ public:
     }
     virtual int          getBitsPerPixel ()
     {
-        return 8 * sizeof(float);
+        return 8 * sizeof (float);
     }
     virtual int          saveToFile (Glib::ustring fname)
     {
@@ -100,12 +106,12 @@ public:
         delete this;
     }
 
-    virtual void         normalizeFloat(float srcMinVal, float srcMaxVal);
+    virtual void         normalizeFloat (float srcMinVal, float srcMaxVal);
     void                 normalizeFloatTo1();
     void                 normalizeFloatTo65535();
-    void                 calcCroppedHistogram(const ProcParams &params, float scale, LUTu & hist);
+    void                 calcCroppedHistogram (const ProcParams &params, float scale, LUTu & hist);
 
-    void                 ExecCMSTransform(cmsHTRANSFORM hTransform);
+    void                 ExecCMSTransform (cmsHTRANSFORM hTransform);
 };
 
 }

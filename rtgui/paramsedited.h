@@ -448,6 +448,7 @@ public:
     bool lumaref;
     bool sensi;
     bool qualityMethod;
+    bool wbMethod;
     bool curve;
     bool curve2;
     bool curveMode;

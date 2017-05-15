@@ -794,7 +794,8 @@ HISTORY_MSG_546;locrgb - exposure
 HISTORY_MSG_547;locrgb - enable
 HISTORY_MSG_548;locrgb - Bottom
 HISTORY_MSG_549;locrgb - Right
-HISTORY_MSG_551;locrgb - Center
+HISTORY_MSG_550;locrgb - Center
+HISTORY_MSG_551;locrgb - degree
 HISTORY_MSG_552;locrgb - lightness
 HISTORY_MSG_553;locrgb - contrast
 HISTORY_MSG_554;locrgb - saturation
@@ -821,6 +822,7 @@ HISTORY_MSG_579;locrgb - White balance
 HISTORY_MSG_580;locrgb - WB temp
 HISTORY_MSG_581;locrgb - WB tint
 HISTORY_MSG_582;locrgb - WB equalizer
+HISTORY_MSG_583;locrgb - WB method
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1852,6 +1854,10 @@ TP_LOCALRGB_CHROMA;Saturation
 TP_LOCALRGB_EXPO;Exposure
 TP_LOCALRGB_LABEL;Local rgb
 TP_LOCALRGB_WB;White balance
+TP_LOCALRGB_TTLABEL;All: Temp=%1 Tint=%2 Equ=%3
+TP_LOCALRGB_TTLABEL_TOOLTIP;Display full image White Balance settings 
+TP_LOCALRGBWB_NONE;None
+TP_LOCALRGBWB_MAN;Custom
 TP_LOCRETI_METHOD_TOOLTIP;Low = Reinforce low light.\nUniform = Equalize action.\nHigh = Reinforce high light.\n
 TP_NEUTRAL;Neutral
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.

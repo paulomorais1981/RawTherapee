@@ -924,7 +924,7 @@ void LocalrgbParams::setDefaults()
     chroma = 0;
     sensi = 19;
     Smethod = "IND";
-    qualityMethod = "enhden";
+    qualityMethod = "enh";
     hueref = 1.;
     chromaref = 50.;
     lumaref = 50.;
@@ -945,7 +945,8 @@ void LocalrgbParams::setDefaults()
     curveMode     = LocalrgbParams::TC_MODE_STD;
     curveMode2    = LocalrgbParams::TC_MODE_STD;
     expwb = false;
-    temp = 6504.;
+    wbMethod = "none";
+    temp = 4750.;
     green = 1.;
     equal = 1.;
 }
@@ -2863,6 +2864,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->localrgb.qualityMethod) {
             keyFile.set_string ("Localrgb", "qualityMethod", localrgb.qualityMethod);
+        }
+
+        if (!pedited || pedited->localrgb.wbMethod) {
+            keyFile.set_string ("Localrgb", "wbMethod", localrgb.wbMethod);
         }
 
         if (!pedited || pedited->localrgb.temp) {
@@ -4836,6 +4841,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->localrgb.qualityMethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "wbMethod"))  {
+                localrgb.wbMethod  = keyFile.get_string ("Localrgb", "wbMethod");
+
+                if (pedited) {
+                    pedited->localrgb.wbMethod = true;
                 }
             }
 
@@ -9892,6 +9905,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && localrgb.sensi == other.localrgb.sensi
         && localrgb.transit == other.localrgb.transit
         && localrgb.qualityMethod == other.localrgb.qualityMethod
+        && localrgb.wbMethod == other.localrgb.wbMethod
         && localrgb.nbspot == other.localrgb.nbspot
         && localrgb.anbspot == other.localrgb.anbspot
         && localrgb.retrab == other.localrgb.retrab

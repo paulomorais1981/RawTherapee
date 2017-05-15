@@ -103,6 +103,8 @@ private:
     MyComboBoxText*   const Smethod;
     MyComboBoxText*   const retinexMethod;
     MyComboBoxText*   const qualityMethod;
+
+
     MyComboBoxText*   const qualitycurveMethod;
 
 
@@ -165,6 +167,7 @@ private:
     sigc::connection  Smethodconn;
     sigc::connection retinexMethodConn;
     sigc::connection qualityMethodConn;
+
     sigc::connection qualitycurveMethodConn;
 
 

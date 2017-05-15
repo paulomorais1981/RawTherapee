@@ -25,6 +25,8 @@
 
 #include "rtengine.h"
 #include "improcfun.h"
+#include "rawimagesource.h"
+
 #include "curves.h"
 #include "gauss.h"
 #include "iccstore.h"
@@ -130,8 +132,8 @@ static void calcLocalParams (int oW, int oH, const LocalrgbParams& localrgb, str
         lp.qualmet = 0;
     } else if (localrgb.qualityMethod == "enh") {
         lp.qualmet = 1;
-    } else if (localrgb.qualityMethod == "enhden") {
-        lp.qualmet = 2;
+//   } else if (localrgb.qualityMethod == "enhden") {
+//       lp.qualmet = 2;
     }
 
 
@@ -174,6 +176,7 @@ static void calcLocalParams (int oW, int oH, const LocalrgbParams& localrgb, str
     lp.green = localrgb.green;
     lp.equal = localrgb.equal;
     lp.expcomp = localrgb.expcomp;
+
 }
 
 static void calcTransition (const float lox, const float loy, const float ach, const local_params& lp, int &zone, float &localFactor)
@@ -230,6 +233,103 @@ static void calcTransition (const float lox, const float loy, const float ach, c
     }
 }
 
+
+void ImProcFunctions::WB_Local (ImageSource* imgsrc, int call, int sp, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, Imagefloat* improv, Imagefloat* imagetransformed, const ColorTemp &ctemploc, int tran, Imagefloat* imageoriginal, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw)
+{
+    if (params->localrgb.enabled) {
+        // BENCHFUN
+#ifdef _DEBUG
+        MyTime t1e, t2e;
+        t1e.set();
+// init variables to display Munsell corrections
+        MunsellDebugInfo* MunsDebugInfo = new MunsellDebugInfo();
+#endif
+
+
+
+        struct local_params lp;
+        calcLocalParams (oW, oH, params->localrgb, lp);
+
+        double ave = 0.;
+        int n = 0;
+        float av = 0;
+        constexpr float ared = (rtengine::RT_PI - 0.05f) / 100.f;
+
+        constexpr float bred = 0.05f;
+
+        float dhue = ared * lp.sens + bred; //delta hue lght chroma
+
+        Imagefloat* bufimage = nullptr;
+
+        int bfh = 0.f, bfw = 0.f;
+        int del = 3; // to avoid crash
+
+        int begy = lp.yc - lp.lyT;
+        int begx = lp.xc - lp.lxL;
+        int yEn = lp.yc + lp.ly;
+        int xEn = lp.xc + lp.lx;
+        //  printf ("by=%i bx=%i y=%i x=%i\n", begx, begy, yEn, xEn);
+
+        if (call <= 3) { //simpleprocess, dcrop, improccoordinator
+            bfh = int (lp.ly + lp.lyT) + del; //bfw bfh real size of square zone
+            bfw = int (lp.lx + lp.lxL) + del;
+
+            bufimage = new Imagefloat (bfw, bfh);
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int ir = 0; ir < bfh; ir++) //fill with 0
+                for (int jr = 0; jr < bfw; jr++) {
+                    bufimage->r (ir, jr) = 0.f;
+                    bufimage->g (ir, jr) = 0.f;
+                    bufimage->b (ir, jr) = 0.f;
+                }
+
+            if (lp.expwb && params->localrgb.wbMethod != "none") {
+                /*                float hueplus = hueref + dhue;
+                                float huemoins = hueref - dhue;
+
+                                //printf("hueplus=%f huemoins=%f dhu=%f\n", hueplus, huemoins, dhue);
+                                if (hueplus > rtengine::RT_PI) {
+                                    hueplus = hueref + dhue - 2.f * rtengine::RT_PI;
+                                }
+
+                                if (huemoins < -rtengine::RT_PI) {
+                                    huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
+                                }
+                */
+
+                imgsrc->getImage_local (begx, begy, yEn, xEn, cx, cy, ctemploc, tran, improv, bufimage, pp, hrp, cmp, raw);
+
+
+                Whitebalance_Local (call, sp, bufimage, lp, imageoriginal, imagetransformed, cx, cy);
+                /*
+                                #ifdef _OPENMP
+                                #pragma omp parallel for schedule(dynamic,16)
+                #endif
+
+                                for (int y = 0; y < imageoriginal->getHeight() ; y++) //{
+                                    for (int x = 0; x < imageoriginal->getWidth(); x++) {
+                                        int lox = cx + x;
+                                        int loy = cy + y;
+
+                                        if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+                                            imageoriginal->r (y, x) =  bufimage->r (loy - begy, lox - begx);
+                                            imageoriginal->g (y, x) =  bufimage->g (loy - begy, lox - begx);
+                                            imageoriginal->b (y, x) =  bufimage->b (loy - begy, lox - begx);
+                                        }
+                                    }
+                */
+
+            }
+
+            delete bufimage;
+
+        }
+    }
+}
+
 void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double &hueref, double &chromaref, double &lumaref,
                                  Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurveloc, LUTf & shtonecurveloc, LUTf & tonecurveloc,
                                  int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
@@ -250,21 +350,25 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         struct local_params lp;
         calcLocalParams (oW, oH, params->localrgb, lp);
 
+
+
         double ave = 0.;
         int n = 0;
         float av = 0;
-        int levred;
-        bool noiscfactiv = false;
+//        int levred;
+//        bool noiscfactiv = false;
 
         // no activ actually because in Locallab ==> todo
-        if (lp.qualmet == 2) { //suppress artifacts with quality enhanced
-            levred = 4;
-            noiscfactiv = true;
-        }    else {
-            levred = 7;
-            noiscfactiv = false;
-        }
-
+        // but after tests not necessary with rgb datas, not enough sensitive
+        /*
+                if (lp.qualmet == 2) { //suppress artifacts with quality enhanced
+                    levred = 4;
+                    noiscfactiv = true;
+                }    else {
+                    levred = 7;
+                    noiscfactiv = false;
+                }
+        */
 // we must here detect : general case, skin, sky,...foliages ???
 // delta dhue, luminance and chroma
         constexpr float ared = (rtengine::RT_PI - 0.05f) / 100.f;
@@ -452,6 +556,240 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
 
 
 }
+
+void ImProcFunctions::Whitebalance_Local (int call, int sp, Imagefloat* bufimage, const struct local_params & lp, Imagefloat* imageoriginal, Imagefloat* imagetransformed, int cx, int cy)
+{
+    BENCHFUN
+
+    const float ach = (float)lp.trans / 100.f;
+
+
+    /*
+    constexpr float delhu = 0.1f; //between 0.05 and 0.2
+
+    constexpr float apl = (-1.f) / delhu;
+    const float bpl = - apl * hueplus;
+    constexpr float amo = 1.f / delhu;
+    const float bmo = - amo * huemoins;
+
+
+    constexpr float pb = 4.f;
+    constexpr float pa = (1.f - pb) / 40.f;
+
+    const float ahu = 1.f / (2.8f * lp.sensbn - 280.f);
+    const float bhu = 1.f - ahu * 2.8f * lp.sensbn;
+    */
+#ifdef _OPENMP
+    #pragma omp parallel if (multiThread)
+#endif
+    {
+#ifdef __SSE2__
+        //  float atan2Buffer[transformed->W] ALIGNED16;
+        //  float sqrtBuffer[transformed->W] ALIGNED16;
+        //  vfloat c327d68v = F2V (327.68f);
+#endif
+
+#ifdef _OPENMP
+        #pragma omp for schedule(dynamic,16)
+#endif
+
+        for (int y = 0; y < imagetransformed->getHeight(); y++) {
+            const int loy = cy + y;
+
+            const bool isZone0 = loy > lp.yc + lp.ly || loy < lp.yc - lp.lyT; // whole line is zone 0 => we can skip a lot of processing
+
+            if (isZone0) { // outside selection and outside transition zone => no effect, keep original values
+                for (int x = 0; x < imagetransformed->getWidth(); x++) {
+                    imagetransformed->r (y, x) = imageoriginal->r (y, x);
+                    imagetransformed->g (y, x) = imageoriginal->g (y, x);
+                    imagetransformed->b (y, x) = imageoriginal->b (y, x);
+
+                }
+
+
+                continue;
+            }
+
+#ifdef __SSE2__
+            int i = 0;
+
+            for (; i < imagetransformed->getWidth() - 3; i += 4) {
+                //    vfloat av = LVFU (original->a[y][i]);
+                //    vfloat bv = LVFU (original->b[y][i]);
+                //    STVF (atan2Buffer[i], xatan2f (bv, av));
+                //    STVF (sqrtBuffer[i], _mm_sqrt_ps (SQRV (bv) + SQRV (av)) / c327d68v);
+            }
+
+            for (; i < imagetransformed->getWidth(); i++) {
+                //    atan2Buffer[i] = xatan2f (original->b[y][i], original->a[y][i]);
+                //    sqrtBuffer[i] = sqrt (SQR (original->b[y][i]) + SQR (original->a[y][i])) / 327.68f;
+            }
+
+#endif
+
+
+
+            for (int x = 0, lox = cx + x; x < imagetransformed->getWidth(); x++, lox++) {
+                int zone = 0;
+                float localFactor = 1.f;
+                calcTransition (lox, loy, ach, lp, zone, localFactor);
+
+                if (zone == 0) { // outside selection and outside transition zone => no effect, keep original values
+                    imagetransformed->r (y, x) = imageoriginal->r (y, x);
+                    imagetransformed->g (y, x) = imageoriginal->g (y, x);
+                    imagetransformed->b (y, x) = imageoriginal->b (y, x);
+
+                    continue;
+                }
+
+#ifdef __SSE2__
+                //    const float rhue = atan2Buffer[x];
+                //    const float rchro = sqrtBuffer[x];
+#else
+                //    const float rhue = xatan2f (original->b[y][x], original->a[y][x]);
+                //    const float rchro = sqrt (SQR (original->b[y][x]) + SQR (original->a[y][x])) / 327.68f;
+#endif
+
+                //prepare shape detection
+                float kch = 1.f;
+                float fach = 1.f;
+                //  float deltachro = fabs (rchro - chromaref);
+                //  float deltahue = fabs (rhue - hueref);
+                /*
+                                if (deltahue > rtengine::RT_PI) {
+                                    deltahue = - (deltahue - 2.f * rtengine::RT_PI);
+                                }
+
+                                float deltaE = 20.f * deltahue + deltachro; //pseudo deltaE between 0 and 280
+
+                                //kch to modulate action with chroma
+                                if (deltachro < 160.f * SQR (lp.sensbn / 100.f)) {
+                                    kch = 1.f;
+                                } else {
+                                    float ck = 160.f * SQR (lp.sensbn / 100.f);
+                                    float ak = 1.f / (ck - 160.f);
+                                    float bk = -160.f * ak;
+                                    kch = ak * deltachro + bk;
+                                }
+
+                                if (lp.sensbn < 40.f ) {
+                                    float khu = 0.f;
+                                    kch = pow (kch, pa * lp.sensbn + pb);   //increase under 40
+
+
+                                    // algo with detection of hue ==> artifacts for noisy images  ==> denoise before
+                                    if (lp.qualmet == 1 && lp.sensbn < 20.f) { //to try...
+                                        //hue detection
+                                        if ((hueref + dhue) < rtengine::RT_PI && rhue < hueplus && rhue > huemoins) { //transition are good
+                                            if (rhue >= hueplus - delhu )  {
+                                                khu  = apl * rhue + bpl;
+                                            } else if (rhue < huemoins + delhu)  {
+                                                khu = amo * rhue + bmo;
+                                            } else {
+                                                khu = 1.f;
+                                            }
+                                        } else if ((hueref + dhue) >= rtengine::RT_PI && (rhue > huemoins  || rhue < hueplus )) {
+                                            if (rhue >= hueplus - delhu  && rhue < hueplus)  {
+                                                khu  = apl * rhue + bpl;
+                                            } else if (rhue >= huemoins && rhue < huemoins + delhu)  {
+                                                khu = amo * rhue + bmo;
+                                            } else {
+                                                khu = 1.f;
+                                            }
+                                        }
+
+                                        if ((hueref - dhue) > -rtengine::RT_PI && rhue < hueplus && rhue > huemoins ) {
+                                            if (rhue >= hueplus - delhu  && rhue < hueplus)  {
+                                                khu  = apl * rhue + bpl;
+                                            } else if (rhue >= huemoins && rhue < huemoins + delhu)  {
+                                                khu = amo * rhue + bmo;
+                                            } else {
+                                                khu = 1.f;
+                                            }
+                                        } else if ((hueref - dhue) <= -rtengine::RT_PI && (rhue > huemoins  || rhue < hueplus )) {
+                                            if (rhue >= hueplus - delhu  && rhue < hueplus)  {
+                                                khu  = apl * rhue + bpl;
+                                            } else if (rhue >= huemoins && rhue < huemoins + delhu)  {
+                                                khu = amo * rhue + bmo;
+                                            } else {
+                                                khu = 1.f;
+                                            }
+                                        }
+
+                                        if (deltaE <  2.8f * lp.sensbn) {
+                                            fach = khu;
+                                        } else {
+                                            fach = khu * (ahu * deltaE + bhu);
+                                        }
+
+
+                                        float kcr = 10.f;
+
+                                        if (rchro < kcr) {
+                                            fach *= (1.f / (kcr * kcr)) * rchro * rchro;
+                                        }
+                                    }
+                                }
+                */
+                int begx = lp.xc - lp.lxL;
+                int begy = lp.yc - lp.lyT;
+
+                switch (zone) {
+
+                    case 1: { // inside transition zone
+                        float difr = 0.f, difg = 0.f, difb = 0.f;
+
+                        if (call <= 3) {
+
+                            difr = bufimage->r (loy - begy, lox - begx) - imageoriginal->r (y, x);
+                            difg = bufimage->g (loy - begy, lox - begx) - imageoriginal->g (y, x);
+                            difb = bufimage->b (loy - begy, lox - begx) - imageoriginal->b (y, x);
+                            /*
+                                                        difL = tmp1->L[loy - begy][lox - begx] - original->L[y][x];
+                                                        difa = tmp1->a[loy - begy][lox - begx] - original->a[y][x];
+                                                        difb = tmp1->b[loy - begy][lox - begx] - original->b[y][x];
+                            */
+                        }
+
+                        difr *= localFactor;
+                        difg *= localFactor;
+                        difb *= localFactor;
+
+                        imagetransformed->r (y, x) = imageoriginal->r (y, x) + difr;
+                        imagetransformed->g (y, x) = imageoriginal->g (y, x) + difg;
+                        imagetransformed->b (y, x) = imageoriginal->b (y, x) + difb;
+
+                        // transformed->L[y][x] = original->L[y][x] + difL * kch * fach;
+
+
+                        break;
+                    }
+
+                    case 2: { // inside selection => full effect, no transition
+                        float difr = 0.f, difg = 0.f, difb = 0.f;
+
+                        if (call <= 3) {
+                            difr = bufimage->r (loy - begy, lox - begx) - imageoriginal->r (y, x);
+                            difg = bufimage->g (loy - begy, lox - begx) - imageoriginal->g (y, x);
+                            difb = bufimage->b (loy - begy, lox - begx) - imageoriginal->b (y, x);
+
+                        }
+
+                        imagetransformed->r (y, x) = imageoriginal->r (y, x) + difr;
+                        imagetransformed->g (y, x) = imageoriginal->g (y, x) + difg;
+                        imagetransformed->b (y, x) = imageoriginal->b (y, x) + difb;
+
+                        //    transformed->L[y][x] = original->L[y][x] + difL * kch * fach;
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 
 void ImProcFunctions::Expose_Local (int call, float **buflight, float **bufchro, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params & lp, LabImage * original, LabImage * transformed, const LabImage * const tmp1, int cx, int cy)
 {

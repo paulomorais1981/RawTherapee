@@ -914,6 +914,8 @@ public:
     int     anbspot;
     int     retrab;
     bool expwb;
+    Glib::ustring wbMethod;
+
     double temp;
     double green;
     double equal;

@@ -809,11 +809,52 @@ private:
         delete [] pcsk;
     }
 
+
+
+
     void stage_transform()
     {
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
         ImProcFunctions &ipf = * (ipf_p.get());
+        Imagefloat *imageoriginal = nullptr;
+        Imagefloat *imagetransformed = nullptr;
+        Imagefloat *improv = nullptr;
+
+        if (params.localrgb.enabled && params.localrgb.expwb) {
+            currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
+
+            imageoriginal = new Imagefloat (fw, fh);
+            imagetransformed = new Imagefloat (fw, fh);
+            improv = new Imagefloat (fw, fh);
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int ir = 0; ir < fh; ir++)
+                for (int jr = 0; jr < fw; jr++) {
+                    imagetransformed->r (ir, jr) = imageoriginal->r (ir, jr) = baseImg->r (ir, jr);
+                    imagetransformed->g (ir, jr) = imageoriginal->g (ir, jr) = baseImg->g (ir, jr);
+                    imagetransformed->b (ir, jr) = imageoriginal->b (ir, jr) = baseImg->b (ir, jr);
+                }
+
+            ipf.WB_Local (imgsrc, 2, 1, 0, 0, 0, 0, fw, fh, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw);
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int ir = 0; ir < fh; ir++)
+                for (int jr = 0; jr < fw; jr++) {
+                    baseImg->r (ir, jr) = imagetransformed->r (ir, jr);
+                    baseImg->g (ir, jr) = imagetransformed->g (ir, jr);
+                    baseImg->b (ir, jr) = imagetransformed->b (ir, jr);
+                }
+
+            delete imageoriginal;
+            delete imagetransformed;
+            delete improv;
+
+        }
 
         imgsrc->convertColorSpace (baseImg, params.icm, currWB);
 
@@ -874,6 +915,14 @@ private:
         wavclCurve (65536, 0);
 
         //if(params.blackwhite.enabled) params.toneCurve.hrenabled=false;
+        Imagefloat *orirgb = nullptr;
+        LabImage *nprloc = nullptr;
+
+        if (params.localrgb.enabled && params.localrgb.expexpose) {
+            orirgb = new Imagefloat (fw, fh);
+            nprloc = new LabImage (fw, fh);
+
+        }
 
         CurveFactory::complexCurve (expcomp, black / 65535.0, hlcompr, hlcomprthresh, params.toneCurve.shcompr, bright, contr,
                                     params.toneCurve.curveMode, params.toneCurve.curve, params.toneCurve.curveMode2, params.toneCurve.curve2,
@@ -946,9 +995,44 @@ private:
             printf ("Output image / Auto B&W coefs:   R=%.2f   G=%.2f   B=%.2f\n", autor, autog, autob);
         }
 
+        if (params.localrgb.enabled && params.localrgb.expexpose) {
+            hltonecurveloc (65536);
+            shtonecurveloc (65536);
+            tonecurveloc (65536);
+            LUTu dummy;
+
+            CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
+                                             params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
+                                             params.localrgb.shcompr, params.localrgb.lightness, params.localrgb.contrast,
+                                             params.localrgb.curveMode, params.localrgb.curve, params.localrgb.curveMode2, params.localrgb.curve2,
+                                             dummy, hltonecurveloc, shtonecurveloc, tonecurveloc, customToneCurve1loc, customToneCurve2loc, 1);
+
+
+            DCPProfile::ApplyState as;
+            DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
+            nprloc->CopyFrom (labView);
+
+
+            int sp = 1;
+            ipf.Rgb_Local (2, sp, nprloc, nprloc, 0, 0, 0, 0, fw, fh, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
+                           baseImg, labView, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,
+                           params.localrgb.chroma, customToneCurve1loc, customToneCurve2loc,
+                           params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);
+
+            delete orirgb;
+        }
+
+
+
         // if clut was used and size of clut cache == 1 we free the memory used by the clutstore (default clut cache size = 1 for 32 bit OS)
         if ( params.filmSimulation.enabled && !params.filmSimulation.clutFilename.empty() && options.clutCacheSize == 1) {
             CLUTStore::getInstance().clearCache();
+        }
+
+        if (params.localrgb.enabled && params.localrgb.expexpose) {
+            labView->CopyFrom (nprloc);
+
+            delete nprloc ;
         }
 
         // freeing up some memory
@@ -1025,7 +1109,7 @@ private:
             t1.set();
 
             std::string mdfive = getMD5 (imgsrc->getFileName());
-			
+
             Glib::ustring pop = options.cacheBaseDir + "/mip/";
 
             Glib::ustring datalab;
@@ -2134,26 +2218,32 @@ private:
         params.dirpyrDenoise.luma *= scale_factor;
         //params.dirpyrDenoise.Ldetail += (100 - params.dirpyrDenoise.Ldetail) * scale_factor;
         auto &lcurve = params.dirpyrDenoise.lcurve;
+
         for (size_t i = 2; i < lcurve.size(); i += 4) {
-            lcurve[i] *= min(scale_factor * 2, 1.0);
+            lcurve[i] *= min (scale_factor * 2, 1.0);
         }
-        noiseLCurve.Set(lcurve);
+
+        noiseLCurve.Set (lcurve);
         const char *medmethods[] = { "soft", "33", "55soft", "55", "77", "99" };
+
         if (params.dirpyrDenoise.median) {
             auto &key = params.dirpyrDenoise.methodmed == "RGB" ? params.dirpyrDenoise.rgbmethod : params.dirpyrDenoise.medmethod;
-            for (int i = 1; i < int(sizeof(medmethods)/sizeof(const char *)); ++i) {
+
+            for (int i = 1; i < int (sizeof (medmethods) / sizeof (const char *)); ++i) {
                 if (key == medmethods[i]) {
-                    int j = i - int(1.0 / scale_factor);
+                    int j = i - int (1.0 / scale_factor);
+
                     if (j < 0) {
                         params.dirpyrDenoise.median = false;
                     } else {
                         key = medmethods[j];
                     }
+
                     break;
                 }
             }
         }
-        
+
         params.epd.scale *= scale_factor;
         //params.epd.edgeStopping *= scale_factor;
 
@@ -2163,6 +2253,7 @@ private:
             adjust_radius (defaultparams.dirpyrequalizer.mult[i], dirpyreq_scale,
                            params.dirpyrequalizer.mult[i]);
         }
+
         params.dirpyrequalizer.threshold *= scale_factor;
 
         adjust_radius (defaultparams.defringe.radius, scale_factor,
@@ -2176,6 +2267,7 @@ private:
                 procparams::RAWParams::XTransSensor::methodstring[
                     procparams::RAWParams::XTransSensor::onePass];
         }
+
         if (params.raw.bayersensor.method == procparams::RAWParams::BayerSensor::methodstring[procparams::RAWParams::BayerSensor::pixelshift]) {
             params.raw.bayersensor.method = procparams::RAWParams::BayerSensor::methodstring[params.raw.bayersensor.pixelShiftLmmse ? procparams::RAWParams::BayerSensor::lmmse : procparams::RAWParams::BayerSensor::amaze];
         }
@@ -2225,6 +2317,8 @@ private:
     int hlcomprthresh;
 
     ColorTemp currWB;
+    ColorTemp currWBloc;
+
     Imagefloat *baseImg;
     LabImage* labView;
 
@@ -2240,13 +2334,16 @@ private:
     LUTf clToningcurve;
     LUTf cl2Toningcurve;
     LUTf wavclCurve;
+    LUTf hltonecurveloc;
+    LUTf tonecurveloc;
+    LUTf shtonecurveloc;
 
     LUTf rCurve;
     LUTf gCurve;
     LUTf bCurve;
     LUTu dummy;
 
-    ToneCurve customToneCurve1, customToneCurve2;
+    ToneCurve customToneCurve1, customToneCurve2, customToneCurve1loc, customToneCurve2loc;
     ColorGradientCurve ctColorCurve;
     OpacityCurve ctOpacityCurve;
     ColorAppearance customColCurve1, customColCurve2, customColCurve3 ;

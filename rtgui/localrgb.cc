@@ -166,6 +166,7 @@ Localrgb::Localrgb ():
 
     Smethod (Gtk::manage (new MyComboBoxText ())),
     qualityMethod (Gtk::manage (new MyComboBoxText ())),
+    wbMethod (Gtk::manage (new MyComboBoxText ())),
     shapeFrame (Gtk::manage (new Gtk::Frame (M ("TP_LOCALLAB_SHFR")))),
     artifFrame (Gtk::manage (new Gtk::Frame (M ("TP_LOCALLAB_ARTIF")))),
     superFrame (Gtk::manage (new Gtk::Frame ())),
@@ -183,7 +184,9 @@ Localrgb::Localrgb ():
 
 {
     CurveListener::setMulti (true);
-
+    nexttemp = 0.;
+    nexttint = 0.;
+    nextequal = 0.;
     std::vector<GradientMilestone> bottomMilestones;
     bottomMilestones.push_back ( GradientMilestone (0., 0., 0., 0.) );
     bottomMilestones.push_back ( GradientMilestone (1., 1., 1., 1.) );
@@ -269,10 +272,10 @@ Localrgb::Localrgb ():
 
     qualityMethod->append (M ("TP_LOCALLAB_STD"));
     qualityMethod->append (M ("TP_LOCALLAB_ENH"));
-    qualityMethod->append (M ("TP_LOCALLAB_ENHDEN"));
+//   qualityMethod->append (M ("TP_LOCALLAB_ENHDEN"));
     qualityMethod->set_active (0);
     qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::qualityMethodChanged) );
-    qualityMethod->set_tooltip_markup (M ("TP_LOCALLAB_METHOD_TOOLTIP"));
+//    qualityMethod->set_tooltip_markup (M ("TP_LOCALRGB_METHOD_TOOLTIP"));
 
     expcomp->setAdjusterListener (this);
     hlcomprthresh->setAdjusterListener (this);
@@ -436,6 +439,12 @@ Localrgb::Localrgb ():
 
         spotbox->pack_start (*spotbutton);
     */
+    wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
+    wbMethod->append (M ("TP_LOCALRGBWB_MAN"));
+    wbMethod->set_active (0);
+    wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
+
+
     Gtk::Image* itempL =  Gtk::manage (new RTImage ("ajd-wb-temp1.png"));
     Gtk::Image* itempR =  Gtk::manage (new RTImage ("ajd-wb-temp2.png"));
     Gtk::Image* igreenL = Gtk::manage (new RTImage ("ajd-wb-green1.png"));
@@ -443,14 +452,21 @@ Localrgb::Localrgb ():
     Gtk::Image* iblueredL = Gtk::manage (new RTImage ("ajd-wb-bluered1.png"));
     Gtk::Image* iblueredR = Gtk::manage (new RTImage ("ajd-wb-bluered2.png"));
 
+    ttLabels = Gtk::manage (new Gtk::Label ("---"));
+    setExpandAlignProperties (ttLabels, true, false, Gtk::ALIGN_CENTER, Gtk::ALIGN_START);
+    ttLabels->set_tooltip_markup (M ("TP_LOCALRGB_MLABEL_TOOLTIP"));
+    ttLabels->show ();
+
     temp = Gtk::manage (new Adjuster (M ("TP_WBALANCE_TEMPERATURE"), MINTEMP, MAXTEMP, 5, CENTERTEMP, itempL, itempR, &wbSlider2Temp, &wbTemp2Slider));
     green = Gtk::manage (new Adjuster (M ("TP_WBALANCE_GREEN"), MINGREEN, MAXGREEN, 0.001, 1.0, igreenL, igreenR));
     equal = Gtk::manage (new Adjuster (M ("TP_WBALANCE_EQBLUERED"), MINEQUAL, MAXEQUAL, 0.001, 1.0, iblueredL, iblueredR));
-
+    wbMethod->show ();
     temp->show ();
     green->show ();
     equal->show ();
 //  wbBox->pack_start (*spotbox);
+    wbBox->pack_start (*wbMethod);
+    wbBox->pack_start (*ttLabels);
 
     wbBox->pack_start (*temp);
     wbBox->pack_start (*green);
@@ -711,6 +727,8 @@ Localrgb::Localrgb ():
 
 Localrgb::~Localrgb()
 {
+    idle_register.destroy();
+
     for (std::vector<Geometry*>::const_iterator i = visibleGeometry.begin(); i != visibleGeometry.end(); ++i) {
         delete *i;
     }
@@ -755,6 +773,51 @@ void Localrgb::enableToggled (MyExpander *expander)
 
     }
 }
+
+void Localrgb::temptintChanged (double ctemp, double ctint, double cequal)
+{
+    nexttemp = ctemp;
+    nexttint = ctint;
+    nextequal = cequal;
+
+    const auto func = [] (gpointer data) -> gboolean {
+        GThreadLock lock; // All GUI access from idle_add callbacks or separate thread HAVE to be protected
+        static_cast<Localrgb*> (data)->temptintComputed_();
+
+        return FALSE;
+    };
+
+    idle_register.add (func, this);
+}
+
+bool Localrgb::temptintComputed_ ()
+{
+
+    disableListener ();
+    enableListener ();
+    updateLabel ();
+    return false;
+
+}
+
+void Localrgb::updateLabel ()
+{
+    if (!batchMode) {
+        float nX, nY, nZ;
+        nX = nexttemp;
+        nY = nexttint;
+        nZ = nextequal;
+        {
+            ttLabels->set_text (
+                Glib::ustring::compose (M ("TP_LOCALRGB_TTLABEL"),
+                                        Glib::ustring::format (std::fixed, std::setprecision (0), nX),
+                                        Glib::ustring::format (std::fixed, std::setprecision (3), nY),
+                                        Glib::ustring::format (std::fixed, std::setprecision (3), nZ))
+            );
+        }
+    }
+}
+
 
 void Localrgb::writeOptions (std::vector<int> &tpOpen)
 {
@@ -1367,6 +1430,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     Smethodconn.block (true);
     qualityMethodConn.block (true);
+    wbMethodConn.block (true);
 
     degree->setValue (pp->localrgb.degree);
     locY->setValue (pp->localrgb.locY);
@@ -1425,13 +1489,21 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         qualityMethod->set_active (0);
     } else if (pp->localrgb.qualityMethod == "enh") {
         qualityMethod->set_active (1);
-    } else if (pp->localrgb.qualityMethod == "enhden") {
-        qualityMethod->set_active (2);
+        //  } else if (pp->localrgb.qualityMethod == "enhden") {
+        //      qualityMethod->set_active (2);
     }
 
     qualityMethodChanged ();
 
-    qualityMethodConn.block (false);
+    wbMethodConn.block (false);
+
+    if (pp->localrgb.wbMethod == "none") {
+        wbMethod->set_active (0);
+    } else if (pp->localrgb.wbMethod == "man") {
+        wbMethod->set_active (1);
+    }
+
+    wbMethodChanged ();
 
     anbspot->hide();
     hueref->hide();
@@ -1456,6 +1528,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     tcmode2conn.block (false);
     tcmodeconn.block (false);
+    qualityMethodConn.block (false);
+    wbMethodConn.block (false);
 
     enableexposeConn.block (false);
     enableListener ();
@@ -1750,6 +1824,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->localrgb.degree = degree->getEditedState ();
         pedited->localrgb.Smethod  = Smethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->localrgb.qualityMethod    = qualityMethod->get_active_text() != M ("GENERAL_UNCHANGED");
+        pedited->localrgb.wbMethod    = wbMethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->localrgb.locY = locY->getEditedState ();
         pedited->localrgb.locX = locX->getEditedState ();
         pedited->localrgb.locYT = locYT->getEditedState ();
@@ -1795,10 +1870,15 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.qualityMethod = "std";
     } else if (qualityMethod->get_active_row_number() == 1) {
         pp->localrgb.qualityMethod = "enh";
-    } else if (qualityMethod->get_active_row_number() == 2) {
-        pp->localrgb.qualityMethod = "enhden";
+//    } else if (qualityMethod->get_active_row_number() == 2) {
+//        pp->localrgb.qualityMethod = "enhden";
     }
 
+    if (wbMethod->get_active_row_number() == 0) {
+        pp->localrgb.wbMethod = "none";
+    } else if (wbMethod->get_active_row_number() == 1) {
+        pp->localrgb.wbMethod = "man";
+    }
 
     if (Smethod->get_active_row_number() == 0) {
         pp->localrgb.Smethod = "IND";
@@ -1836,6 +1916,15 @@ void Localrgb::qualityMethodChanged()
     }
 }
 
+void Localrgb::wbMethodChanged()
+{
+    if (!batchMode) {
+    }
+
+    if (listener) {
+        listener->panelChanged (EvlocalrgbwbMethod, wbMethod->get_active_text ());
+    }
+}
 
 
 void Localrgb::curveChanged (CurveEditor* ce)
