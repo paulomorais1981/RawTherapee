@@ -5129,6 +5129,234 @@ void RawImageSource::getRowStartEnd (int x, int &start, int &end)
     }
 }
 
+void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, double &rm, double &gm, double &bm)
+{
+//    BENCHFUN
+    constexpr double clipHigh = 64000.0;
+
+    if (ri->get_colors() == 1) {
+        rm = gm = bm = 1;
+        return;
+    }
+
+    double avg_r = 0;
+    double avg_g = 0;
+    double avg_b = 0;
+    int rn = 0, gn = 0, bn = 0;
+
+    if (fuji) {
+        for (int i = 32; i < H - 32; i++) {
+            int fw = ri->get_FujiWidth();
+            int start = ABS (fw - i) + 32;
+            int end = min (H + W - fw - i, fw + i) - 32;
+
+            for (int j = start; j < end; j++) {
+                int lox = cx + j;
+                int loy = cy + i;
+
+                if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+
+
+                    if (ri->getSensorType() != ST_BAYER) {
+                        double dr = CLIP (initialGain * (rawData[i][3 * j]  ));
+                        double dg = CLIP (initialGain * (rawData[i][3 * j + 1]));
+                        double db = CLIP (initialGain * (rawData[i][3 * j + 2]));
+
+                        if (dr > clipHigh || dg > clipHigh || db > clipHigh) {
+                            continue;
+                        }
+
+                        avg_r += dr;
+                        avg_g += dg;
+                        avg_b += db;
+                        rn = gn = ++bn;
+                    } else {
+                        int c = FC ( i, j);
+                        double d = CLIP (initialGain * (rawData[i][j]));
+
+                        if (d > clipHigh) {
+                            continue;
+                        }
+
+                        // Let's test green first, because they are more numerous
+                        if (c == 1) {
+                            avg_g += d;
+                            gn++;
+                        } else if (c == 0) {
+                            avg_r += d;
+                            rn++;
+                        } else { /*if (c==2)*/
+                            avg_b += d;
+                            bn++;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        if (ri->getSensorType() != ST_BAYER) {
+            if (ri->getSensorType() == ST_FUJI_XTRANS) {
+                const double compval = clipHigh / initialGain;
+#ifdef _OPENMP
+                #pragma omp parallel
+#endif
+                {
+                    double avg_c[3] = {0.0};
+                    int cn[3] = {0};
+#ifdef _OPENMP
+                    #pragma omp for schedule(dynamic,16) nowait
+#endif
+
+                    for (int i = 32; i < H - 32; i++) {
+                        for (int j = 32; j < W - 32; j++) {
+
+                            int lox = cx + j;
+                            int loy = cy + i;
+
+                            if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+
+                                // each loop read 1 rgb triplet value
+                                double d = rawData[i][j];
+
+                                if (d > compval) {
+                                    continue;
+                                }
+
+                                int c = ri->XTRANSFC (i, j);
+                                avg_c[c] += d;
+                                cn[c]++;
+                            }
+                        }
+                    }
+
+#ifdef _OPENMP
+                    #pragma omp critical
+#endif
+                    {
+                        avg_r += avg_c[0];
+                        avg_g += avg_c[1];
+                        avg_b += avg_c[2];
+                        rn += cn[0];
+                        gn += cn[1];
+                        bn += cn[2];
+                    }
+                }
+                avg_r *= initialGain;
+                avg_g *= initialGain;
+                avg_b *= initialGain;
+            } else {
+                for (int i = 32; i < H - 32; i++)
+                    for (int j = 32; j < W - 32; j++) {
+                        // each loop read 1 rgb triplet value
+                        int lox = cx + j;
+                        int loy = cy + i;
+
+                        if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+
+                            double dr = CLIP (initialGain * (rawData[i][3 * j]  ));
+                            double dg = CLIP (initialGain * (rawData[i][3 * j + 1]));
+                            double db = CLIP (initialGain * (rawData[i][3 * j + 2]));
+
+                            if (dr > clipHigh || dg > clipHigh || db > clipHigh) {
+                                continue;
+                            }
+
+                            avg_r += dr;
+                            rn++;
+                            avg_g += dg;
+                            avg_b += db;
+                        }
+
+                        gn = rn;
+                        bn = rn;
+                    }
+            }
+        } else {
+            //determine GRBG coset; (ey,ex) is the offset of the R subarray
+            int ey, ex;
+
+            if (ri->ISGREEN (0, 0)) { //first pixel is G
+                if (ri->ISRED (0, 1)) {
+                    ey = 0;
+                    ex = 1;
+                } else {
+                    ey = 1;
+                    ex = 0;
+                }
+            } else {//first pixel is R or B
+                if (ri->ISRED (0, 0)) {
+                    ey = 0;
+                    ex = 0;
+                } else {
+                    ey = 1;
+                    ex = 1;
+                }
+            }
+
+            const double compval = clipHigh / initialGain;
+#ifdef _OPENMP
+            #pragma omp parallel for reduction(+:avg_r,avg_g,avg_b,rn,gn,bn) schedule(dynamic,8)
+#endif
+
+            for (int i = 32; i < H - 32; i += 2)
+                for (int j = 32; j < W - 32; j += 2) {
+                    int lox = cx + j;
+                    int loy = cy + i;
+
+                    if (lox >= begx && lox < xEn && loy >= begy && loy < yEn) {
+
+                        //average each Bayer quartet component individually if non-clipped
+                        double d[2][2];
+                        d[0][0] = rawData[i][j];
+                        d[0][1] = rawData[i][j + 1];
+                        d[1][0] = rawData[i + 1][j];
+                        d[1][1] = rawData[i + 1][j + 1];
+
+                        if (d[ey][ex] <= compval) {
+                            avg_r += d[ey][ex];
+                            rn++;
+                        }
+
+                        if (d[1 - ey][ex] <= compval) {
+                            avg_g += d[1 - ey][ex];
+                            gn++;
+                        }
+
+                        if (d[ey][1 - ex] <= compval) {
+                            avg_g += d[ey][1 - ex];
+                            gn++;
+                        }
+
+                        if (d[1 - ey][1 - ex] <= compval) {
+                            avg_b += d[1 - ey][1 - ex];
+                            bn++;
+                        }
+                    }
+                }
+
+            avg_r *= initialGain;
+            avg_g *= initialGain;
+            avg_b *= initialGain;
+
+        }
+    }
+
+    if ( settings->verbose ) {
+        printf ("AVGloc: %g %g %g r=%i g=%i b=%i\n", avg_r / rn, avg_g / gn, avg_b / bn, rn, gn, bn);
+    }
+
+    //    return ColorTemp (pow(avg_r/rn, 1.0/6.0)*img_r, pow(avg_g/gn, 1.0/6.0)*img_g, pow(avg_b/bn, 1.0/6.0)*img_b);
+
+    double reds   = avg_r / rn * refwb_red;
+    double greens = avg_g / gn * refwb_green;
+    double blues  = avg_b / bn * refwb_blue;
+
+    redAWBMul   = rm = imatrices.rgb_cam[0][0] * reds + imatrices.rgb_cam[0][1] * greens + imatrices.rgb_cam[0][2] * blues;
+    greenAWBMul = gm = imatrices.rgb_cam[1][0] * reds + imatrices.rgb_cam[1][1] * greens + imatrices.rgb_cam[1][2] * blues;
+    blueAWBMul  = bm = imatrices.rgb_cam[2][0] * reds + imatrices.rgb_cam[2][1] * greens + imatrices.rgb_cam[2][2] * blues;
+}
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 void RawImageSource::getAutoWBMultipliers (double &rm, double &gm, double &bm)
 {
@@ -5332,7 +5560,7 @@ void RawImageSource::getAutoWBMultipliers (double &rm, double &gm, double &bm)
     }
 
     if ( settings->verbose ) {
-        printf ("AVG: %g %g %g\n", avg_r / rn, avg_g / gn, avg_b / bn);
+        printf ("AVG: %g %g %g r=%i g=%i b=%i\n", avg_r / rn, avg_g / gn, avg_b / bn, rn, gn, bn);
     }
 
     //    return ColorTemp (pow(avg_r/rn, 1.0/6.0)*img_r, pow(avg_g/gn, 1.0/6.0)*img_g, pow(avg_b/bn, 1.0/6.0)*img_b);
@@ -5344,6 +5572,7 @@ void RawImageSource::getAutoWBMultipliers (double &rm, double &gm, double &bm)
     redAWBMul   = rm = imatrices.rgb_cam[0][0] * reds + imatrices.rgb_cam[0][1] * greens + imatrices.rgb_cam[0][2] * blues;
     greenAWBMul = gm = imatrices.rgb_cam[1][0] * reds + imatrices.rgb_cam[1][1] * greens + imatrices.rgb_cam[1][2] * blues;
     blueAWBMul  = bm = imatrices.rgb_cam[2][0] * reds + imatrices.rgb_cam[2][1] * greens + imatrices.rgb_cam[2][2] * blues;
+
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

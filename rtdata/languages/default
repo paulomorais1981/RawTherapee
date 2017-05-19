@@ -1858,6 +1858,7 @@ TP_LOCALRGB_TTLABEL;All: Temp=%1 Tint=%2 Equ=%3
 TP_LOCALRGB_TTLABEL_TOOLTIP;Display full image White Balance settings 
 TP_LOCALRGBWB_NONE;None
 TP_LOCALRGBWB_MAN;Custom
+TP_LOCALRGBWB_AUT;Auto
 TP_LOCRETI_METHOD_TOOLTIP;Low = Reinforce low light.\nUniform = Equalize action.\nHigh = Reinforce high light.\n
 TP_NEUTRAL;Neutral
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.

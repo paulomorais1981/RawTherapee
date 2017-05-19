@@ -73,6 +73,7 @@ protected:
     ColorTemp currWB;
     ColorTemp autoWB;
     ColorTemp currWBloc;
+    ColorTemp autoWBloc;
 
 
     double lastAwbEqual;
@@ -151,7 +152,7 @@ protected:
     LocretigainCurve locRETgainCurve;
     LocretigainCurverab locRETgainCurverab;
     LocLHCurve loclhCurve;
-
+    double ptemp, pgreen;
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;
     ColorAppearance customColCurve3;

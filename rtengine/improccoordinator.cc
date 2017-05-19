@@ -170,7 +170,7 @@ ImProcCoordinator::ImProcCoordinator ()
 
       vhist16loc (65536), hltonecurveloc (655536), shtonecurveloc (65536), tonecurveloc (65536),
       //histToneCurveloc(256),
-
+      ptemp (0.), pgreen (0.),
       retistrsav (nullptr)
 
 {}
@@ -210,6 +210,102 @@ DetailedCrop* ImProcCoordinator::createCrop  (::EditDataProvider *editDataProvid
     return new Crop (this, editDataProvider, isDetailWindow);
 }
 
+
+struct local_params {
+    float yc, xc;
+    float lx, ly;
+    float lxL, lyT;
+    float dxx, dyy;
+    float iterat;
+    int cir;
+    float thr;
+    int prox;
+    int chro, cont, sens;
+    float ligh;
+    int qualmet;
+    float threshol;
+    bool exposeena;
+    bool expwb;
+    int blac;
+    int shcomp;
+    int hlcomp;
+    int hlcompthr;
+    double temp;
+    double  green;
+    double equal;
+    double expcomp;
+    int trans;
+
+
+};
+
+static void calcLocalrgbParams (int oW, int oH, const LocalrgbParams& localrgb, struct local_params& lp)
+{
+    int w = oW;
+    int h = oH;
+    int circr = localrgb.circrad;
+
+    float thre = localrgb.thres / 100.f;
+    double local_x = localrgb.locX / 2000.0;
+    double local_y = localrgb.locY / 2000.0;
+    double local_xL = localrgb.locXL / 2000.0;
+    double local_yT = localrgb.locYT / 2000.0;
+    double local_center_x = localrgb.centerX / 2000.0 + 0.5;
+    double local_center_y = localrgb.centerY / 2000.0 + 0.5;
+    double local_dxx = localrgb.proxi / 8000.0;//for proxi = 2==> # 1 pixel
+    double local_dyy = localrgb.proxi / 8000.0;
+    float iterati = (float) localrgb.proxi;
+
+    if (localrgb.qualityMethod == "std") {
+        lp.qualmet = 0;
+    } else if (localrgb.qualityMethod == "enh") {
+        lp.qualmet = 1;
+//   } else if (localrgb.qualityMethod == "enhden") {
+//       lp.qualmet = 2;
+    }
+
+
+    int local_chroma = localrgb.chroma;
+    int local_sensi = localrgb.sensi;
+    int local_contrast = localrgb.contrast;
+    float local_lightness = (float) localrgb.lightness;
+    int local_transit = localrgb.transit;
+
+    lp.cir = circr;
+    //  lp.actsp = acti;
+    lp.xc = w * local_center_x;
+    lp.yc = h * local_center_y;
+    lp.lx = w * local_x;
+    lp.ly = h * local_y;
+    lp.lxL = w * local_xL;
+    lp.lyT = h * local_yT;
+    lp.chro = local_chroma;
+    lp.sens = local_sensi;
+    lp.cont = local_contrast;
+    lp.ligh = local_lightness;
+
+    if (lp.ligh >= -2.f && lp.ligh <= 2.f) {
+        lp.ligh /= 5.f;
+    }
+
+    lp.trans = local_transit;
+    lp.iterat = iterati;
+    lp.dxx = w * local_dxx;
+    lp.dyy = h * local_dyy;
+    lp.thr = thre;
+
+    lp.exposeena = localrgb.expexpose;
+    lp.expwb = localrgb.expwb;
+    lp.blac = localrgb.black;
+    lp.shcomp = localrgb.shcompr;
+    lp.hlcomp = localrgb.hlcompr;
+    lp.hlcompthr = localrgb.hlcomprthresh;
+    lp.temp = localrgb.temp;
+    lp.green = localrgb.green;
+    lp.equal = localrgb.equal;
+    lp.expcomp = localrgb.expcomp;
+
+}
 
 // todo: bitmask containing desired actions, taken from changesSinceLast
 // cropCall: calling crop, used to prevent self-updates  ...doesn't seem to be used
@@ -423,12 +519,26 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         Imagefloat *improv = nullptr;
 
         if (params.localrgb.enabled && params.localrgb.expwb) {
-
-            if (alorgbListener) {
+            if (alorgbListener) { // dispaly values
                 alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal);
             }
 
             currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
+
+            if (params.localrgb.wbMethod == "aut") {//if auto ==> passed directly to Custom GUI after calculation
+                struct local_params lpall;
+                calcLocalrgbParams (fw, fh, params.localrgb, lpall);
+                int begy = lpall.yc - lpall.lyT;
+                int begx = lpall.xc - lpall.lxL;
+                int yEn = lpall.yc + lpall.ly;
+                int xEn = lpall.xc + lpall.lx;
+                int cx = 0;
+                int cy = 0;
+                double rm, gm, bm;
+                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, rm, gm, bm);
+                autoWBloc.mul2temp (rm, gm, bm, params.localrgb.equal, ptemp, pgreen);
+                currWBloc = autoWBloc;
+            }
 
             imageoriginal = new Imagefloat (pW, pH);
             imagetransformed = new Imagefloat (pW, pH);
@@ -444,7 +554,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     imagetransformed->b (ir, jr) = imageoriginal->b (ir, jr) = orig_prev->b (ir, jr);
                 }
 
-            ipf.WB_Local (imgsrc, 3, 1, 0, 0, 0, 0, pW, pH, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw);
+            ipf.WB_Local (imgsrc, 3, 1, 0, 0, 0, 0, pW, pH, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw, ptemp, pgreen);
 #ifdef _OPENMP
             #pragma omp parallel for
 #endif
@@ -459,6 +569,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete imageoriginal;
             delete imagetransformed;
             delete improv;
+
+            if (params.localrgb.wbMethod == "aut" && alorgbListener) {
+                alorgbListener ->WBChanged (ptemp, pgreen);//change GUI and method to Custom
+            }
+
 
         }
 

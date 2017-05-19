@@ -194,6 +194,7 @@ public:
     void temptintChanged (double ctemp, double ctint, double cequal);
     bool temptintComputed_ ();
     void updateLabel      ();
+    void WBChanged           (double temp, double green);
 
     // EditSubscriber interface
     CursorShape getCursor (int objectID);

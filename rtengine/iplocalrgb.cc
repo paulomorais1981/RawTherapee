@@ -234,7 +234,7 @@ static void calcTransition (const float lox, const float loy, const float ach, c
 }
 
 
-void ImProcFunctions::WB_Local (ImageSource* imgsrc, int call, int sp, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, Imagefloat* improv, Imagefloat* imagetransformed, const ColorTemp &ctemploc, int tran, Imagefloat* imageoriginal, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw)
+void ImProcFunctions::WB_Local (ImageSource* imgsrc, int call, int sp, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, Imagefloat* improv, Imagefloat* imagetransformed, const ColorTemp &ctemploc, int tran, Imagefloat* imageoriginal, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw, double &ptemp, double &pgreen)
 {
     if (params->localrgb.enabled) {
         // BENCHFUN
@@ -299,9 +299,7 @@ void ImProcFunctions::WB_Local (ImageSource* imgsrc, int call, int sp, int sx, i
                                     huemoins = hueref - dhue + 2.f * rtengine::RT_PI;
                                 }
                 */
-
                 imgsrc->getImage_local (begx, begy, yEn, xEn, cx, cy, ctemploc, tran, improv, bufimage, pp, hrp, cmp, raw);
-
 
                 Whitebalance_Local (call, sp, bufimage, lp, imageoriginal, imagetransformed, cx, cy);
                 /*

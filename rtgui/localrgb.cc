@@ -441,6 +441,7 @@ Localrgb::Localrgb ():
     */
     wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
     wbMethod->append (M ("TP_LOCALRGBWB_MAN"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUT"));
     wbMethod->set_active (0);
     wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
 
@@ -1501,6 +1502,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         wbMethod->set_active (0);
     } else if (pp->localrgb.wbMethod == "man") {
         wbMethod->set_active (1);
+    } else if (pp->localrgb.wbMethod == "aut") {
+        wbMethod->set_active (2);
     }
 
     wbMethodChanged ();
@@ -1878,6 +1881,8 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.wbMethod = "none";
     } else if (wbMethod->get_active_row_number() == 1) {
         pp->localrgb.wbMethod = "man";
+    } else if (wbMethod->get_active_row_number() == 2) {
+        pp->localrgb.wbMethod = "aut";
     }
 
     if (Smethod->get_active_row_number() == 0) {
@@ -1926,6 +1931,17 @@ void Localrgb::wbMethodChanged()
     }
 }
 
+void Localrgb::WBChanged(double temperature, double greenVal)
+{
+    GThreadLock lock;
+    disableListener();
+    temp->setValue(temperature);
+    green->setValue(greenVal);
+    temp->setDefault(temperature);
+    green->setDefault(greenVal);
+	wbMethod->set_active (1);//enabled custom after auto
+    enableListener();
+}
 
 void Localrgb::curveChanged (CurveEditor* ce)
 {

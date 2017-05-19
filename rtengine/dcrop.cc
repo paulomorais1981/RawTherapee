@@ -698,6 +698,7 @@ void Crop::update (int todo)
             improv = new Imagefloat (trafw, trafh);
             int W = origCrop->getWidth();
             int H = origCrop->getHeight();
+		//	double ptemp, pgreen;
             //  printf("W=%i H=%i trafw=%i trafh=%i\n",W, H, trafw, trafh);
 #ifdef _OPENMP
             #pragma omp parallel for
@@ -711,7 +712,7 @@ void Crop::update (int todo)
                 }
 
             PreviewProps pp (trafx, trafy, trafw * skip, trafh * skip, skip);
-            parent->ipf.WB_Local (parent->imgsrc, 1, 1, trafx / skip, trafy / skip, cropx / skip, cropy / skip, skips (parent->fw, skip), skips (parent->fh, skip), parent->fw, parent->fh, improv, imagetransformed, parent->currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw);
+            parent->ipf.WB_Local (parent->imgsrc, 1, 1, trafx / skip, trafy / skip, cropx / skip, cropy / skip, skips (parent->fw, skip), skips (parent->fh, skip), parent->fw, parent->fh, improv, imagetransformed, parent->currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw, parent->ptemp, parent->pgreen);
 #ifdef _OPENMP
             #pragma omp parallel for
 #endif

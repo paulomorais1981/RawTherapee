@@ -824,6 +824,36 @@ private:
         if (params.localrgb.enabled && params.localrgb.expwb) {
             currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
 
+
+            if (params.localrgb.wbMethod == "aut") {//if auto ==> passed directly to Custom GUI after calculation
+// actually not necessary - never used -  but perhaps ?
+                int w = fw;
+                int h = fh;
+                float lxall, lyall, lxLall, lyTall, ycall, xcall;
+                double local_x = params.localrgb.locX / 2000.0;
+                double local_y = params.localrgb.locY / 2000.0;
+                double local_xL = params.localrgb.locXL / 2000.0;
+                double local_yT = params.localrgb.locYT / 2000.0;
+                double local_center_x = params.localrgb.centerX / 2000.0 + 0.5;
+                double local_center_y = params.localrgb.centerY / 2000.0 + 0.5;
+                lxall = w * local_x;
+                lyall = h * local_y;
+                lxLall = w * local_xL;
+                lyTall = h * local_yT;
+                ycall = h * local_center_y;
+                xcall = w * local_center_x;
+                int begy = ycall - lyTall;
+                int begx = xcall - lxLall;
+                int yEn = ycall + lyall;
+                int xEn = xcall + lxall;
+                int cx = 0;
+                int cy = 0;
+                double rm, gm, bm;
+                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, rm, gm, bm);
+                autoWBloc.mul2temp (rm, gm, bm, params.localrgb.equal, ptemp, pgreen);
+                currWBloc = autoWBloc;
+            }
+
             imageoriginal = new Imagefloat (fw, fh);
             imagetransformed = new Imagefloat (fw, fh);
             improv = new Imagefloat (fw, fh);
@@ -838,7 +868,7 @@ private:
                     imagetransformed->b (ir, jr) = imageoriginal->b (ir, jr) = baseImg->b (ir, jr);
                 }
 
-            ipf.WB_Local (imgsrc, 2, 1, 0, 0, 0, 0, fw, fh, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw);
+            ipf.WB_Local (imgsrc, 2, 1, 0, 0, 0, 0, fw, fh, fw, fh, improv, imagetransformed, currWBloc, tr, imageoriginal, pp, params.toneCurve, params.icm, params.raw, ptemp, pgreen);
 #ifdef _OPENMP
             #pragma omp parallel for
 #endif
@@ -2318,7 +2348,8 @@ private:
 
     ColorTemp currWB;
     ColorTemp currWBloc;
-
+    ColorTemp autoWBloc;
+    double ptemp, pgreen;
     Imagefloat *baseImg;
     LabImage* labView;
 
@@ -2354,6 +2385,7 @@ private:
 };
 
 } // namespace
+
 
 
 IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* pl, bool tunnelMetaData, bool flush)

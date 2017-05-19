@@ -326,6 +326,23 @@ void StdImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
     }
 }
 
+void StdImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, double &rm, double &gm, double &bm)
+{
+    if (redAWBMul != -1.) {
+        rm = redAWBMul;
+        gm = greenAWBMul;
+        bm = blueAWBMul;
+        return;
+    }
+
+    img->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, rm, gm, bm);
+
+    redAWBMul   = rm;
+    greenAWBMul = gm;
+    blueAWBMul  = bm;
+}
+
+
 void StdImageSource::getAutoWBMultipliers (double &rm, double &gm, double &bm)
 {
     if (redAWBMul != -1.) {
