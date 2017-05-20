@@ -385,7 +385,7 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
         float mult = (float)fabs (lp.cont) * (maxl - 1.f) / 100.f + 1.f;
 
 
-        if ((lp.chro != 0 || lp.ligh != 0.f || lp.cont != 0.f || lp.expcomp != 0.f) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
+        if ((lp.chro != 0 || lp.ligh != 0.f || lp.cont != 0.f || lp.expcomp != 0.f  || customToneCurve1 || customToneCurve2) && lp.exposeena) { //interior ellipse renforced lightness and chroma  //locallutili
 
             float hueplus = hueref + dhue;
             float huemoins = hueref - dhue;
