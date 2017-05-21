@@ -187,6 +187,9 @@ Localrgb::Localrgb ():
     nexttemp = 0.;
     nexttint = 0.;
     nextequal = 0.;
+    next_temp = 0.;
+    next_green = 0.;
+    next_wbauto = 0;
     std::vector<GradientMilestone> bottomMilestones;
     bottomMilestones.push_back ( GradientMilestone (0., 0., 0., 0.) );
     bottomMilestones.push_back ( GradientMilestone (1., 1., 1., 1.) );
@@ -729,6 +732,7 @@ Localrgb::Localrgb ():
 Localrgb::~Localrgb()
 {
     idle_register.destroy();
+    idle_register2.destroy();
 
     for (std::vector<Geometry*>::const_iterator i = visibleGeometry.begin(); i != visibleGeometry.end(); ++i) {
         delete *i;
@@ -1931,16 +1935,70 @@ void Localrgb::wbMethodChanged()
     }
 }
 
-void Localrgb::WBChanged(double temperature, double greenVal)
+int localwbChangedUI (void* data)
 {
+
     GThreadLock lock;
+    (static_cast<Localrgb*> (data))->localwbComputed_ ();
+
+    return 0;
+}
+
+
+bool Localrgb::localwbComputed_ ()
+{
     disableListener();
-    temp->setValue(temperature);
-    green->setValue(greenVal);
-    temp->setDefault(temperature);
-    green->setDefault(greenVal);
-	wbMethod->set_active (1);//enabled custom after auto
+    temp->setValue (next_temp);
+    green->setValue (next_green);
+    wbMethod->set_active (next_wbauto);//enabled custom after auto
+    wbMethodChanged ();
+
+    if (anbspot->getValue() == 0) {
+        anbspot->setValue (1);
+
+        if (options.rtSettings.locdelay) {
+            if (anbspot->delay < 100) {
+                anbspot->delay = 100;
+            }
+        }
+
+        adjusterChanged (anbspot, 1);
+
+    } else if (anbspot->getValue() == 1) {
+        anbspot->setValue (0);
+
+        if (options.rtSettings.locdelay) {
+            if (anbspot->delay < 100) {
+                anbspot->delay = 100;
+            }
+        }
+
+        adjusterChanged (anbspot, 0);
+    }
+
     enableListener();
+
+    if (listener) { //for all sliders
+        listener->panelChanged (Evlocalrgbanbspot, "");//anbspot->getTextValue());
+    }
+
+    if (listener) {
+        listener->panelChanged (EvlocalrgbwbMethod, wbMethod->get_active_text ());
+    }
+
+    return false;
+
+}
+
+
+void Localrgb::WBChanged (double temperature, double greenVal, int wbauto)
+{
+
+    next_temp = temperature;
+    next_green = greenVal;
+    next_wbauto = wbauto;
+
+    g_idle_add (localwbChangedUI, this);
 }
 
 void Localrgb::curveChanged (CurveEditor* ce)

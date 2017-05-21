@@ -153,6 +153,7 @@ protected:
     LocretigainCurverab locRETgainCurverab;
     LocLHCurve loclhCurve;
     double ptemp, pgreen;
+    int wbauto;
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;
     ColorAppearance customColCurve3;

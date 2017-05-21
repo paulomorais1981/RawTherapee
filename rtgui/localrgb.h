@@ -34,6 +34,7 @@ private:
     void enableToggled (MyExpander *expander);
 
     IdleRegister idle_register;
+    IdleRegister idle_register2;
 
 //protected:
     Gtk::HBox *editHBox;
@@ -130,6 +131,9 @@ private:
     double nexttemp;
     double nexttint;
     double nextequal;
+    double next_temp;
+    double next_green;
+    int next_wbauto;
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -181,6 +185,7 @@ public:
 //   void localretChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat);
     bool localComputed_         ();
     bool localretComputed_         ();
+    bool localwbComputed_ ();
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
     void qualityMethodChanged();
@@ -194,7 +199,7 @@ public:
     void temptintChanged (double ctemp, double ctint, double cequal);
     bool temptintComputed_ ();
     void updateLabel      ();
-    void WBChanged           (double temp, double green);
+    void WBChanged           (double temp, double green, int wbauto);
 
     // EditSubscriber interface
     CursorShape getCursor (int objectID);

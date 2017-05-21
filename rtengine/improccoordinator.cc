@@ -170,7 +170,7 @@ ImProcCoordinator::ImProcCoordinator ()
 
       vhist16loc (65536), hltonecurveloc (655536), shtonecurveloc (65536), tonecurveloc (65536),
       //histToneCurveloc(256),
-      ptemp (0.), pgreen (0.),
+      ptemp (0.), pgreen (0.), wbauto (0),
       retistrsav (nullptr)
 
 {}
@@ -571,7 +571,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete improv;
 
             if (params.localrgb.wbMethod == "aut" && alorgbListener) {
-                alorgbListener ->WBChanged (ptemp, pgreen);//change GUI and method to Custom
+                alorgbListener ->WBChanged (ptemp, pgreen, 1 );//change GUI and method to Custom
             }
 
 
