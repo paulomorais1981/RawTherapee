@@ -83,13 +83,17 @@ protected:
     array2D<float> rawData;  // holds preprocessed pixel values, rowData[i][j] corresponds to the ith row and jth column
     array2D<float> *rawDataFrames[4] = {nullptr};
     array2D<float> *rawDataBuffer[3] = {nullptr};
+    array2D<float> rawDataloc;  // holds preprocessed pixel values, rowData[i][j] corresponds to the ith row and jth column
 
     // the interpolated green plane:
     array2D<float> green;
+    array2D<float> greenloc;
     // the interpolated red plane:
     array2D<float> red;
+    array2D<float> redloc;
     // the interpolated blue plane:
     array2D<float> blue;
+    array2D<float> blueloc;
 
 
     void hphd_vertical       (float** hpmap, int col_from, int col_to);
@@ -144,8 +148,12 @@ public:
     {
         return camera_wb;
     }
+    void        WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr);
+
     void        getAutoWBMultipliers (double &rm, double &gm, double &bm);
-    void        getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, double &rm, double &gm, double &bm);
+    void        getrgbloc (bool gamma, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w);
+
+    void        getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w, double &rm, double &gm, double &bm, const LocalrgbParams &localr);
     ColorTemp   getSpotWB   (std::vector<Coord2D> &red, std::vector<Coord2D> &green, std::vector<Coord2D> &blue, int tran, double equal);
     bool        isWBProviderReady ()
     {
@@ -251,6 +259,7 @@ protected:
     void ahd_demosaic (int winx, int winy, int winw, int winh);
     void border_interpolate (unsigned int border, float (*image)[4], unsigned int start = 0, unsigned int end = 0);
     void border_interpolate2 (int winw, int winh, int lborders);
+    void border_interpolateloc (int winw, int winh, unsigned int border, float (*image)[4], unsigned int start = 0, unsigned int end = 0);
     void dcb_initTileLimits (int &colMin, int &rowMin, int &colMax, int &rowMax, int x0, int y0, int border);
     void fill_raw ( float (*cache )[3], int x0, int y0, float** rawData);
     void fill_border ( float (*cache )[3], int border, int x0, int y0);

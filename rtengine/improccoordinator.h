@@ -321,7 +321,7 @@ protected:
 //  LUTu histToneCurveloc;
     ToneCurve customToneCurve1loc;
     ToneCurve customToneCurve2loc;
-
+    int wbm;
 public:
 
     ImProcCoordinator ();

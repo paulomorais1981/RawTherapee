@@ -324,7 +324,7 @@ class localrgbListener
 {
 public :
     virtual ~localrgbListener() {}
-    virtual void temptintChanged (double ctemp, double ctint, double cequal) {}
+    virtual void temptintChanged (double ctemp, double ctint, double cequal, int meth) {}
     virtual void WBChanged (double temp, double green, int wbauto) {}
 
 };

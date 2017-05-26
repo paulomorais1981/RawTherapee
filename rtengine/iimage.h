@@ -97,7 +97,7 @@ public:
     {
         return "unknown";
     }
-    virtual void getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, double &rm, double &gm, double &bm)
+    virtual void getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w, double &rm, double &gm, double &bm)
     {
         rm = gm = bm = 1.0;
     }

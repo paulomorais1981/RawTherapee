@@ -609,7 +609,7 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     ALLNORAW, //Evlocalrgbtemp
     ALLNORAW, //Evlocalrgbgreen
     ALLNORAW, //Evlocalrgbequal
-    ALLNORAW //EvlocalrgbwbMethod
+    DEMOSAIC //EvlocalrgbwbMethod
 
 };
 

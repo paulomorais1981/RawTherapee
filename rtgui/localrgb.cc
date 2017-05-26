@@ -190,6 +190,7 @@ Localrgb::Localrgb ():
     next_temp = 0.;
     next_green = 0.;
     next_wbauto = 0;
+	nextmeth = 0;
     std::vector<GradientMilestone> bottomMilestones;
     bottomMilestones.push_back ( GradientMilestone (0., 0., 0., 0.) );
     bottomMilestones.push_back ( GradientMilestone (1., 1., 1., 1.) );
@@ -445,6 +446,9 @@ Localrgb::Localrgb ():
     wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
     wbMethod->append (M ("TP_LOCALRGBWB_MAN"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUT"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTGAMMA"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTEDG"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTOLD"));
     wbMethod->set_active (0);
     wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
 
@@ -779,12 +783,12 @@ void Localrgb::enableToggled (MyExpander *expander)
     }
 }
 
-void Localrgb::temptintChanged (double ctemp, double ctint, double cequal)
+void Localrgb::temptintChanged (double ctemp, double ctint, double cequal, int meth)
 {
     nexttemp = ctemp;
     nexttint = ctint;
     nextequal = cequal;
-
+	nextmeth = meth;
     const auto func = [] (gpointer data) -> gboolean {
         GThreadLock lock; // All GUI access from idle_add callbacks or separate thread HAVE to be protected
         static_cast<Localrgb*> (data)->temptintComputed_();
@@ -809,15 +813,18 @@ void Localrgb::updateLabel ()
 {
     if (!batchMode) {
         float nX, nY, nZ;
+		int nM;
         nX = nexttemp;
         nY = nexttint;
         nZ = nextequal;
+		nM = nextmeth;
         {
             ttLabels->set_text (
                 Glib::ustring::compose (M ("TP_LOCALRGB_TTLABEL"),
+                                        Glib::ustring::format (std::fixed, std::setprecision (0), nM),
                                         Glib::ustring::format (std::fixed, std::setprecision (0), nX),
-                                        Glib::ustring::format (std::fixed, std::setprecision (3), nY),
-                                        Glib::ustring::format (std::fixed, std::setprecision (3), nZ))
+                                        Glib::ustring::format (std::fixed, std::setprecision (2), nY),
+                                        Glib::ustring::format (std::fixed, std::setprecision (2), nZ))
             );
         }
     }
@@ -1508,6 +1515,13 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         wbMethod->set_active (1);
     } else if (pp->localrgb.wbMethod == "aut") {
         wbMethod->set_active (2);
+    } else if (pp->localrgb.wbMethod == "autgamma") {
+        wbMethod->set_active (3);
+    } else if (pp->localrgb.wbMethod == "autedg") {
+        wbMethod->set_active (4);
+    } else if (pp->localrgb.wbMethod == "autold") {
+        wbMethod->set_active (5);
+
     }
 
     wbMethodChanged ();
@@ -1887,6 +1901,12 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.wbMethod = "man";
     } else if (wbMethod->get_active_row_number() == 2) {
         pp->localrgb.wbMethod = "aut";
+    } else if (wbMethod->get_active_row_number() == 3) {
+        pp->localrgb.wbMethod = "autgamma";
+    } else if (wbMethod->get_active_row_number() == 4) {
+        pp->localrgb.wbMethod = "autedg";
+    } else if (wbMethod->get_active_row_number() == 5) {
+        pp->localrgb.wbMethod = "autold";
     }
 
     if (Smethod->get_active_row_number() == 0) {
@@ -1983,7 +2003,7 @@ bool Localrgb::localwbComputed_ ()
     }
 
     if (listener) {
-        listener->panelChanged (EvlocalrgbwbMethod, wbMethod->get_active_text ());
+       listener->panelChanged (EvlocalrgbwbMethod, wbMethod->get_active_text ());
     }
 
     return false;
@@ -2340,10 +2360,18 @@ void Localrgb::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocalrgbchromaref, "");//anbspot->getTextValue());
         } else if (a == temp) {
             listener->panelChanged (Evlocalrgbtemp, temp->getTextValue());
+			wbMethod->set_active (1);
+			wbMethodChanged ();
         } else if (a == green) {
             listener->panelChanged (Evlocalrgbgreen, green->getTextValue());
+			wbMethod->set_active (1);
+			wbMethodChanged ();
+			
         } else if (a == equal) {
             listener->panelChanged (Evlocalrgbequal, equal->getTextValue());
+			wbMethod->set_active (1);
+			wbMethodChanged ();
+			
         } else if (a == lumaref) {
             listener->panelChanged (Evlocalrgblumaref, "");//anbspot->getTextValue());
         } else if (a == circrad) {

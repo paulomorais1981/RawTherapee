@@ -44,16 +44,18 @@ public:
 
     int         load        (const Glib::ustring &fname, int imageNum = 0, bool batch = false);
     void getImage_local    (int begx, int begy, int yEn, int xEn, int cx, int cy, const ColorTemp &ctemp, int tran, Imagefloat* image, Imagefloat* bufimage, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw);
+    void        getrgbloc (bool gamma, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w);
 
     void        getImage    (const ColorTemp &ctemp, int tran, Imagefloat* image, const PreviewProps &pp, const ToneCurveParams &hrp, const ColorManagementParams &cmp, const RAWParams &raw);
     ColorTemp   getWB       () const
     {
         return wb;
     }
-    void        getAutoWBMultipliers (double &rm, double &gm, double &bm);
-    void        getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, double &rm, double &gm, double &bm);
-    ColorTemp   getSpotWB   (std::vector<Coord2D> &red, std::vector<Coord2D> &green, std::vector<Coord2D> &blue, int tran, double equal);
+    void        WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr);
 
+    void        getAutoWBMultipliers (double &rm, double &gm, double &bm);
+    void        getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w, double &rm, double &gm, double &bm, const LocalrgbParams &localr);
+    ColorTemp   getSpotWB   (std::vector<Coord2D> &red, std::vector<Coord2D> &green, std::vector<Coord2D> &blue, int tran, double equal);
     eSensorType getSensorType() const
     {
         return ST_NONE;

@@ -170,7 +170,7 @@ ImProcCoordinator::ImProcCoordinator ()
 
       vhist16loc (65536), hltonecurveloc (655536), shtonecurveloc (65536), tonecurveloc (65536),
       //histToneCurveloc(256),
-      ptemp (0.), pgreen (0.), wbauto (0),
+      ptemp (0.), pgreen (0.), wbauto (0), wbm (0),
       retistrsav (nullptr)
 
 {}
@@ -413,6 +413,28 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         // if a demosaic happened we should also call getimage later, so we need to set the M_INIT flag
         todo |= M_INIT;
 
+        if (params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg"  ) {//if auto ==> passed directly to Custom GUI after calculation
+            struct local_params lpall;
+            calcLocalrgbParams (fw, fh, params.localrgb, lpall);
+            int begy = lpall.yc - lpall.lyT;
+            int begx = lpall.xc - lpall.lxL;
+            int yEn = lpall.yc + lpall.ly;
+            int xEn = lpall.xc + lpall.lx;
+            int bf_h = lpall.ly + lpall.lyT;
+            int bf_w = lpall.lx + lpall.lxL;
+
+            int cx = 0;
+            int cy = 0;
+            bool gamma = false;
+
+            if (params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg") {
+                gamma = true;
+            }
+
+            imgsrc->getrgbloc (gamma, begx, begy, yEn, xEn, cx, cy, bf_h, bf_w);
+
+        }
+
         if (highDetailNeeded) {
             highDetailRawComputed = true;
         } else {
@@ -519,23 +541,32 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         Imagefloat *improv = nullptr;
 
         if (params.localrgb.enabled && params.localrgb.expwb) {
-            if (alorgbListener) { // dispaly values
-                alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal);
-            }
+            /*          int wbm = 1;
+                        if(params.localrgb.wbMethod == "aut") wbm = 2;
+                        if(params.localrgb.wbMethod == "autgamma") wbm = 3;
+                        if(params.localrgb.wbMethod == "autedg") wbm = 4;
+                        if(params.localrgb.wbMethod == "autold") wbm = 5;
 
+                        if (alorgbListener) { // dispaly values
+                            alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal, wbm);
+                        }
+            */
             currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
 
-            if (params.localrgb.wbMethod == "aut") {//if auto ==> passed directly to Custom GUI after calculation
+            if ((params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold")) {//if auto ==> passed directly to Custom GUI after calculation
                 struct local_params lpall;
                 calcLocalrgbParams (fw, fh, params.localrgb, lpall);
                 int begy = lpall.yc - lpall.lyT;
                 int begx = lpall.xc - lpall.lxL;
                 int yEn = lpall.yc + lpall.ly;
                 int xEn = lpall.xc + lpall.lx;
+                int bf_h = lpall.ly + lpall.lyT;
+                int bf_w = lpall.lx + lpall.lxL;
+
                 int cx = 0;
                 int cy = 0;
                 double rm, gm, bm;
-                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, rm, gm, bm);
+                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, bf_h, bf_w, rm, gm, bm, params.localrgb);
                 autoWBloc.mul2temp (rm, gm, bm, params.localrgb.equal, ptemp, pgreen);
                 currWBloc = autoWBloc;
             }
@@ -569,9 +600,32 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete imageoriginal;
             delete imagetransformed;
             delete improv;
+//          int wbm = 0;
 
-            if (params.localrgb.wbMethod == "aut" && alorgbListener) {
-                alorgbListener ->WBChanged (ptemp, pgreen, 1 );//change GUI and method to Custom
+            if ((params.localrgb.wbMethod == "aut" || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold") && alorgbListener) {
+                if (params.localrgb.wbMethod == "aut") {
+                    wbm = 2;
+                }
+
+                if (params.localrgb.wbMethod == "autgamma") {
+                    wbm = 3;
+                }
+
+                if (params.localrgb.wbMethod == "autedg") {
+                    wbm = 4;
+                }
+
+                if (params.localrgb.wbMethod == "autold") {
+                    wbm = 5;
+                }
+
+                alorgbListener ->WBChanged (ptemp, pgreen, 1);//change GUI and method to Custom
+            }
+
+            params.localrgb.wbMethod = "man";
+
+            if (alorgbListener) { // dispaly values
+                alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal, wbm);
             }
 
 

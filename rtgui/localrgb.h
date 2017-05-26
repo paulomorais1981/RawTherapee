@@ -134,6 +134,7 @@ private:
     double next_temp;
     double next_green;
     int next_wbauto;
+	int nextmeth;
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -196,7 +197,7 @@ public:
     void lumacontrastMinusPressed ();
     void neutral_pressed       ();
     virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
-    void temptintChanged (double ctemp, double ctint, double cequal);
+    void temptintChanged (double ctemp, double ctint, double cequal, int meth);
     bool temptintComputed_ ();
     void updateLabel      ();
     void WBChanged           (double temp, double green, int wbauto);

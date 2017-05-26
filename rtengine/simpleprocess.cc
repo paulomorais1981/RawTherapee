@@ -846,10 +846,12 @@ private:
                 int begx = xcall - lxLall;
                 int yEn = ycall + lyall;
                 int xEn = xcall + lxall;
+				int bf_h = lyall + lyTall;
+				int bf_w = lxall + lxLall;
                 int cx = 0;
                 int cy = 0;
                 double rm, gm, bm;
-                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, rm, gm, bm);
+                imgsrc->getAutoWBMultipliersloc (begx, begy, yEn, xEn, cx, cy, bf_h, bf_w, rm, gm, bm, params.localrgb);
                 autoWBloc.mul2temp (rm, gm, bm, params.localrgb.equal, ptemp, pgreen);
                 currWBloc = autoWBloc;
             }
