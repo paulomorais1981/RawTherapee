@@ -465,6 +465,11 @@ Localrgb::Localrgb ():
     ttLabels->set_tooltip_markup (M ("TP_LOCALRGB_MLABEL_TOOLTIP"));
     ttLabels->show ();
 
+    metLabels = Gtk::manage (new Gtk::Label ("---"));
+    setExpandAlignProperties (metLabels, true, false, Gtk::ALIGN_CENTER, Gtk::ALIGN_START);
+    metLabels->set_tooltip_markup (M ("TP_LOCALRGB_MLABEL_TOOLTIP"));
+    metLabels->show ();
+	
     temp = Gtk::manage (new Adjuster (M ("TP_WBALANCE_TEMPERATURE"), MINTEMP, MAXTEMP, 5, CENTERTEMP, itempL, itempR, &wbSlider2Temp, &wbTemp2Slider));
     green = Gtk::manage (new Adjuster (M ("TP_WBALANCE_GREEN"), MINGREEN, MAXGREEN, 0.001, 1.0, igreenL, igreenR));
     equal = Gtk::manage (new Adjuster (M ("TP_WBALANCE_EQBLUERED"), MINEQUAL, MAXEQUAL, 0.001, 1.0, iblueredL, iblueredR));
@@ -475,6 +480,7 @@ Localrgb::Localrgb ():
 //  wbBox->pack_start (*spotbox);
     wbBox->pack_start (*wbMethod);
     wbBox->pack_start (*ttLabels);
+    wbBox->pack_start (*metLabels);
 
     wbBox->pack_start (*temp);
     wbBox->pack_start (*green);
@@ -818,14 +824,21 @@ void Localrgb::updateLabel ()
         nY = nexttint;
         nZ = nextequal;
 		nM = nextmeth;
+		Glib::ustring meta;
+		if(nM == 2) meta = "Last auto:" + M("TP_LOCALRGBWB_AUT");
+		if(nM == 3) meta = "Last auto:" + M("TP_LOCALRGBWB_AUTGAMMA");
+		if(nM == 4) meta = "Last auto:" + M("TP_LOCALRGBWB_AUTEDG");
+		if(nM == 5) meta = "Last auto:" + M("TP_LOCALRGBWB_AUTOLD");
+		
+		
         {
             ttLabels->set_text (
                 Glib::ustring::compose (M ("TP_LOCALRGB_TTLABEL"),
-                                        Glib::ustring::format (std::fixed, std::setprecision (0), nM),
                                         Glib::ustring::format (std::fixed, std::setprecision (0), nX),
                                         Glib::ustring::format (std::fixed, std::setprecision (2), nY),
                                         Glib::ustring::format (std::fixed, std::setprecision (2), nZ))
             );
+            metLabels->set_text (meta);
         }
     }
 }

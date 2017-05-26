@@ -91,6 +91,7 @@ private:
     Adjuster* green;
     Adjuster* equal;
     Gtk::Label* ttLabels;
+    Gtk::Label* metLabels;
 
     MyComboBoxText* toneCurveMode;
     MyComboBoxText* toneCurveMode2;
