@@ -1863,6 +1863,7 @@ TP_LOCALRGBWB_AUT;2-Auto Grey Demosaic
 TP_LOCALRGBWB_AUTGAMMA;3-Auto Grey Demosaic-gam sRGB
 TP_LOCALRGBWB_AUTEDG;4-Auto Edge
 TP_LOCALRGBWB_AUTOLD;5-Auto Grey Old
+TP_LOCALRGB_MLABEL_TOOLTIP;Display Current WB settings for full image\nDisplay Last Auto WB method even sliders changed.
 TP_LOCRETI_METHOD_TOOLTIP;Low = Reinforce low light.\nUniform = Equalize action.\nHigh = Reinforce high light.\n
 TP_NEUTRAL;Neutral
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.

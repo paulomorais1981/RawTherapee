@@ -5574,10 +5574,6 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
                 avg_g *= initialGain;
                 avg_b *= initialGain;
 
-                //    if (rawDataloc) {
-                //       rawDataloc (0, 0);
-                //   }
-
             }
         }
     }
@@ -5597,9 +5593,6 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
     //    return ColorTemp (pow(avg_r/rn, 1.0/6.0)*img_r, pow(avg_g/gn, 1.0/6.0)*img_g, pow(avg_b/bn, 1.0/6.0)*img_b);
     //TODO mix of the 2 methods ...
 
-    //   double reds   = a vg_r / rn * refwb_red;
-    //  double greens = avg_g / gn * refwb_green;
-    //   double blues  = avg_b / bn * refwb_blue;
     double reds = 0. , greens = 0., blues = 0.;
 
     if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg") {
@@ -5633,20 +5626,21 @@ void RawImageSource::getAutoWBMultipliers (double &rm, double &gm, double &bm)
         return;
     }
 
-    if (redAWBMul != -1.) {
-        rm = redAWBMul;
-        gm = greenAWBMul;
-        bm = blueAWBMul;
-        return;
-    }
+    /*
+        if (redAWBMul != -1.) {
+            rm = redAWBMul;
+            gm = greenAWBMul;
+            bm = blueAWBMul;
+            return;
+        }
 
-    if (!isWBProviderReady()) {
-        rm = -1.0;
-        gm = -1.0;
-        bm = -1.0;
-        return;
-    }
-
+        if (!isWBProviderReady()) {
+            rm = -1.0;
+            gm = -1.0;
+            bm = -1.0;
+            return;
+        }
+    */
     double avg_r = 0;
     double avg_g = 0;
     double avg_b = 0;

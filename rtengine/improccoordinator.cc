@@ -413,7 +413,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         // if a demosaic happened we should also call getimage later, so we need to set the M_INIT flag
         todo |= M_INIT;
 
-        if (params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg"  ) {//if auto ==> passed directly to Custom GUI after calculation
+        if (params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg"  ) {
+            //calculate RGB demosaic and with or not gamma sRGB for local area
             struct local_params lpall;
             calcLocalrgbParams (fw, fh, params.localrgb, lpall);
             int begy = lpall.yc - lpall.lyT;
@@ -541,19 +542,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         Imagefloat *improv = nullptr;
 
         if (params.localrgb.enabled && params.localrgb.expwb) {
-            /*          int wbm = 1;
-                        if(params.localrgb.wbMethod == "aut") wbm = 2;
-                        if(params.localrgb.wbMethod == "autgamma") wbm = 3;
-                        if(params.localrgb.wbMethod == "autedg") wbm = 4;
-                        if(params.localrgb.wbMethod == "autold") wbm = 5;
-
-                        if (alorgbListener) { // dispaly values
-                            alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal, wbm);
-                        }
-            */
             currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
 
-            if ((params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold")) {//if auto ==> passed directly to Custom GUI after calculation
+            if ((params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold")) {
                 struct local_params lpall;
                 calcLocalrgbParams (fw, fh, params.localrgb, lpall);
                 int begy = lpall.yc - lpall.lyT;
@@ -600,7 +591,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete imageoriginal;
             delete imagetransformed;
             delete improv;
-//          int wbm = 0;
 
             if ((params.localrgb.wbMethod == "aut" || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold") && alorgbListener) {
                 if (params.localrgb.wbMethod == "aut") {
@@ -624,7 +614,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             params.localrgb.wbMethod = "man";
 
-            if (alorgbListener) { // dispaly values
+            if (alorgbListener) { // display values Full image an last method auto
                 alorgbListener->temptintChanged (params.wb.temperature, params.wb.green, params.wb.equal, wbm);
             }
 
