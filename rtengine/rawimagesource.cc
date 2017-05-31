@@ -5137,8 +5137,9 @@ void RawImageSource::getRowStartEnd (int x, int &start, int &end)
 void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr)
 {
     //auto white balance
-    //inspired from Chen Guanghua Zhang Xiaolong
-    // edge detection to improve auto WB
+
+//    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust" ) {
+
     array2D<float> redsobel;
     array2D<float> greensobel;
     array2D<float> bluesobel;
@@ -5162,9 +5163,180 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
     constexpr double clipHigh = 64000.0;
     constexpr double clipLow = 1500.0;
     bool edg = false;
+    bool greyn = false;
+    bool robust = false;
+
+    if (localr.wbMethod == "autorobust") {
+        // inspired by "Robust automatic WB algorithm using gray color points in Images"
+        // Jy Huo, Yl Chang, J.Wang Xx Wei
+        robust = true;
+
+        array2D<float> Y0;
+        array2D<float> U0;
+        array2D<float> V0;
+
+        Y0 (bfw, bfh);
+        U0 (bfw, bfh);
+        V0 (bfw, bfh);
+
+        float *Uba;
+        Uba = new float [204];
+        array2D<float> FYUV;
+        FYUV (bfw, bfh);
+
+        bool contin;
+        // float kR = 0.137f;//0.1 0.3
+        // float kB = 0.13f; //0.096 0.267
+        float Th = 0.1321f; //0.1321f; // 0.097  0.2753
+        float Ubarohm = 0.f, Vbarohm = 0.f;
+        float ep = 0.1f;
+        float wr = 1.f;
+        float wg = 1.f;
+        float wb = 1.f;
+        float mu = 0.002f;
+        float mu2 = 0.001f;
+        float phi = 0.f;
+        int itera = 0;
+        float epsil;
+        int minim = 1;
+
+        do {
+            contin = false;
+            itera++;
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for (int y = 0; y < bfh ; y++) {
+                for (int x = 0; x < bfw ; x++) {
+                    Y0[y][x] = 0.299f * wr * redloc[y][x] + 0.587f * wg * greenloc[y][x] + 0.114f * wb * blueloc[y][x];
+                    U0[y][x] = -0.14713f * wr * redloc[y][x] - 0.28886f * wg * greenloc[y][x] + 0.436f * wb * blueloc[y][x];
+                    V0[y][x] = 0.615f * wr * redloc[y][x] - 0.51498f * wg * greenloc[y][x] - 0.10001f * wb * blueloc[y][x];
+
+                    if (Y0[y][x] == 0.f) {
+                        Y0[y][x] = ep;//avoid divide by zero
+                    }
+
+                    FYUV[y][x] =  (fabs (U0[y][x]) + fabs (V0[y][x])) / Y0[y][x];
+
+
+                }
+            }
+
+            int Nf = 0;
+#ifdef _OPENMP
+            #pragma omp parallel for reduction(+:Ubarohm, Vbarohm, Nf)
+#endif
+
+            for (int y = 0; y < bfh ; y++) {
+                for (int x = 0; x < bfw ; x++) {
+                    if (FYUV[y][x] < Th) {
+                        Nf++;
+                        Ubarohm +=  U0[y][x];
+                        Vbarohm +=  V0[y][x];
+                    }
+
+                }
+            }
+
+            Ubarohm /= Nf;
+            Uba[itera] = Ubarohm;
+
+            if (itera > 5) {
+                if (Uba[itera] - Uba[itera - 2] < 0.01f) {
+                    minim = 2;   //accelerate convergence - not in original algorithm
+                }
+            }
+
+            Vbarohm /= Nf;
+            //  printf ("Nf=%i max=%i  U=%f V=%f\n", Nf, bfh*bfw, Ubarohm, Vbarohm);
+            int Kx = 0;
+            float aa = 0.8f;//superior limit
+            float bb = 0.15f;//inferior limit
+            int ind = 1;
+
+            if ((fabs (Ubarohm) > fabs (Vbarohm)) || (Ubarohm != 0.f && fabs (Ubarohm) == fabs (Vbarohm))) {
+                phi = Ubarohm;
+                ind = 1;
+            } else if (fabs (Ubarohm) < fabs (Vbarohm)) {
+                phi = Vbarohm;
+                ind = 2;
+            } else if (Ubarohm == 0.f && Vbarohm == 0.f) {
+                phi = 0.f;
+                ind = 3;
+            }
+
+            epsil = - phi;
+            int sign = 0;
+
+            if (epsil > 0.f) {
+                sign = 1;
+            } else if (epsil == 0.f) {
+                sign = 0;
+            } else if (epsil < 0.f) {
+                sign = -1;
+            }
+
+            if (fabs (epsil) >= aa) {
+                Kx = 2 * sign;
+            }
+
+            if (fabs (epsil) < aa && fabs (epsil) >= bb) {
+                Kx = sign;
+            }
+
+            if (fabs (epsil) >= 0.f && fabs (epsil) < bb) {
+                Kx = 0;
+            }
+
+            //
+            float mur = mu;
+
+            if (minim == 2) {
+                mur = mu2;
+            }
+
+            if (ind == 1) {
+                wb += mur * Kx;
+            }
+
+            if (ind == 2) {
+                wr += mur * Kx;
+            }
+
+            if (Kx == 0 || itera > 200) {//stop iterations
+                contin = true;
+            }
+
+          //  printf ("epsil=%f iter=%i wb=%f wr=%f U=%f V=%f\n", fabs (epsil), itera, wb, wr, Ubarohm, Vbarohm);
+            Ubarohm = 0.f;
+            Vbarohm = 0.f;
+
+
+        } while (contin == false);
+
+        delete Uba;
+        printf ("epsil=%f iter=%i wb=%f wr=%f\n", fabs (epsil), itera, wb, wr);
+
+        avg_rm = 10000.* wr;
+        avg_gm = 10000.* wg;
+        avg_bm = 10000.* wb;
+
+        Y0 (0, 0);
+        U0 (0, 0);
+        V0 (0, 0);
+        FYUV (0, 0);
+    }
+
+
 
     if (localr.wbMethod == "autedg") {
         edg = true;
+    }
+
+    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma") {
+        greyn = true;
+
     }
 
     //Sobel Horizontal
@@ -5188,6 +5360,8 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
     GY[2][0] = -1;
     GY[2][1] = -2;
     GY[2][2] = -1;
+    //inspired from Chen Guanghua Zhang Xiaolong
+    // edge detection to improve auto WB
 
     if (edg) {
         for (int y = 0; y < bfh ; y++) {
@@ -5270,7 +5444,9 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
                 }
             }
         }
-    } else {
+    }
+
+    if (greyn) {
 
         for (int y = 0; y < bfh ; y++) {
             for (int x = 0; x < bfw ; x++) {
@@ -5292,13 +5468,17 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
         }
     }
 
-    avg_rm = avg_r / rn;
-    avg_gm = avg_g / gn;
-    avg_bm = avg_b / bn;
+    if (greyn || edg) {
+        avg_rm = avg_r / rn;
+        avg_gm = avg_g / gn;
+        avg_bm = avg_b / bn;
+    }
 
     if (edg) {
         printf ("Local sobel avgr = % f avgg = % f avgb = % f \n", avg_rm, avg_gm, avg_bm);
-    } else {
+    }
+
+    if (greyn  || robust)  {
         printf ("Local rgb avgr = % f avgg = % f avgb = % f \n", avg_rm, avg_gm, avg_bm);
     }
 
@@ -5578,7 +5758,7 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
         }
     }
 
-    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg") {
+    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust" ) {
         WBauto (redloc, greenloc, blueloc, bfw, bfh, avg_rm, avg_gm, avg_bm, localr);
     }
 
@@ -5595,7 +5775,7 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
 
     double reds = 0. , greens = 0., blues = 0.;
 
-    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg") {
+    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust") {
         reds   = avg_rm * refwb_red;
         greens = avg_gm * refwb_green;
         blues  = avg_bm * refwb_blue;

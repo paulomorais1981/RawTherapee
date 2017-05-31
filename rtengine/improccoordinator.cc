@@ -413,7 +413,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         // if a demosaic happened we should also call getimage later, so we need to set the M_INIT flag
         todo |= M_INIT;
 
-        if (params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg"  ) {
+        if (params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma" || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autorobust" ) {
             //calculate RGB demosaic and with or not gamma sRGB for local area
             struct local_params lpall;
             calcLocalrgbParams (fw, fh, params.localrgb, lpall);
@@ -544,7 +544,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         if (params.localrgb.enabled && params.localrgb.expwb) {
             currWBloc = ColorTemp (params.localrgb.temp, params.localrgb.green, params.localrgb.equal, "Custom");
 
-            if ((params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold")) {
+            if ((params.localrgb.wbMethod == "aut"  || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold" || params.localrgb.wbMethod == "autorobust" )) {
                 struct local_params lpall;
                 calcLocalrgbParams (fw, fh, params.localrgb, lpall);
                 int begy = lpall.yc - lpall.lyT;
@@ -592,7 +592,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete imagetransformed;
             delete improv;
 
-            if ((params.localrgb.wbMethod == "aut" || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold") && alorgbListener) {
+            if ((params.localrgb.wbMethod == "aut" || params.localrgb.wbMethod == "autgamma"  || params.localrgb.wbMethod == "autedg" || params.localrgb.wbMethod == "autold" || params.localrgb.wbMethod == "autorobust" ) && alorgbListener) {
                 if (params.localrgb.wbMethod == "aut") {
                     wbm = 2;
                 }
@@ -607,6 +607,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 if (params.localrgb.wbMethod == "autold") {
                     wbm = 5;
+                }
+
+                if (params.localrgb.wbMethod == "autorobust") {
+                    wbm = 6;
                 }
 
                 alorgbListener ->WBChanged (ptemp, pgreen, 1);//change GUI and method to Custom
