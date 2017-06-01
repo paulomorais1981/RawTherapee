@@ -5138,8 +5138,6 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
 {
     //auto white balance
 
-//    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust" ) {
-
     array2D<float> redsobel;
     array2D<float> greensobel;
     array2D<float> bluesobel;
@@ -5179,29 +5177,35 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
         U0 (bfw, bfh);
         V0 (bfw, bfh);
 
-        float *Uba;
+        float *Uba = nullptr;
+        float *Vba = nullptr;
         Uba = new float [204];
+        Vba = new float [204];
+
         array2D<float> FYUV;
         FYUV (bfw, bfh);
 
         bool contin;
-        // float kR = 0.137f;//0.1 0.3
-        // float kB = 0.13f; //0.096 0.267
-        float Th = 0.1321f; //0.1321f; // 0.097  0.2753
+        float Th = 0.1321f; //Threshold 0.1321f  0.097f  0.2753f  if necessary
         float Ubarohm = 0.f, Vbarohm = 0.f;
         float ep = 0.1f;
+        //wr, wb, wg multipliers for each channel RGB
         float wr = 1.f;
         float wg = 1.f;
         float wb = 1.f;
-        float mu = 0.002f;
-        float mu2 = 0.001f;
+        float mu = 0.002f;//std variation
+        float mu2 = 0.0012f;//first reduce variation
+        float mu3 = 0.0007f;//second variation
         float phi = 0.f;
         int itera = 0;
         float epsil;
         int minim = 1;
+        int realitera = 1;
+        float mur;
 
-        do {
+        do {//iterative WB
             contin = false;
+
             itera++;
 #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic,16)
@@ -5209,6 +5213,7 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
 
             for (int y = 0; y < bfh ; y++) {
                 for (int x = 0; x < bfw ; x++) {
+                    //claculate YUV from RGB and wr, wg, wb
                     Y0[y][x] = 0.299f * wr * redloc[y][x] + 0.587f * wg * greenloc[y][x] + 0.114f * wb * blueloc[y][x];
                     U0[y][x] = -0.14713f * wr * redloc[y][x] - 0.28886f * wg * greenloc[y][x] + 0.436f * wb * blueloc[y][x];
                     V0[y][x] = 0.615f * wr * redloc[y][x] - 0.51498f * wg * greenloc[y][x] - 0.10001f * wb * blueloc[y][x];
@@ -5217,6 +5222,7 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
                         Y0[y][x] = ep;//avoid divide by zero
                     }
 
+                    //FYUX fonction to dtect grey points
                     FYUV[y][x] =  (fabs (U0[y][x]) + fabs (V0[y][x])) / Y0[y][x];
 
 
@@ -5230,7 +5236,7 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
 
             for (int y = 0; y < bfh ; y++) {
                 for (int x = 0; x < bfw ; x++) {
-                    if (FYUV[y][x] < Th) {
+                    if (FYUV[y][x] < Th) {//grey values
                         Nf++;
                         Ubarohm +=  U0[y][x];
                         Vbarohm +=  V0[y][x];
@@ -5240,19 +5246,29 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
             }
 
             Ubarohm /= Nf;
-            Uba[itera] = Ubarohm;
+            Uba[itera] = Ubarohm;//stock value Ubarohm
+            Vba[itera] = Vbarohm;//stock value Vbarohm
 
-            if (itera > 5) {
-                if (Uba[itera] - Uba[itera - 2] < 0.01f) {
+            if (itera > 5 && minim < 2) {
+                if ((fabs (Uba[itera] - Uba[itera - 2]) < 0.001f) && (fabs (Vba[itera] - Vba[itera - 2]) < 0.001f)) {
+                    //printf("DUba=%f Dvba=%f\n", Uba[itera] - Uba[itera - 2], Vba[itera] - Vba[itera - 2]);
+                    realitera = itera;
                     minim = 2;   //accelerate convergence - not in original algorithm
                 }
+            }
+
+            if (itera > 10 && minim == 2 && itera > realitera + 3) {
+                if ((fabs (Uba[itera] - Uba[itera - 2]) < 0.001f)  && (fabs (Vba[itera] - Vba[itera - 2]) < 0.001f)) {
+                    minim = 3;   //accelerate second time if necessary convergence, - not in original algorithm
+                }
+
             }
 
             Vbarohm /= Nf;
             //  printf ("Nf=%i max=%i  U=%f V=%f\n", Nf, bfh*bfw, Ubarohm, Vbarohm);
             int Kx = 0;
-            float aa = 0.8f;//superior limit
-            float bb = 0.15f;//inferior limit
+            float aa = 0.8f;//superior limit if epsil > aa increase variation
+            float bb = 0.15f;//inferior limit if epsil < bb exit
             int ind = 1;
 
             if ((fabs (Ubarohm) > fabs (Vbarohm)) || (Ubarohm != 0.f && fabs (Ubarohm) == fabs (Vbarohm))) {
@@ -5290,10 +5306,14 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
             }
 
             //
-            float mur = mu;
+            mur = mu;
 
             if (minim == 2) {
                 mur = mu2;
+            }
+
+            if (minim == 3) {
+                mur = mu3;
             }
 
             if (ind == 1) {
@@ -5304,11 +5324,11 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
                 wr += mur * Kx;
             }
 
-            if (Kx == 0 || itera > 200) {//stop iterations
+            if (Kx == 0 || itera > 200) {//stop iterations in normal case Kx =0, or if WB iteration do not converge
                 contin = true;
             }
 
-          //  printf ("epsil=%f iter=%i wb=%f wr=%f U=%f V=%f\n", fabs (epsil), itera, wb, wr, Ubarohm, Vbarohm);
+            //printf ("epsil=%f iter=%i wb=%f wr=%f U=%f V=%f mu=%f\n", fabs (epsil), itera, wb, wr, Ubarohm, Vbarohm, mur);
             Ubarohm = 0.f;
             Vbarohm = 0.f;
 
@@ -5316,7 +5336,8 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
         } while (contin == false);
 
         delete Uba;
-        printf ("epsil=%f iter=%i wb=%f wr=%f\n", fabs (epsil), itera, wb, wr);
+        delete Vba;
+        printf ("epsil=%f iter=%i wb=%f wr=%f mu=%f\n", fabs (epsil), itera, wb, wr, mur);
 
         avg_rm = 10000.* wr;
         avg_gm = 10000.* wg;
