@@ -450,6 +450,7 @@ Localrgb::Localrgb ():
     wbMethod->append (M ("TP_LOCALRGBWB_AUTEDG"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTOLD"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTOROBUST"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTOSDW"));
 
     wbMethod->set_active (0);
     wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
@@ -848,6 +849,10 @@ void Localrgb::updateLabel ()
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOROBUST");
         }
 
+        if (nM == 7) {
+            meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOSDW");
+        }
+		
         {
             ttLabels->set_text (
                 Glib::ustring::compose (M ("TP_LOCALRGB_TTLABEL"),
@@ -1553,6 +1558,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         wbMethod->set_active (5);
     } else if (pp->localrgb.wbMethod == "autorobust") {
         wbMethod->set_active (6);
+    } else if (pp->localrgb.wbMethod == "autosdw") {
+        wbMethod->set_active (7);
 
     }
 
@@ -1941,6 +1948,8 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.wbMethod = "autold";
     } else if (wbMethod->get_active_row_number() == 6) {
         pp->localrgb.wbMethod = "autorobust";
+    } else if (wbMethod->get_active_row_number() == 7) {
+        pp->localrgb.wbMethod = "autosdw";
     }
 
     if (Smethod->get_active_row_number() == 0) {

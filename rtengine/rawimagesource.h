@@ -148,7 +148,7 @@ public:
     {
         return camera_wb;
     }
-    void        WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr);
+    void        WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr, int begx, int begy, int yEn, int xEn, int cx, int cy);
 
     void        getAutoWBMultipliers (double &rm, double &gm, double &bm);
     void        getrgbloc (bool gamma, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w);
