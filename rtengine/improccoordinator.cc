@@ -617,11 +617,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     wbm = 7;
                 }
 
-                if (params.localrgb.wbMethod == "autedsdw") {
+                if (params.localrgb.wbMethod == "autedgsdw") {
                     wbm = 8;
                 }
 
-                alorgbListener ->WBChanged (ptemp, pgreen, 1);//change GUI and method to Custom
+                alorgbListener ->WBChanged (ptemp, pgreen, 0);//change GUI and method to Custom
             }
 
             params.localrgb.wbMethod = "man";

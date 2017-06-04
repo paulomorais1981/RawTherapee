@@ -443,7 +443,7 @@ Localrgb::Localrgb ():
 
         spotbox->pack_start (*spotbutton);
     */
-    wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
+//    wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
     wbMethod->append (M ("TP_LOCALRGBWB_MAN"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUT"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTEDG"));
@@ -1560,24 +1560,24 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     wbMethodConn.block (false);
 
-    if (pp->localrgb.wbMethod == "none") {
+//   if (pp->localrgb.wbMethod == "none") {
+//       wbMethod->set_active (0);
+    if (pp->localrgb.wbMethod == "man") {
         wbMethod->set_active (0);
-    } else if (pp->localrgb.wbMethod == "man") {
-        wbMethod->set_active (1);
     } else if (pp->localrgb.wbMethod == "aut") {
-        wbMethod->set_active (2);
+        wbMethod->set_active (1);
     } else if (pp->localrgb.wbMethod == "autedg") {
-        wbMethod->set_active (3);
+        wbMethod->set_active (2);
     } else if (pp->localrgb.wbMethod == "autold") {
-        wbMethod->set_active (4);
+        wbMethod->set_active (3);
     } else if (pp->localrgb.wbMethod == "autorobust") {
-        wbMethod->set_active (5);
+        wbMethod->set_active (4);
     } else if (pp->localrgb.wbMethod == "autosdw") {
-        wbMethod->set_active (6);
+        wbMethod->set_active (5);
     } else if (pp->localrgb.wbMethod == "autedgrob") {
-        wbMethod->set_active (7);
+        wbMethod->set_active (6);
     } else if (pp->localrgb.wbMethod == "autedgsdw") {
-        wbMethod->set_active (8);
+        wbMethod->set_active (7);
 
     }
 
@@ -1983,22 +1983,20 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     }
 
     if (wbMethod->get_active_row_number() == 0) {
-        pp->localrgb.wbMethod = "none";
-    } else if (wbMethod->get_active_row_number() == 1) {
         pp->localrgb.wbMethod = "man";
-    } else if (wbMethod->get_active_row_number() == 2) {
+    } else if (wbMethod->get_active_row_number() == 1) {
         pp->localrgb.wbMethod = "aut";
-    } else if (wbMethod->get_active_row_number() == 3) {
+    } else if (wbMethod->get_active_row_number() == 2) {
         pp->localrgb.wbMethod = "autedg";
-    } else if (wbMethod->get_active_row_number() == 4) {
+    } else if (wbMethod->get_active_row_number() == 3) {
         pp->localrgb.wbMethod = "autold";
-    } else if (wbMethod->get_active_row_number() == 5) {
+    } else if (wbMethod->get_active_row_number() == 4) {
         pp->localrgb.wbMethod = "autorobust";
-    } else if (wbMethod->get_active_row_number() == 6) {
+    } else if (wbMethod->get_active_row_number() == 5) {
         pp->localrgb.wbMethod = "autosdw";
-    } else if (wbMethod->get_active_row_number() == 7) {
+    } else if (wbMethod->get_active_row_number() == 6) {
         pp->localrgb.wbMethod = "autedgrob";
-    } else if (wbMethod->get_active_row_number() == 8) {
+    } else if (wbMethod->get_active_row_number() == 7) {
         pp->localrgb.wbMethod = "autedgsdw";
     }
 
