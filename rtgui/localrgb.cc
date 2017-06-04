@@ -853,7 +853,7 @@ void Localrgb::updateLabel ()
         if (nM == 6) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOSDW");
         }
-		
+
         if (nM == 7) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTEDGROB");
         }
@@ -861,7 +861,7 @@ void Localrgb::updateLabel ()
         if (nM == 8) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTEDGSDW");
         }
-		
+
 
         {
             ttLabels->set_text (
@@ -1564,7 +1564,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         wbMethod->set_active (0);
     } else if (pp->localrgb.wbMethod == "man") {
         wbMethod->set_active (1);
-    } else if (pp->localrgb.wbMethod == "autgamma") {
+    } else if (pp->localrgb.wbMethod == "aut") {
         wbMethod->set_active (2);
     } else if (pp->localrgb.wbMethod == "autedg") {
         wbMethod->set_active (3);
@@ -1987,7 +1987,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     } else if (wbMethod->get_active_row_number() == 1) {
         pp->localrgb.wbMethod = "man";
     } else if (wbMethod->get_active_row_number() == 2) {
-        pp->localrgb.wbMethod = "autgamma";
+        pp->localrgb.wbMethod = "aut";
     } else if (wbMethod->get_active_row_number() == 3) {
         pp->localrgb.wbMethod = "autedg";
     } else if (wbMethod->get_active_row_number() == 4) {

@@ -5616,7 +5616,7 @@ static void SobelWB (array2D<float> &redsobel, array2D<float> &greensobel, array
 void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr, int begx, int begy, int yEn, int xEn, int cx, int cy)
 {
     //auto white balance
-
+	printf("AUtoWB OK\n");
     array2D<float> redsobel;
     array2D<float> greensobel;
     array2D<float> bluesobel;
@@ -5639,15 +5639,12 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
         RobustWB (redloc, greenloc, blueloc, bfw, bfh, avg_rm, avg_gm, avg_bm);
     }
 
-
-
     if (localr.wbMethod == "autedg") {
         edg = true;
     }
 
     if (localr.wbMethod == "aut") {
         greyn = true;
-
     }
 
     if (localr.wbMethod == "autedgsdw") {
