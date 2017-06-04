@@ -457,6 +457,7 @@ public:
     bool temp;
     bool green;
     bool equal;
+	bool gamma;
 
 };
 

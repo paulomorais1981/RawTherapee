@@ -5645,13 +5645,24 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
         edg = true;
     }
 
-    if (localr.wbMethod == "aut"  || localr.wbMethod == "autgamma") {
+    if (localr.wbMethod == "aut") {
         greyn = true;
 
     }
 
+    if (localr.wbMethod == "autedgsdw") {
+        SobelWB (redsobel, greensobel, bluesobel, redloc, greenloc, blueloc, bfw, bfh);
+        RobustWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm);
+
+    }
+
+    if (localr.wbMethod == "autedgrob") {
+        SobelWB (redsobel, greensobel, bluesobel, redloc, greenloc, blueloc, bfw, bfh);
+        SdwWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm,  begx, begy, yEn,  xEn,  cx,  cy);
+
+    }
+
     if (localr.wbMethod == "autosdw") {
-        printf ("OK SdwWB\n");
         SdwWB (redloc, greenloc, blueloc, bfw, bfh, avg_rm, avg_gm, avg_bm,  begx, begy, yEn,  xEn,  cx,  cy);
 
         printf ("bfw=%i bfh=%i begx=%i begy=%i xEn=%i yEn=%i cx=%i\n", bfw, bfh, begx, begy, xEn, yEn, cx);
@@ -5994,7 +6005,7 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
         }
     }
 
-    if (localr.wbMethod == "aut"  || localr.wbMethod == "autosdw" || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust" ) {
+    if (localr.wbMethod == "aut"  || localr.wbMethod == "autosdw" || localr.wbMethod == "autedgsdw"  || localr.wbMethod == "autedgrob" || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust" ) {
         WBauto (redloc, greenloc, blueloc, bfw, bfh, avg_rm, avg_gm, avg_bm, localr, begx, begy, yEn,  xEn,  cx,  cy);
     }
 
@@ -6007,11 +6018,10 @@ void RawImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int x
     }
 
     //    return ColorTemp (pow(avg_r/rn, 1.0/6.0)*img_r, pow(avg_g/gn, 1.0/6.0)*img_g, pow(avg_b/bn, 1.0/6.0)*img_b);
-    //TODO mix of the 2 methods ...
 
     double reds = 0. , greens = 0., blues = 0.;
 
-    if (localr.wbMethod == "aut"  || localr.wbMethod == "autosdw"  || localr.wbMethod == "autgamma"  || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust") {
+    if (localr.wbMethod == "aut"  || localr.wbMethod == "autosdw"  || localr.wbMethod == "autedgsdw" || localr.wbMethod == "autedgrob" || localr.wbMethod == "autedg" || localr.wbMethod == "autorobust") {
         reds   = avg_rm * refwb_red;
         greens = avg_gm * refwb_green;
         blues  = avg_bm * refwb_blue;

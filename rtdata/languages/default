@@ -1860,11 +1860,13 @@ TP_LOCALRGB_TTLABEL_TOOLTIP;Display full image White Balance settings
 TP_LOCALRGBWB_NONE;0-None
 TP_LOCALRGBWB_MAN;1-Custom
 TP_LOCALRGBWB_AUT;2-Auto Grey Demosaic
-TP_LOCALRGBWB_AUTGAMMA;3-Auto Grey Demosaic-gam sRGB
-TP_LOCALRGBWB_AUTEDG;4-Auto Edge
-TP_LOCALRGBWB_AUTOLD;5-Auto Grey Old
-TP_LOCALRGBWB_AUTOROBUST;6-Auto Robust Color
-TP_LOCALRGBWB_AUTOSDW;7-Auto Standard Deviation
+TP_LOCALRGBWB_AUTEDGROB;7-Auto Edge + Robust
+TP_LOCALRGBWB_AUTEDGSDW;7-Auto Edge + Std deviation
+TP_LOCALRGBWB_AUTEDG;3-Auto Edge
+TP_LOCALRGBWB_AUTOLD;4-Auto Grey Old
+TP_LOCALRGBWB_AUTOROBUST;5-Auto Robust Color
+TP_LOCALRGBWB_AUTOSDW;6-Auto Standard Deviation
+TP_LOCALRGBWB_GAMMA;Gamma for Auto(except old)
 TP_LOCALRGB_MLABEL_TOOLTIP;Display Current WB settings for full image\nDisplay Last Auto WB method even sliders changed.
 TP_LOCRETI_METHOD_TOOLTIP;Low = Reinforce low light.\nUniform = Equalize action.\nHigh = Reinforce high light.\n
 TP_NEUTRAL;Neutral

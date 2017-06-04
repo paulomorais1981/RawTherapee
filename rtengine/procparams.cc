@@ -949,6 +949,8 @@ void LocalrgbParams::setDefaults()
     temp = 4750.;
     green = 1.;
     equal = 1.;
+    gamma = true;
+	
 }
 
 
@@ -2886,6 +2888,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Localrgb", "Expwb", localrgb.expwb);
         }
 
+        if (!pedited || pedited->localrgb.gamma) {
+            keyFile.set_boolean ("Localrgb", "Gamma", localrgb.gamma);
+        }
+		
         if (!pedited || pedited->localrgb.curveMode)  {
             Glib::ustring method;
 
@@ -4884,6 +4890,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Localrgb", "Gamma"))  {
+                localrgb.gamma  = keyFile.get_boolean ("Localrgb", "Gamma");
+
+                if (pedited) {
+                    pedited->localrgb.gamma = true;
+                }
+            }
+			
             if (keyFile.has_key ("Localrgb", "CurveMode"))      {
                 Glib::ustring sMode = keyFile.get_string ("Localrgb", "CurveMode");
 
@@ -9925,6 +9939,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && localrgb.temp == other.localrgb.temp
         && localrgb.green == other.localrgb.green
         && localrgb.equal == other.localrgb.equal
+        && localrgb.gamma == other.localrgb.gamma
         && locallab.enabled == other.locallab.enabled
         && locallab.avoid == other.locallab.avoid
         && locallab.invers == other.locallab.invers

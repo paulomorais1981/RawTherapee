@@ -915,6 +915,7 @@ public:
     int     retrab;
     bool expwb;
     Glib::ustring wbMethod;
+    bool    gamma;
 
     double temp;
     double green;

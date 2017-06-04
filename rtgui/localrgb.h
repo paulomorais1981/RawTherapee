@@ -118,7 +118,9 @@ private:
     sigc::connection qualityMethodConn;
     sigc::connection wbMethodConn;
 
-
+    Gtk::CheckButton* gamma;
+    sigc::connection gammaconn;
+    bool lastgamma;
     int nextdatasp[61];
     int nextlength;
     std::string nextstr;
@@ -135,7 +137,7 @@ private:
     double next_temp;
     double next_green;
     int next_wbauto;
-	int nextmeth;
+    int nextmeth;
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -181,6 +183,7 @@ public:
     bool curveMode1Changed_ ();
     void curveMode2Changed ();
     bool curveMode2Changed_ ();
+    void gamma_toggled ();
 
 //   void autoOpenCurve ();
 //   void localChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat);

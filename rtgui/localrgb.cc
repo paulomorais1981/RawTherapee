@@ -446,11 +446,13 @@ Localrgb::Localrgb ():
     wbMethod->append (M ("TP_LOCALRGBWB_NONE"));
     wbMethod->append (M ("TP_LOCALRGBWB_MAN"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUT"));
-    wbMethod->append (M ("TP_LOCALRGBWB_AUTGAMMA"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTEDG"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTOLD"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTOROBUST"));
     wbMethod->append (M ("TP_LOCALRGBWB_AUTOSDW"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTEDGROB"));
+    wbMethod->append (M ("TP_LOCALRGBWB_AUTEDGSDW"));
+
 
     wbMethod->set_active (0);
     wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
@@ -493,6 +495,9 @@ Localrgb::Localrgb ():
     green->setAdjusterListener (this);
     equal->setAdjusterListener (this);
 
+    gamma = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALRGBWB_GAMMA")));
+    wbBox->pack_start (*gamma);
+    gammaconn = gamma->signal_toggled().connect ( sigc::mem_fun (*this, &Localrgb::gamma_toggled) );
 
 
     expwb->add (*wbBox);
@@ -834,25 +839,30 @@ void Localrgb::updateLabel ()
         }
 
         if (nM == 3) {
-            meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTGAMMA");
-        }
-
-        if (nM == 4) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTEDG");
         }
 
-        if (nM == 5) {
+        if (nM == 4) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOLD");
         }
 
-        if (nM == 6) {
+        if (nM == 5) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOROBUST");
         }
 
-        if (nM == 7) {
+        if (nM == 6) {
             meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTOSDW");
         }
 		
+        if (nM == 7) {
+            meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTEDGROB");
+        }
+
+        if (nM == 8) {
+            meta = "Last auto:" + M ("TP_LOCALRGBWB_AUTEDGSDW");
+        }
+		
+
         {
             ttLabels->set_text (
                 Glib::ustring::compose (M ("TP_LOCALRGB_TTLABEL"),
@@ -1425,6 +1435,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     if (pedited) {
         degree->setEditedState (pedited->localrgb.degree ? Edited : UnEdited);
+        gamma->set_inconsistent  (!pedited->localrgb.gamma);
         locY->setEditedState (pedited->localrgb.locY ? Edited : UnEdited);
         locX->setEditedState (pedited->localrgb.locX ? Edited : UnEdited);
         locYT->setEditedState (pedited->localrgb.locYT ? Edited : UnEdited);
@@ -1474,6 +1485,11 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     }
 
     setEnabled (pp->localrgb.enabled);
+
+    gammaconn.block (true);
+    gamma->set_active (pp->localrgb.gamma);
+    gammaconn.block (false);
+    lastgamma = pp->localrgb.gamma;
 
     Smethodconn.block (true);
     qualityMethodConn.block (true);
@@ -1548,18 +1564,20 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         wbMethod->set_active (0);
     } else if (pp->localrgb.wbMethod == "man") {
         wbMethod->set_active (1);
-    } else if (pp->localrgb.wbMethod == "aut") {
-        wbMethod->set_active (2);
     } else if (pp->localrgb.wbMethod == "autgamma") {
-        wbMethod->set_active (3);
+        wbMethod->set_active (2);
     } else if (pp->localrgb.wbMethod == "autedg") {
-        wbMethod->set_active (4);
+        wbMethod->set_active (3);
     } else if (pp->localrgb.wbMethod == "autold") {
-        wbMethod->set_active (5);
+        wbMethod->set_active (4);
     } else if (pp->localrgb.wbMethod == "autorobust") {
-        wbMethod->set_active (6);
+        wbMethod->set_active (5);
     } else if (pp->localrgb.wbMethod == "autosdw") {
+        wbMethod->set_active (6);
+    } else if (pp->localrgb.wbMethod == "autedgrob") {
         wbMethod->set_active (7);
+    } else if (pp->localrgb.wbMethod == "autedgsdw") {
+        wbMethod->set_active (8);
 
     }
 
@@ -1595,6 +1613,34 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableListener ();
 
 }
+
+void Localrgb::gamma_toggled ()
+{
+
+    if (batchMode) {
+        if (gamma->get_inconsistent()) {
+            gamma->set_inconsistent (false);
+            gammaconn.block (true);
+            gamma->set_active (false);
+            gammaconn.block (false);
+        } else if (lastgamma) {
+            gamma->set_inconsistent (true);
+        }
+
+        lastgamma = gamma->get_active ();
+    }
+
+    if (listener) {
+        if (gamma->get_active ()) {
+            listener->panelChanged (Evlocalrgbgamma, M ("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (Evlocalrgbgamma, M ("GENERAL_DISABLED"));
+        }
+    }
+}
+
+
+
 
 void Localrgb::updateGeometry (const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
 {
@@ -1829,6 +1875,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     pp->localrgb.transit = transit->getIntValue ();
     pp->localrgb.nbspot = nbspot->getIntValue ();
     pp->localrgb.anbspot = anbspot->getIntValue ();
+    pp->localrgb.gamma = gamma->get_active();
     pp->localrgb.retrab = retrab->getIntValue ();
     pp->localrgb.hueref = hueref->getValue ();
     pp->localrgb.chromaref = chromaref->getValue ();
@@ -1914,6 +1961,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->localrgb.curve2     = !shape2->isUnChanged ();
         pedited->localrgb.curveMode  = toneCurveMode->get_active_row_number() != 6;
         pedited->localrgb.curveMode2 = toneCurveMode2->get_active_row_number() != 6;
+        pedited->localrgb.gamma    = !gamma->get_inconsistent();
 
         pedited->localrgb.enabled = !get_inconsistent();
 
@@ -1939,17 +1987,19 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     } else if (wbMethod->get_active_row_number() == 1) {
         pp->localrgb.wbMethod = "man";
     } else if (wbMethod->get_active_row_number() == 2) {
-        pp->localrgb.wbMethod = "aut";
-    } else if (wbMethod->get_active_row_number() == 3) {
         pp->localrgb.wbMethod = "autgamma";
-    } else if (wbMethod->get_active_row_number() == 4) {
+    } else if (wbMethod->get_active_row_number() == 3) {
         pp->localrgb.wbMethod = "autedg";
-    } else if (wbMethod->get_active_row_number() == 5) {
+    } else if (wbMethod->get_active_row_number() == 4) {
         pp->localrgb.wbMethod = "autold";
-    } else if (wbMethod->get_active_row_number() == 6) {
+    } else if (wbMethod->get_active_row_number() == 5) {
         pp->localrgb.wbMethod = "autorobust";
-    } else if (wbMethod->get_active_row_number() == 7) {
+    } else if (wbMethod->get_active_row_number() == 6) {
         pp->localrgb.wbMethod = "autosdw";
+    } else if (wbMethod->get_active_row_number() == 7) {
+        pp->localrgb.wbMethod = "autedgrob";
+    } else if (wbMethod->get_active_row_number() == 8) {
+        pp->localrgb.wbMethod = "autedgsdw";
     }
 
     if (Smethod->get_active_row_number() == 0) {

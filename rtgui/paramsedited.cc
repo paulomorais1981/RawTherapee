@@ -333,6 +333,7 @@ void ParamsEdited::set (bool v)
     localrgb.temp = v;
     localrgb.green = v;
     localrgb.equal = v;
+    localrgb.gamma = v;
 
     locallab.enabled = v;
     locallab.expcolor = v;
@@ -978,6 +979,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         localrgb.temp = localrgb.temp && p.localrgb.temp == other.localrgb.temp;
         localrgb.green = localrgb.green && p.localrgb.green == other.localrgb.green;
         localrgb.wbMethod = localrgb.wbMethod && p.localrgb.wbMethod == other.localrgb.wbMethod;
+        localrgb.gamma = localrgb.gamma && p.localrgb.gamma == other.localrgb.gamma;
 
         locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
@@ -2447,6 +2449,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.localrgb.equal      = mods.localrgb.equal;
     }
 
+    if (localrgb.gamma) {
+        toEdit.localrgb.gamma     = mods.localrgb.gamma;
+    }
+	
     if (locallab.enabled) {
         toEdit.locallab.enabled   = mods.locallab.enabled;
     }
