@@ -573,17 +573,17 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     LUMINANCECURVE,   // Evlocallabchromaref
     LUMINANCECURVE,   // Evlocallablumaref
     LUMINANCECURVE,    //EvLocrgbenaexpose
-    LUMINANCECURVE, //EvlocalrgbEnabled
-    ALLNORAW, //EvlocalrgblocY
-    ALLNORAW, //EvlocalrgblocX
-    ALLNORAW, // EvlocalrgbCenter
+    DEMOSAIC, //EvlocalrgbEnabled
+    DEMOSAIC, //EvlocalrgblocY
+    DEMOSAIC, //EvlocalrgblocX
+    DEMOSAIC, // EvlocalrgbCenter
     LUMINANCECURVE, //EvlocalrgbDegree
     LUMINANCECURVE, //Evlocalrgblightness
     LUMINANCECURVE, //Evlocalrgbcontrast
     LUMINANCECURVE, //Evlocalrgbchroma
-    ALLNORAW, //Evlocalrgbtransit
-    ALLNORAW, //EvlocalrgblocYT
-    ALLNORAW, //EvlocalrgblocXL
+    DEMOSAIC, //Evlocalrgbtransit
+    DEMOSAIC, //EvlocalrgblocYT
+    DEMOSAIC, //EvlocalrgblocXL
     LUMINANCECURVE, //EvlocalrgbSmet
     LUMINANCECURVE, //Evlocalrgbsensi
     LUMINANCECURVE, //Evlocalrgbnbspot
@@ -605,10 +605,10 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     LUMINANCECURVE, //EvlocalrgbCurve2
     LUMINANCECURVE, //EvlocalrgbCurveMode1
     LUMINANCECURVE, //EvlocalrgbCurveMode2
-    ALLNORAW, //EvLocrgbenawb
-    ALLNORAW, //Evlocalrgbtemp
-    ALLNORAW, //Evlocalrgbgreen
-    ALLNORAW, //Evlocalrgbequal
+    DEMOSAIC, //EvLocrgbenawb
+    DEMOSAIC, //Evlocalrgbtemp
+    DEMOSAIC, //Evlocalrgbgreen
+    DEMOSAIC, //Evlocalrgbequal
     DEMOSAIC, //EvlocalrgbwbMethod
     DEMOSAIC //Evlocalrgbgamma
 
