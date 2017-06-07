@@ -924,7 +924,7 @@ void LocalrgbParams::setDefaults()
     chroma = 0;
     sensi = 19;
     Smethod = "IND";
-    qualityMethod = "enh";
+    qualityMethod = "enhden";
     hueref = 1.;
     chromaref = 50.;
     lumaref = 50.;
@@ -935,7 +935,7 @@ void LocalrgbParams::setDefaults()
     transit = 60;
     expcomp       = 0;
     black         = 0;
-    hlcompr       = 0;
+    hlcompr       = 20;
     hlcomprthresh = 33;
     shcompr       = 50;
     curve.clear ();
@@ -950,7 +950,7 @@ void LocalrgbParams::setDefaults()
     green = 1.;
     equal = 1.;
     gamma = true;
-	
+
 }
 
 
@@ -2891,7 +2891,7 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
         if (!pedited || pedited->localrgb.gamma) {
             keyFile.set_boolean ("Localrgb", "Gamma", localrgb.gamma);
         }
-		
+
         if (!pedited || pedited->localrgb.curveMode)  {
             Glib::ustring method;
 
@@ -4897,7 +4897,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->localrgb.gamma = true;
                 }
             }
-			
+
             if (keyFile.has_key ("Localrgb", "CurveMode"))      {
                 Glib::ustring sMode = keyFile.get_string ("Localrgb", "CurveMode");
 

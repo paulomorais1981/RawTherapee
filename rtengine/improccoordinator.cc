@@ -898,7 +898,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     //begin Local rgb
     //why here ? 1) after auto exposure, not to influence auto 2) I can use either Lab and rgb (after conversion) 3) just before all L*a*b* threatment
+
+    if (params.localrgb.qualityMethod == "enhden") {
+        params.dirpyrDenoise.enabled = true;
+    }
+
+    //provisory not good solution to prevent artifacts in enhaced mode
+    //TODO change that with the same solution as locallab
+
     if (params.localrgb.enabled && params.localrgb.expexpose) {
+
         CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
                                          params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
                                          params.localrgb.shcompr, params.localrgb.lightness, params.localrgb.contrast,
@@ -909,10 +918,14 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         DCPProfile::ApplyState as;
         DCPProfile *dcpProf = imgsrc->getDCP (params.icm, currWB, as);
         nprloc->CopyFrom (oprevl);
-
+        double huere, chromare, lumare;
+        ipf.calcrgb_ref (nprloc, nprloc, scale, 0, 0, 0, 0, pW, pH, fw, fh, huere, chromare, lumare);
+        params.localrgb.hueref = huere;
+        params.localrgb.chromaref = chromare;
+        params.localrgb.lumaref = lumare;
 
         int sp = 1;
-        ipf.Rgb_Local (3, sp, nprloc, nprloc, 0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
+        ipf.Rgb_Local (3, sp, nprloc, nprloc,  0, 0, 0, 0, pW, pH, fw, fh, params.localrgb.hueref, params.localrgb.chromaref, params.localrgb.lumaref,
                        oprevi, oprevl, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,
                        params.localrgb.chroma, customToneCurve1loc, customToneCurve2loc,
                        params.localrgb.expcomp, params.localrgb.hlcompr, params.localrgb.hlcomprthresh, dcpProf, as);

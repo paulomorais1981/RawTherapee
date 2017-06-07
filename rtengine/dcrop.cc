@@ -197,6 +197,13 @@ void Crop::update (int todo)
 
         params.dirpyrDenoise.getCurves (noiseLCurve, noiseCCurve);
 
+        if (params.localrgb.qualityMethod == "enhden") {
+            params.dirpyrDenoise.enabled = true;
+        }
+
+        //provisory not good solution to prevent artifacts in enhaced mode
+        //TODO change that with the same solution as locallab
+
         int tilesize;
         int overlap;
 
@@ -698,7 +705,7 @@ void Crop::update (int todo)
             improv = new Imagefloat (trafw, trafh);
             int W = origCrop->getWidth();
             int H = origCrop->getHeight();
-		//	double ptemp, pgreen;
+            //  double ptemp, pgreen;
             //  printf("W=%i H=%i trafw=%i trafh=%i\n",W, H, trafw, trafh);
 #ifdef _OPENMP
             #pragma omp parallel for

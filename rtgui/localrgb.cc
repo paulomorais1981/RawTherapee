@@ -149,8 +149,8 @@ Localrgb::Localrgb ():
     sensi (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSI"), 0, 100, 1, 19))),
     transit (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_TRANSIT"), 5, 95, 1, 60))),
     retrab (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_RETRAB"), 0, 10000, 1, 500))),
-    expcomp (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_EXPCOMP"), -4, 4, 0.05, 0))),
-    hlcompr (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRHIGHLIGHTS"), 0, 500, 1, 0))),
+    expcomp (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_EXPCOMP"), -2, 2, 0.05, 0))),
+    hlcompr (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRHIGHLIGHTS"), 0, 500, 1, 20))),
     hlcomprthresh (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRHIGHLIGHTSTHRESHOLD"), 0, 100, 1, 33))),
     black (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_BLACKLEVEL"), -16384, 32768, 50, 0))),
     shcompr (Gtk::manage (new Adjuster (M ("TP_EXPOSURE_COMPRSHADOWS"), 0, 100, 1, 50))),
@@ -276,7 +276,7 @@ Localrgb::Localrgb ():
 
     qualityMethod->append (M ("TP_LOCALLAB_STD"));
     qualityMethod->append (M ("TP_LOCALLAB_ENH"));
-//   qualityMethod->append (M ("TP_LOCALLAB_ENHDEN"));
+    qualityMethod->append (M ("TP_LOCALLAB_ENHDEN"));
     qualityMethod->set_active (0);
     qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::qualityMethodChanged) );
 //    qualityMethod->set_tooltip_markup (M ("TP_LOCALRGB_METHOD_TOOLTIP"));
@@ -370,11 +370,13 @@ Localrgb::Localrgb ():
 
     toneCurveMode = Gtk::manage (new MyComboBoxText ());
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_STANDARD"));
+    /*
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_WEIGHTEDSTD"));
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_FILMLIKE"));
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_SATANDVALBLENDING"));
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_LUMINANCE"));
     toneCurveMode->append (M ("TP_EXPOSURE_TCMODE_PERCEPTUAL"));
+    */
     toneCurveMode->set_active (0);
     toneCurveMode->set_tooltip_text (M ("TP_EXPOSURE_TCMODE_LABEL1"));
 
@@ -395,11 +397,13 @@ Localrgb::Localrgb ():
 
     toneCurveMode2 = Gtk::manage (new MyComboBoxText ());
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_STANDARD"));
+    /*
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_WEIGHTEDSTD"));
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_FILMLIKE"));
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_SATANDVALBLENDING"));
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_LUMINANCE"));
     toneCurveMode2->append (M ("TP_EXPOSURE_TCMODE_PERCEPTUAL"));
+    */
     toneCurveMode2->set_active (0);
     toneCurveMode2->set_tooltip_text (M ("TP_EXPOSURE_TCMODE_LABEL2"));
 
@@ -1552,8 +1556,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
         qualityMethod->set_active (0);
     } else if (pp->localrgb.qualityMethod == "enh") {
         qualityMethod->set_active (1);
-        //  } else if (pp->localrgb.qualityMethod == "enhden") {
-        //      qualityMethod->set_active (2);
+    } else if (pp->localrgb.qualityMethod == "enhden") {
+        qualityMethod->set_active (2);
     }
 
     qualityMethodChanged ();
@@ -1896,7 +1900,10 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
 
     if      (tcMode == 0) {
         pp->localrgb.curveMode = LocalrgbParams::TC_MODE_STD;
-    } else if (tcMode == 1) {
+    }
+
+    /*
+    else if (tcMode == 1) {
         pp->localrgb.curveMode = LocalrgbParams::TC_MODE_WEIGHTEDSTD;
     } else if (tcMode == 2) {
         pp->localrgb.curveMode = LocalrgbParams::TC_MODE_FILMLIKE;
@@ -1907,12 +1914,14 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     } else if (tcMode == 5) {
         pp->localrgb.curveMode = LocalrgbParams::TC_MODE_PERCEPTUAL;
     }
-
+    */
     tcMode = toneCurveMode2->get_active_row_number();
 
     if      (tcMode == 0) {
         pp->localrgb.curveMode2 = LocalrgbParams::TC_MODE_STD;
-    } else if (tcMode == 1) {
+    }
+
+    /*else if (tcMode == 1) {
         pp->localrgb.curveMode2 = LocalrgbParams::TC_MODE_WEIGHTEDSTD;
     } else if (tcMode == 2) {
         pp->localrgb.curveMode2 = LocalrgbParams::TC_MODE_FILMLIKE;
@@ -1923,7 +1932,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     } else if (tcMode == 5) {
         pp->localrgb.curveMode2 = LocalrgbParams::TC_MODE_PERCEPTUAL;
     }
-
+    */
     pp->localrgb.expexpose      = expexpose->getEnabled();
     pp->localrgb.expwb      = expwb->getEnabled();
 
@@ -1978,8 +1987,8 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.qualityMethod = "std";
     } else if (qualityMethod->get_active_row_number() == 1) {
         pp->localrgb.qualityMethod = "enh";
-//    } else if (qualityMethod->get_active_row_number() == 2) {
-//        pp->localrgb.qualityMethod = "enhden";
+    } else if (qualityMethod->get_active_row_number() == 2) {
+        pp->localrgb.qualityMethod = "enhden";
     }
 
     if (wbMethod->get_active_row_number() == 0) {

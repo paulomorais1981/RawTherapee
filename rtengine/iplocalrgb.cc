@@ -3,7 +3,7 @@
  *
  *  Copyright (c) 2004-2010 Gabor Horvath <hgabor@rawtherapee.com>
  *
- *  RawTherapee is free software: you can redistribute it and/or modify
+ *  RawTherapee is free software: you can redistribute it and/or modifyf
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -230,6 +230,52 @@ static void calcTransition (const float lox, const float loy, const float ach, c
                 localFactor = calcLocalFactor (lox, loy, lp.xc, lp.lxL, lp.yc, lp.ly, ach);
             }
         }
+    }
+}
+void ImProcFunctions::calcrgb_ref (LabImage * original, LabImage * transformed, int sk, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double & hueref, double & chromaref, double & lumaref)
+{
+    if (params->localrgb.enabled) {
+        //always calculate hueref, chromaref, lumaref  before others operations use in normal mode for all modules exceprt denoise
+        struct local_params lp;
+        calcLocalParams (oW, oH, params->localrgb, lp);
+        //  printf("OK calcrgb\n");
+        //int sk = 1;
+// double precision for large summations
+        double aveA = 0.;
+        double aveB = 0.;
+        double aveL = 0.;
+        double aveChro = 0.;
+// int precision for the counters
+        int nab = 0;
+// single precision for the result
+        float avA, avB, avL;
+        int spotSize = 0.88623f * max (1,  lp.cir / sk); //18
+
+        //O.88623 = sqrt(PI / 4) ==> sqare equal to circle
+        //  printf("Spots=%i  xc=%i\n", spotSize, (int) lp.xc);
+        // very small region, don't use omp here
+        for (int y = max (cy, (int) (lp.yc - spotSize)); y < min (transformed->H + cy, (int) (lp.yc + spotSize + 1)); y++) {
+            for (int x = max (cx, (int) (lp.xc - spotSize)); x < min (transformed->W + cx, (int) (lp.xc + spotSize + 1)); x++) {
+                aveL += original->L[y - cy][x - cx];
+                aveA += original->a[y - cy][x - cx];
+                aveB += original->b[y - cy][x - cx];
+                aveChro += sqrtf (SQR (original->b[y - cy][x - cx]) + SQR (original->a[y - cy][x - cx]));
+
+                nab++;
+            }
+        }
+
+        aveL = aveL / nab;
+        aveA = aveA / nab;
+        aveB = aveB / nab;
+        aveChro = aveChro / nab;
+        aveChro /= 327.68f;
+        avA = aveA / 327.68f;
+        avB = aveB / 327.68f;
+        avL = aveL / 327.68f;
+        hueref = xatan2f (avB, avA);   //mean hue
+        chromaref = aveChro;
+        lumaref = avL;
     }
 }
 
@@ -477,8 +523,11 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
 
 
 
-                ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
-                                           customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
+                //   ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
+                //                              customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
+
+                ImProcFunctions::rgblabLocal (bufworking, bfh, bfw, bufexporig, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
+                                              customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
 
 
                 //      float maxc = -10000.f;

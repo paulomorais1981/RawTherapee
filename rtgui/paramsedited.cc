@@ -2452,7 +2452,7 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
     if (localrgb.gamma) {
         toEdit.localrgb.gamma     = mods.localrgb.gamma;
     }
-	
+
     if (locallab.enabled) {
         toEdit.locallab.enabled   = mods.locallab.enabled;
     }

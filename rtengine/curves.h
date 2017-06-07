@@ -898,6 +898,12 @@ inline void Colorfcurve::Apply (float& Cf) const
     Cf = lutColCurve[Cf];
 }
 
+class StandardToneCurveL : public ToneCurve
+{
+public:
+    void Apply (float& L) const;
+};
+
 
 class StandardToneCurve : public ToneCurve
 {
@@ -994,6 +1000,16 @@ private:
 public:
     void Apply (float& r, float& g, float& b) const;
 };
+
+// Standard L tone curve
+inline void StandardToneCurveL::Apply (float& L) const
+{
+
+    assert (lutToneCurve);
+
+    L = lutToneCurve[L];
+}
+
 
 // Standard tone curve
 inline void StandardToneCurve::Apply (float& r, float& g, float& b) const
