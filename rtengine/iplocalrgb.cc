@@ -373,6 +373,223 @@ void ImProcFunctions::WB_Local (ImageSource* imgsrc, int call, int sp, int sx, i
         }
     }
 }
+void ImProcFunctions::rgblabLocal (const local_params& lp, Imagefloat* working, int bfh, int bfw, LabImage* bufexporig, LabImage* lab, Imagefloat* orirgb,  LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+                                   const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn )
+{
+
+    const float exp_scale = pow (2.0, lp.expcomp);//lp.expcomp
+    const float comp = (max (0.0, lp.expcomp) + 1.0) * lp.hlcomp / 100.0;
+    const float shoulder = ((65536.0 / max (1.0f, exp_scale)) * (lp.hlcompthr / 200.0)) + 0.1;
+    const float hlrange = 65536.0 - shoulder;
+    const bool isProPhoto = (params->icm.working == "ProPhoto");
+    // extracting datas from 'params' to avoid cache flush (to be confirmed)
+    LocalrgbParams::eTCModeId curveMode = params->localrgb.curveMode;
+    LocalrgbParams::eTCModeId curveMode2 = params->localrgb.curveMode2;
+    //  bool highlight = params->toneCurve.hrenabled;//Get the value if "highlight reconstruction" is activated
+    bool hasToneCurve1 = bool (customToneCurve1);
+    bool hasToneCurve2 = bool (customToneCurve2);
+
+
+#define TS 112
+
+#ifdef _OPENMP
+    #pragma omp parallel if (multiThread)
+#endif
+    {
+        char *buffer;
+
+        buffer = (char *) malloc (3 * sizeof (float) * TS * TS + 20 * 64 + 63);
+        char *data;
+        data = (char*) ( ( uintptr_t (buffer) + uintptr_t (63)) / 64 * 64);
+
+        float *Ltemp = (float (*))data;
+        float *atemp = (float (*))         ((char*)Ltemp + sizeof (float) * TS * TS + 4 * 64);
+        float *btemp = (float (*))         ((char*)atemp + sizeof (float) * TS * TS + 8 * 64);
+        int istart;
+        int jstart;
+        int tW;
+        int tH;
+
+#ifdef _OPENMP
+        #pragma omp for schedule(dynamic) collapse(2)
+#endif
+
+        for (int ii = 0; ii < bfh; ii += TS)
+            for (int jj = 0; jj < bfw; jj += TS) {
+
+                istart = ii;
+                jstart = jj;
+                tH = min (ii + TS, bfh);
+                tW = min (jj + TS, bfw);
+
+
+                for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                    for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                        Ltemp[ti * TS + tj] = 2.f * bufexporig->L[i][j];
+                        atemp[ti * TS + tj] = bufexporig->a[i][j];
+                        btemp[ti * TS + tj] = bufexporig->b[i][j];;
+                    }
+                }
+
+
+
+                for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                    for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+
+                        float L = Ltemp[ti * TS + tj];
+                        float a = atemp[ti * TS + tj];
+                        float b = btemp[ti * TS + tj];
+                        float tonefactor = (L < MAXVALF ? hltonecurve[L] : CurveFactory::hlcurve (exp_scale, comp, hlrange, L) );
+                        Ltemp[ti * TS + tj] = L * tonefactor;
+                    }
+                }
+
+                for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                    for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+
+                        float L = Ltemp[ti * TS + tj];
+                        float a = atemp[ti * TS + tj];
+                        float b = btemp[ti * TS + tj];
+
+                        //shadow tone curve
+                        float Y = L;
+                        float tonefactor = shtonecurve[Y];
+                        Ltemp[ti * TS + tj] = Ltemp[ti * TS + tj] * tonefactor;
+                    }
+                }
+
+                if (dcpProf) {
+                    //          dcpProf->step2ApplyTile (rtemp, gtemp, btemp, tW - jstart, tH - istart, TS, asIn);
+                }
+
+                /*
+                                for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                                    for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                                        float r = rtemp[ti * TS + tj];
+                                        float g = gtemp[ti * TS + tj];
+                                        float b = btemp[ti * TS + tj];
+
+                                        // clip out of gamut colors, without distorting color too bad
+                                        if (r < 0) {
+                                            r = 0;
+                                        }
+
+                                        if (g < 0) {
+                                            g = 0;
+                                        }
+
+                                        if (b < 0) {
+                                            b = 0;
+                                        }
+
+                                        if (r > 65535 || g > 65535 || b > 65535) {
+                                            filmlike_clip (&r, &g, &b);
+                                        }
+
+                                        rtemp[ti * TS + tj] = r;
+                                        gtemp[ti * TS + tj] = g;
+                                        btemp[ti * TS + tj] = b;
+                                    }
+                                }
+                */
+                for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                    for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+
+                        //brightness/contrast
+                        Ltemp[ti * TS + tj] = tonecurve[Ltemp[ti * TS + tj] ];
+
+                    }
+                }
+
+
+                if (hasToneCurve1) {
+                    if (curveMode == LocalrgbParams::TC_MODE_STD) { // Standard
+                        for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                            for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                                const StandardToneCurveL& userToneCurve = static_cast<const StandardToneCurveL&> (customToneCurve1);
+                                userToneCurve.Apply (Ltemp[ti * TS + tj]);
+                            }
+                        }
+                    }
+                }
+
+
+                if (hasToneCurve2) {
+                    if (curveMode2 == LocalrgbParams::TC_MODE_STD) { // Standard
+                        for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                            for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                                const StandardToneCurveL& userToneCurve = static_cast<const StandardToneCurveL&> (customToneCurve2);
+                                userToneCurve.Apply (Ltemp[ti * TS + tj]);
+                            }
+                        }
+                    }
+                }
+
+
+                if (lp.chro != 0) {
+                    for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                        for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+
+                            float satby100 = lp.chro / 100.f;
+                            float L = 2.f * Ltemp[ti * TS + tj];
+                            float a = atemp[ti * TS + tj];
+                            float b = btemp[ti * TS + tj];
+
+                            atemp[ti * TS + tj] = a * (1.f + satby100);
+                            btemp[ti * TS + tj] = b * (1.f + satby100);
+                        }
+                    }
+                }
+
+                /*
+                                if (isProPhoto) { // this is a hack to avoid the blue=>black bug (Issue 2141)
+                                    for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                                        for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                                            float r = rtemp[ti * TS + tj];
+                                            float g = gtemp[ti * TS + tj];
+
+                                            if (r == 0.0f || g == 0.0f) {
+                                                float b = btemp[ti * TS + tj];
+                                                float h, s, v;
+                                                Color::rgb2hsv (r, g, b, h, s, v);
+                                                s *= 0.99f;
+                                                Color::hsv2rgb (h, s, v, rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj]);
+                                            }
+                                        }
+                                    }
+                                }
+
+                */
+
+                bool vasy = true;
+
+                if (vasy) {
+                    // ready, fill lab
+                    for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                        for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+
+                            lab->L[i][j] = 0.5f * Ltemp[ti * TS + tj];
+                            lab->a[i][j] = atemp[ti * TS + tj];
+                            lab->b[i][j] = btemp[ti * TS + tj];
+
+                            //in case off futur usage
+                            /*
+                            origrgb->r (i, j) = r;
+                            origrgb->g (i, j) = g;
+                            origrgb->b (i, j) = b;
+                            */
+                        }
+                    }
+                }
+            }
+
+        free (buffer);
+
+
+    }
+
+
+}
 
 void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, double &hueref, double &chromaref, double &lumaref,
                                  Imagefloat* working, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurveloc, LUTf & shtonecurveloc, LUTf & tonecurveloc,
@@ -403,7 +620,6 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
 //        bool noiscfactiv = false;
 
         // no activ actually because in Locallab ==> todo
-        // but after tests not necessary with rgb datas, not enough sensitive
         /*
                 if (lp.qualmet == 2) { //suppress artifacts with quality enhanced
                     levred = 4;
@@ -526,8 +742,8 @@ void ImProcFunctions::Rgb_Local (int call, int sp, LabImage* original, LabImage*
                 //   ImProcFunctions::rgbLocal (bufworking, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
                 //                              customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
 
-                ImProcFunctions::rgblabLocal (bufworking, bfh, bfw, bufexporig, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc, lp.chro,
-                                              customToneCurve1, customToneCurve2, lp.expcomp, lp.hlcomp, lp.hlcompthr, dcpProf, as);
+                ImProcFunctions::rgblabLocal (lp, bufworking, bfh, bfw, bufexporig, bufexpfin, orirgb, hltonecurveloc, shtonecurveloc, tonecurveloc,
+                                              customToneCurve1, customToneCurve2, dcpProf, as);
 
 
                 //      float maxc = -10000.f;

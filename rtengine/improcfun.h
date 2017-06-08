@@ -219,9 +219,9 @@ public:
                              int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
                              double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn);
 
-    void rgblabLocal        (Imagefloat* working, int bfh, int bfw, LabImage* bufexporig, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
-                             int sat, const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
-                             double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn);
+    void rgblabLocal        (const local_params& lp, Imagefloat* working, int bfh, int bfw, LabImage* bufexporig, LabImage* lab, Imagefloat* orirgb, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
+                             const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,
+                             DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn);
 
     void labtoning (float r, float g, float b, float &ro, float &go, float &bo, int algm, int metchrom, int twoc, float satLimit, float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, LUTf & clToningcurve, LUTf & cl2Toningcurve, float iplow, float iphigh, double wp[3][3], double wip[3][3]  );
     void toning2col (float r, float g, float b, float &ro, float &go, float &bo, float iplow, float iphigh, float rl, float gl, float bl, float rh, float gh, float bh, float SatLow, float SatHigh, float balanS, float balanH, float reducac, int mode, int preser, float strProtect);
