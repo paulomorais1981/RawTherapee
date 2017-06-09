@@ -30,6 +30,7 @@
 #include <string>
 #include <unistd.h>
 #include "../rtengine/improcfun.h"
+#include "../rtengine/color.h"
 
 #define MINTEMP 1500   //1200
 #define MAXTEMP 60000  //12000
@@ -130,6 +131,7 @@ Localrgb::Localrgb ():
     EditSubscriber (ET_OBJECTS), lastObject (-1),
     expexpose (new MyExpander (true, M ("TP_LOCALRGB_EXPO"))),
     expsettings (new MyExpander (false, M ("TP_LOCALLAB_SETTINGS"))),
+    expvibrance (new MyExpander (true, M ("TP_LOCALRGB_VIBRANCE"))),
     expwb (new MyExpander (true, M ("TP_LOCALRGB_WB"))),
 
     anbspot (Gtk::manage (new Adjuster (M ("TP_LOCALLAB_ANBSPOT"), 0, 1, 1, 0))),
@@ -233,6 +235,9 @@ Localrgb::Localrgb ():
 
     expexpose->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Localrgb::foldAllButMe), expexpose) );
     enableexposeConn = expexpose->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Localrgb::enableToggled), expexpose) );
+
+    expvibrance->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Localrgb::foldAllButMe), expvibrance) );
+    enablevibranceConn = expvibrance->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Localrgb::enableToggled), expvibrance) );
 
     expwb->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Localrgb::foldAllButMe), expwb) );
     enablewbConn = expwb->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Localrgb::enableToggled), expwb) );
@@ -430,6 +435,76 @@ Localrgb::Localrgb ():
     expexpose->add (*colorBox);
     expexpose->setLevel (2);
     pack_start (*expexpose);
+
+
+    ToolParamBlock* const vibranceBox = Gtk::manage (new ToolParamBlock());
+    std::vector<GradientMilestone> milestonesvib;
+    float R, G, B;
+    // -0.1 rad < Hue < 1.6 rad
+    Color::hsv2rgb01 (0.92f, 0.45f, 0.6f, R, G, B);
+    milestonesvib.push_back ( GradientMilestone (0.0, double (R), double (G), double (B)) );
+    Color::hsv2rgb01 (0.14056f, 0.45f, 0.6f, R, G, B);
+    milestonesvib.push_back ( GradientMilestone (1.0, double (R), double (G), double (B)) );
+
+    saturated = Gtk::manage (new Adjuster (M ("TP_VIBRANCE_SATURATED"), -100., 100., 1., 0.));
+    saturated->setAdjusterListener (this);
+    saturated->set_sensitive (false);
+    vibranceBox->pack_start ( *saturated, Gtk::PACK_SHRINK, 0);
+
+    pastels = Gtk::manage (new Adjuster (M ("TP_VIBRANCE_PASTELS"), -100., 100., 1., 0.));
+    pastels->setAdjusterListener (this);
+    vibranceBox->pack_start ( *pastels, Gtk::PACK_SHRINK, 0);
+
+    psThreshold = Gtk::manage (new ThresholdAdjuster (M ("TP_VIBRANCE_PSTHRESHOLD"), -100., 100., 0., M ("TP_VIBRANCE_PSTHRESHOLD_WEIGTHING"), 0, 0., 100., 75., M ("TP_VIBRANCE_PSTHRESHOLD_SATTHRESH"), 0, this, false));
+    psThreshold->setAdjusterListener (this);
+    psThreshold->set_tooltip_markup (M ("TP_VIBRANCE_PSTHRESHOLD_TOOLTIP"));
+    psThreshold->set_sensitive (false);
+    vibranceBox->pack_start ( *psThreshold, Gtk::PACK_SHRINK, 0);
+
+    protectSkins = Gtk::manage (new Gtk::CheckButton (M ("TP_VIBRANCE_PROTECTSKINS")));
+    protectSkins->set_active (true);
+    vibranceBox->pack_start (*protectSkins, Gtk::PACK_SHRINK, 0);
+
+    avoidColorShift = Gtk::manage (new Gtk::CheckButton (M ("TP_VIBRANCE_AVOIDCOLORSHIFT")));
+    avoidColorShift->set_active (true);
+    vibranceBox->pack_start (*avoidColorShift, Gtk::PACK_SHRINK, 0);
+
+    pastSatTog = Gtk::manage (new Gtk::CheckButton (M ("TP_VIBRANCE_PASTSATTOG")));
+    pastSatTog->set_active (true);
+    vibranceBox->pack_start (*pastSatTog, Gtk::PACK_SHRINK, 0);
+
+    sensiv = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSI"), 0, 100, 1, 19));
+    sensiv->setAdjusterListener (this);
+
+    vibranceBox->pack_start (*sensiv, Gtk::PACK_SHRINK, 0);
+
+    curveEditorGG = new CurveEditorGroup (options.lastVibranceCurvesDir, M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_LABEL"));
+    curveEditorGG->setCurveListener (this);
+
+    skinTonesCurve = static_cast<DiagonalCurveEditor*> (curveEditorGG->addCurve (CT_Diagonal, M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES")));
+    skinTonesCurve->setTooltip (M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_TOOLTIP"));
+    skinTonesCurve->setBottomBarBgGradient (milestonesvib);
+    skinTonesCurve->setLeftBarBgGradient (milestonesvib);
+    skinTonesCurve->setRangeLabels (
+        M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_RANGE1"), M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_RANGE2"),
+        M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_RANGE3"), M ("TP_VIBRANCE_CURVEEDITOR_SKINTONES_RANGE4")
+    );
+    skinTonesCurve->setRangeDefaultMilestones (0.1, 0.4, 0.85);
+    curveEditorGG->curveListComplete();
+
+    vibranceBox->pack_start (*curveEditorGG, Gtk::PACK_SHRINK, 4);
+
+    pskinsconn = protectSkins->signal_toggled().connect ( sigc::mem_fun (*this, &Localrgb::protectskins_toggled) );
+    ashiftconn = avoidColorShift->signal_toggled().connect ( sigc::mem_fun (*this, &Localrgb::avoidcolorshift_toggled) );
+    pastsattogconn = pastSatTog->signal_toggled().connect ( sigc::mem_fun (*this, &Localrgb::pastsattog_toggled) );
+
+
+    expvibrance->add (*vibranceBox);
+    expvibrance->setLevel (2);
+    pack_start (*expvibrance);
+
+
+
 
 
     ToolParamBlock* const wbBox = Gtk::manage (new ToolParamBlock());
@@ -772,6 +847,7 @@ void Localrgb::foldAllButMe (GdkEventButton* event, MyExpander *expander)
     if (event->button == 3) {
         expsettings->set_expanded (expsettings == expander);
         expexpose->set_expanded (expexpose == expander);
+        expvibrance->set_expanded (expvibrance == expander);
         expwb->set_expanded (expwb == expander);
     }
 }
@@ -783,6 +859,8 @@ void Localrgb::enableToggled (MyExpander *expander)
 
         if (expander == expexpose) {
             event = EvLocrgbenaexpose;
+        } else if (expander == expvibrance) {
+            event = EvLocrgbenavibrance;
         } else if (expander == expwb) {
             event = EvLocrgbenawb;
 
@@ -884,15 +962,17 @@ void Localrgb::writeOptions (std::vector<int> &tpOpen)
 {
     tpOpen.push_back (expsettings->get_expanded ());
     tpOpen.push_back (expexpose->get_expanded ());
+    tpOpen.push_back (expvibrance->get_expanded ());
     tpOpen.push_back (expwb->get_expanded ());
 }
 
 void Localrgb::updateToolState (std::vector<int> &tpOpen)
 {
-    if (tpOpen.size() == 3) {
+    if (tpOpen.size() == 4) {
         expsettings->set_expanded (tpOpen.at (0));
         expexpose->set_expanded (tpOpen.at (1));
-        expwb->set_expanded (tpOpen.at (2));
+        expvibrance->set_expanded (tpOpen.at (2));
+        expwb->set_expanded (tpOpen.at (3));
 
     }
 }
@@ -1436,8 +1516,19 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableexposeConn.block (true);
     tcmodeconn.block (true);
     tcmode2conn.block (true);
+    enablevibranceConn.block (true);
 
     if (pedited) {
+        set_inconsistent                  (multiImage && !pedited->localrgb.enabled);
+        pastels->setEditedState           (pedited->localrgb.pastels ? Edited : UnEdited);
+        saturated->setEditedState         (pedited->localrgb.saturated ? Edited : UnEdited);
+        psThreshold->setEditedState       (pedited->localrgb.psthreshold ? Edited : UnEdited);
+        protectSkins->set_inconsistent    (!pedited->localrgb.protectskins);
+        avoidColorShift->set_inconsistent (!pedited->localrgb.avoidcolorshift);
+        pastSatTog->set_inconsistent      (!pedited->localrgb.pastsattog);
+        skinTonesCurve->setUnChanged      (!pedited->localrgb.skintonescurve);
+        sensiv->setEditedState (pedited->localrgb.sensiv ? Edited : UnEdited);
+
         degree->setEditedState (pedited->localrgb.degree ? Edited : UnEdited);
         gamma->set_inconsistent  (!pedited->localrgb.gamma);
         locY->setEditedState (pedited->localrgb.locY ? Edited : UnEdited);
@@ -1469,6 +1560,9 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
 
         shape->setUnChanged (!pedited->localrgb.curve);
         shape2->setUnChanged (!pedited->localrgb.curve2);
+
+        expvibrance->set_inconsistent   (!pedited->localrgb.expvibrance);
+
         expwb->set_inconsistent   (!pedited->localrgb.expwb);
         temp->setEditedState (pedited->localrgb.temp ? Edited : UnEdited);
         green->setEditedState (pedited->localrgb.green ? Edited : UnEdited);
@@ -1532,6 +1626,41 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     shape2->setCurve (pp->localrgb.curve2);
     toneCurveMode->set_active (pp->localrgb.curveMode);
     toneCurveMode2->set_active (pp->localrgb.curveMode2);
+    expvibrance->setEnabled (pp->localrgb.expvibrance);
+    sensiv->setValue (pp->localrgb.sensiv);
+
+    pskinsconn.block (true);
+    protectSkins->set_active (pp->localrgb.protectskins);
+    pskinsconn.block (false);
+    lastProtectSkins = pp->localrgb.protectskins;
+
+    ashiftconn.block (true);
+    avoidColorShift->set_active (pp->localrgb.avoidcolorshift);
+    ashiftconn.block (false);
+    lastAvoidColorShift = pp->localrgb.avoidcolorshift;
+
+    pastsattogconn.block (true);
+    pastSatTog->set_active (pp->localrgb.pastsattog);
+    pastsattogconn.block (false);
+    lastPastSatTog = pp->localrgb.pastsattog;
+
+    pastels->setValue (pp->localrgb.pastels);
+    psThreshold->setValue<int> (pp->localrgb.psthreshold);
+
+    if (lastPastSatTog) {
+        // Link both slider, so we set saturated and psThresholds unsensitive
+        psThreshold->set_sensitive (false);
+        saturated->set_sensitive (false);
+        saturated->setValue (pp->localrgb.pastels);    // Pastels and Saturated are linked
+    } else {
+        // Separate sliders, so we set saturated and psThresholds sensitive again
+        psThreshold->set_sensitive (true);
+        saturated->set_sensitive (true);
+        saturated->setValue (pp->localrgb.saturated);  // Pastels and Saturated are separate
+    }
+
+    skinTonesCurve->setCurve (pp->localrgb.skintonescurve);
+
     expwb->setEnabled (pp->localrgb.expwb);
     temp->setValue (pp->localrgb.temp);
     green->setValue (pp->localrgb.green);
@@ -1614,6 +1743,8 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     wbMethodConn.block (false);
 
     enableexposeConn.block (false);
+    enablevibranceConn.block (false);
+
     enableListener ();
 
 }
@@ -1896,6 +2027,16 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     pp->localrgb.green = green->getValue ();
     pp->localrgb.equal = equal->getValue ();
 
+//   pp->vibrance.enabled         = getEnabled ();
+    pp->localrgb.pastels         = pastels->getIntValue();
+    pp->localrgb.saturated       = pastSatTog->get_active() ? pp->vibrance.pastels : saturated->getIntValue ();
+    pp->localrgb.psthreshold     = psThreshold->getValue<int> ();
+    pp->localrgb.protectskins    = protectSkins->get_active ();
+    pp->localrgb.avoidcolorshift = avoidColorShift->get_active ();
+    pp->localrgb.pastsattog      = pastSatTog->get_active ();
+    pp->localrgb.skintonescurve  = skinTonesCurve->getCurve ();
+    pp->localrgb.sensiv = sensiv->getIntValue ();
+
     int tcMode = toneCurveMode->get_active_row_number();
 
     if      (tcMode == 0) {
@@ -1935,6 +2076,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
     */
     pp->localrgb.expexpose      = expexpose->getEnabled();
     pp->localrgb.expwb      = expwb->getEnabled();
+    pp->localrgb.expvibrance      = expvibrance->getEnabled();
 
     if (pedited) {
         pedited->localrgb.degree = degree->getEditedState ();
@@ -1975,10 +2117,21 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->localrgb.enabled = !get_inconsistent();
 
         pedited->localrgb.expexpose     = !expexpose->get_inconsistent();
+        pedited->localrgb.expvibrance     = !expvibrance->get_inconsistent();
         pedited->localrgb.expwb     = !expwb->get_inconsistent();
         pedited->localrgb.temp    = temp->getEditedState ();
         pedited->localrgb.green    = green->getEditedState ();
         pedited->localrgb.equal    = equal->getEditedState ();
+
+        pedited->localrgb.pastels         = pastels->getEditedState ();
+        pedited->localrgb.saturated       = saturated->getEditedState ();
+        pedited->localrgb.psthreshold     = psThreshold->getEditedState ();
+        pedited->localrgb.protectskins    = !protectSkins->get_inconsistent();
+        pedited->localrgb.avoidcolorshift = !avoidColorShift->get_inconsistent();
+        pedited->localrgb.pastsattog      = !pastSatTog->get_inconsistent();
+        pedited->localrgb.skintonescurve  = !skinTonesCurve->isUnChanged ();
+        pedited->localrgb.sensiv = sensiv->getEditedState ();
+
 
     }
 
@@ -2128,6 +2281,9 @@ void Localrgb::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvlocalrgbCurve1, M ("HISTORY_CUSTOMCURVE"));
         } else if (ce == shape2) {
             listener->panelChanged (EvlocalrgbCurve2, M ("HISTORY_CUSTOMCURVE"));
+        } else if (ce == skinTonesCurve) {
+            listener->panelChanged (EvlocalrgbSkinTonesCurve, M ("HISTORY_CUSTOMCURVE"));
+
         }
     }
 
@@ -2219,6 +2375,90 @@ bool Localrgb::curveMode2Changed_ ()
 
     return false;
 }
+
+void Localrgb::protectskins_toggled ()
+{
+    if (batchMode) {
+        if (protectSkins->get_inconsistent()) {
+            protectSkins->set_inconsistent (false);
+            pskinsconn.block (true);
+            protectSkins->set_active (false);
+            pskinsconn.block (false);
+        } else if (lastProtectSkins) {
+            protectSkins->set_inconsistent (true);
+        }
+
+        lastProtectSkins = protectSkins->get_active ();
+    }
+
+    if (listener && getEnabled()) {
+        if (protectSkins->get_active ()) {
+            listener->panelChanged (EvlocalrgbProtectSkins, M ("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (EvlocalrgbProtectSkins, M ("GENERAL_DISABLED"));
+        }
+    }
+}
+
+void Localrgb::avoidcolorshift_toggled ()
+{
+    if (batchMode) {
+        if (avoidColorShift->get_inconsistent()) {
+            avoidColorShift->set_inconsistent (false);
+            ashiftconn.block (true);
+            avoidColorShift->set_active (false);
+            ashiftconn.block (false);
+        } else if (lastAvoidColorShift) {
+            avoidColorShift->set_inconsistent (true);
+        }
+
+        lastAvoidColorShift = avoidColorShift->get_active ();
+    }
+
+    if (listener && getEnabled()) {
+        if (avoidColorShift->get_active ()) {
+            listener->panelChanged (EvlocalrgbAvoidColorShift, M ("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (EvlocalrgbAvoidColorShift, M ("GENERAL_DISABLED"));
+        }
+    }
+}
+
+void Localrgb::pastsattog_toggled ()
+{
+    if (batchMode) {
+        if (pastSatTog->get_inconsistent()) {
+            pastSatTog->set_inconsistent (false);
+            pastsattogconn.block (true);
+            pastSatTog->set_active (false);
+            pastsattogconn.block (false);
+        } else if (lastPastSatTog) {
+            pastSatTog->set_inconsistent (true);
+        }
+
+        lastPastSatTog = pastSatTog->get_active ();
+    }
+
+    if (pastSatTog->get_active()) {
+        // Link both slider, so we set saturated and psThresholds unsensitive
+        psThreshold->set_sensitive (false);
+        saturated->set_sensitive (false);
+        saturated->setValue (pastels->getValue());     // Pastels and Saturated are linked
+    } else {
+        // Separate sliders, so we set saturated and psThresholds sensitive again
+        psThreshold->set_sensitive (true);
+        saturated->set_sensitive (true);
+    }
+
+    if (listener && getEnabled()) {
+        if (pastSatTog->get_active ()) {
+            listener->panelChanged (EvlocalrgbPastSatTog, M ("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (EvlocalrgbPastSatTog, M ("GENERAL_DISABLED"));
+        }
+    }
+}
+
 
 
 void Localrgb::SmethodChanged ()
@@ -2316,6 +2556,10 @@ void Localrgb::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     green->setDefault (defParams->localrgb.green);
     equal->setDefault (defParams->localrgb.equal);
 
+    pastels->setDefault (defParams->localrgb.pastels);
+    saturated->setDefault (defParams->localrgb.saturated);
+    psThreshold->setDefault<int> (defParams->localrgb.psthreshold);
+    sensiv->setDefault (defParams->localrgb.sensiv);
 
     if (pedited) {
         degree->setDefaultEditedState (pedited->localrgb.degree ? Edited : UnEdited);
@@ -2347,6 +2591,10 @@ void Localrgb::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         temp->setDefaultEditedState (pedited->localrgb.temp ? Edited : UnEdited);
         green->setDefaultEditedState (pedited->localrgb.green ? Edited : UnEdited);
         equal->setDefaultEditedState (pedited->localrgb.equal ? Edited : UnEdited);
+        pastels->setDefaultEditedState     (pedited->localrgb.pastels ? Edited : UnEdited);
+        saturated->setDefaultEditedState   (pedited->localrgb.saturated ? Edited : UnEdited);
+        psThreshold->setDefaultEditedState (pedited->localrgb.psthreshold ? Edited : UnEdited);
+        sensiv->setDefaultEditedState (pedited->localrgb.sensiv ? Edited : UnEdited);
 
     } else {
         degree->setDefaultEditedState (Irrelevant);
@@ -2378,6 +2626,10 @@ void Localrgb::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         temp->setDefaultEditedState (Irrelevant);
         green->setDefaultEditedState (Irrelevant);
         equal->setDefaultEditedState (Irrelevant);
+        pastels->setDefaultEditedState     (Irrelevant);
+        saturated->setDefaultEditedState   (Irrelevant);
+        psThreshold->setDefaultEditedState (Irrelevant);
+        sensiv->setDefaultEditedState (Irrelevant);
 
 
     }
@@ -2393,6 +2645,10 @@ void Localrgb::adjusterChanged (Adjuster * a, double newval)
     hueref->hide();
     chromaref->hide();
     lumaref->hide();
+
+    if (a == pastels && pastSatTog->get_active()) {
+        saturated->setValue (newval);
+    }
 
     if (listener && getEnabled()) {
         if (a == degree) {
@@ -2466,12 +2722,17 @@ void Localrgb::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocalrgbgreen, green->getTextValue());
             wbMethod->set_active (1);
             wbMethodChanged ();
+        } else if (a == sensiv) {
+            listener->panelChanged (Evlocalrgbsensiv, sensiv->getTextValue());
 
         } else if (a == equal) {
             listener->panelChanged (Evlocalrgbequal, equal->getTextValue());
             wbMethod->set_active (1);
             wbMethodChanged ();
-
+        } else if (a == pastels ) {
+            listener->panelChanged (EvlocalrgbPastels, pastels->getTextValue() );
+        } else if (a == saturated && !pastSatTog->get_active()) {
+            listener->panelChanged (EvlocalrgbSaturated, saturated->getTextValue() );
         } else if (a == lumaref) {
             listener->panelChanged (Evlocalrgblumaref, "");//anbspot->getTextValue());
         } else if (a == circrad) {
@@ -2488,6 +2749,14 @@ void Localrgb::adjusterChanged (Adjuster * a, double newval)
     }
 
 }
+
+void Localrgb::adjusterChanged (ThresholdAdjuster* a, int newBottom, int newTop)
+{
+    if (listener && getEnabled()) {
+        listener->panelChanged (EvlocalrgbPastSatThreshold, psThreshold->getHistoryString());
+    }
+}
+
 
 void Localrgb::enabledChanged ()
 {
@@ -2555,6 +2824,9 @@ void Localrgb::trimValues (rtengine::procparams::ProcParams * pp)
     temp->trimValue (pp->localrgb.temp);
     green->trimValue (pp->localrgb.green);
     equal->trimValue (pp->localrgb.equal);
+    pastels->trimValue (pp->localrgb.pastels);
+    saturated->trimValue (pp->localrgb.saturated);
+    sensiv->trimValue (pp->localrgb.sensiv);
 
 }
 
@@ -2593,8 +2865,65 @@ void Localrgb::setBatchMode (bool batchMode)
     temp->showEditedCB ();
     green->showEditedCB ();
     equal->showEditedCB ();
+    pastels->showEditedCB   ();
+    saturated->showEditedCB ();
+    psThreshold->showEditedCB ();
+    sensiv->showEditedCB ();
+
+    curveEditorGG->setBatchMode (batchMode);
 
 }
+
+std::vector<double> Localrgb::getCurvePoints (ThresholdSelector* tAdjuster) const
+{
+    std::vector<double> points;
+    double threshold, transitionWeighting;
+    tAdjuster->getPositions<double> (transitionWeighting, threshold); // ( range -100;+100,   range 0;+100 )
+    transitionWeighting /= 100.; // range -1., +1.
+    threshold /= 100.;      // range  0., +1.
+
+    // Initial point
+    points.push_back (0.);
+    points.push_back (0.);
+
+    double p2 = 3.0 * threshold / 4.0;             // same one than in ipvibrance.cc
+    double s0 = threshold + (1.0 - threshold) / 4.0; // same one than in ipvibrance.cc
+
+    // point at the beginning of the first linear transition
+    points.push_back (p2);
+    points.push_back (0.);
+
+    // Y value of the chroma mean point, calculated to get a straight line between p2 and s0
+    double chromaMean = (threshold / 4.0) / (s0 - p2);
+
+    // move chromaMean up or down depending on transitionWeighting
+    if (transitionWeighting > 0.0) {
+        // positive values -> give more weight to Saturated
+        chromaMean = (1.0 - chromaMean) * transitionWeighting + chromaMean;
+    } else if (transitionWeighting < 0.0) {
+        // negative values -> give more weight to Pastels
+        chromaMean =      chromaMean  * transitionWeighting + chromaMean;
+    }
+
+    // point at the location of the Top cursor, at the end of the first linear transition and the beginning of the second one
+    points.push_back (threshold);
+    points.push_back (chromaMean);
+
+    if (threshold < 1.0) {
+
+        // point at the end of the second linear transition
+        points.push_back (s0);
+        points.push_back (1.0);
+
+        // end point
+        points.push_back (1.0);
+        points.push_back (1.0);
+    }
+
+    return points;
+}
+
+
 
 void Localrgb::setEditProvider (EditDataProvider * provider)
 {

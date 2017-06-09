@@ -610,7 +610,17 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     DEMOSAIC, //Evlocalrgbgreen
     DEMOSAIC, //Evlocalrgbequal
     DEMOSAIC, //EvlocalrgbwbMethod
-    DEMOSAIC //Evlocalrgbgamma
+    DEMOSAIC, //Evlocalrgbgamma
+    LUMINANCECURVE, //Evlocalrgbenavibrance
+    LUMINANCECURVE, //EvlocalrgbSkinTonesCurve
+    LUMINANCECURVE, // EvlocalrgbProtectSkins
+    LUMINANCECURVE, // EvlocalrgbAvoidColorShit
+    LUMINANCECURVE, //EvlocalrgbPastSatTog
+    LUMINANCECURVE, //EvlocalrgbPastels
+    LUMINANCECURVE, // EvlocalrgbSaturated
+    LUMINANCECURVE, //EvlocalrgbPastSatThreshold
+    LUMINANCECURVE //Evlocalrgbsensiv
+
 
 };
 

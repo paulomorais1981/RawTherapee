@@ -904,6 +904,7 @@ public:
     int         shcompr;
     int         hlcompr;
     int         hlcomprthresh;
+    bool expvibrance;
 
     int     transit;
     int sensi;
@@ -917,13 +918,30 @@ public:
     Glib::ustring wbMethod;
     bool    gamma;
 
+    int            pastels;
+    int            saturated;
+    Threshold<int> psthreshold;
+    bool           protectskins;
+    bool           avoidcolorshift;
+    bool           pastsattog;
+    std::vector<double> skintonescurve;
+    int sensiv;
+
+    LocalrgbParams() : psthreshold (0, 75,  false)
+    {
+        setDefaults();
+
+    };
+
     double temp;
     double green;
     double equal;
+    /*
     LocalrgbParams ()
     {
         setDefaults();
     }
+    */
     void setDefaults();
 
 };

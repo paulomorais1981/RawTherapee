@@ -453,6 +453,16 @@ public:
     bool curve2;
     bool curveMode;
     bool curveMode2;
+    bool expvibrance;
+    bool pastels;
+    bool saturated;
+    bool psthreshold;
+    bool protectskins;
+    bool avoidcolorshift;
+    bool pastsattog;
+    bool skintonescurve;
+    bool sensiv;
+
     bool expwb;
     bool temp;
     bool green;

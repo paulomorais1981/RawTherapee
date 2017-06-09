@@ -1856,7 +1856,8 @@ TP_LOCALRGB_LABEL;Local rgb
 TP_LOCALRGB_WB;White balance
 TP_LOCALRGB_TTLABEL;WB all Temp=%1 Tint=%2 Equ=%3
 TP_LOCALRGB_METLABEL;Last auto Method=%1
-TP_LOCALRGB_TTLABEL_TOOLTIP;Display full image White Balance settings 
+TP_LOCALRGB_TTLABEL_TOOLTIP;Display full image White Balance settings
+TP_LOCALRGB_VIBRANCE;Vibrance 
 TP_LOCALRGBWB_NONE;0-None
 TP_LOCALRGBWB_MAN;1-Custom
 TP_LOCALRGBWB_AUT;2-Auto Grey Demosaic

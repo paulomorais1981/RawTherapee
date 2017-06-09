@@ -944,6 +944,17 @@ void LocalrgbParams::setDefaults()
     curve2.push_back (DCT_Linear);
     curveMode     = LocalrgbParams::TC_MODE_STD;
     curveMode2    = LocalrgbParams::TC_MODE_STD;
+    expvibrance = false;
+    pastels            = 0;
+    saturated          = 0;
+    psthreshold.setValues (0, 75);
+    protectskins       = false;
+    avoidcolorshift    = true;
+    pastsattog         = true;
+    skintonescurve.clear ();
+    skintonescurve.push_back (DCT_Linear);
+    sensiv = 19;
+
     expwb = false;
     wbMethod = "none";
     temp = 4750.;
@@ -2760,6 +2771,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Localrgb", "Expexpose", localrgb.expexpose);
         }
 
+        if (!pedited || pedited->localrgb.expvibrance) {
+            keyFile.set_boolean ("Localrgb", "Expvibrance", localrgb.expvibrance);
+        }
+
         if (!pedited || pedited->localrgb.locY) {
             keyFile.set_integer ("Localrgb", "LocY", localrgb.locY);
         }
@@ -2891,6 +2906,42 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
         if (!pedited || pedited->localrgb.gamma) {
             keyFile.set_boolean ("Localrgb", "Gamma", localrgb.gamma);
         }
+
+
+        if (!pedited || pedited->localrgb.pastels) {
+            keyFile.set_integer ("Localrgb", "Pastels", localrgb.pastels);
+        }
+
+        if (!pedited || pedited->localrgb.saturated) {
+            keyFile.set_integer ("Localrgb", "Saturated", localrgb.saturated);
+        }
+
+        if (!pedited || pedited->localrgb.psthreshold) {
+            Glib::ArrayHandle<int> thresh (localrgb.psthreshold.value, 2, Glib::OWNERSHIP_NONE);
+            keyFile.set_integer_list ("Localrgb", "PSThreshold", thresh);
+        }
+
+        if (!pedited || pedited->localrgb.sensiv) {
+            keyFile.set_integer ("Localrgb", "Sensiv", localrgb.sensiv);
+        }
+
+        if (!pedited || pedited->localrgb.protectskins) {
+            keyFile.set_boolean ("Localrgb", "ProtectSkins", localrgb.protectskins);
+        }
+
+        if (!pedited || pedited->localrgb.avoidcolorshift) {
+            keyFile.set_boolean ("Localrgb", "AvoidColorShift", localrgb.avoidcolorshift);
+        }
+
+        if (!pedited || pedited->localrgb.pastsattog) {
+            keyFile.set_boolean ("Localrgb", "PastSatTog", localrgb.pastsattog);
+        }
+
+        if (!pedited || pedited->localrgb.skintonescurve)  {
+            Glib::ArrayHandle<double> skintonescurve = localrgb.skintonescurve;
+            keyFile.set_double_list ("Localrgb", "SkinTonesCurve", skintonescurve);
+        }
+
 
         if (!pedited || pedited->localrgb.curveMode)  {
             Glib::ustring method;
@@ -4631,6 +4682,73 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Localrgb", "Expvibrance")) {
+                localrgb.expvibrance = keyFile.get_boolean ("Localrgb", "Expvibrance");
+
+                if (pedited) {
+                    pedited->localrgb.expvibrance = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Pastels")) {
+                localrgb.pastels            = keyFile.get_integer ("Localrgb", "Pastels");
+
+                if (pedited) {
+                    pedited->localrgb.pastels = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Saturated")) {
+                localrgb.saturated          = keyFile.get_integer ("Localrgb", "Saturated");
+
+                if (pedited) {
+                    pedited->localrgb.saturated = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "PSThreshold")) {
+                Glib::ArrayHandle<int> thresh = keyFile.get_integer_list ("Localrgb", "PSThreshold");
+                localrgb.psthreshold.setValues (thresh.data()[0], thresh.data()[1]);
+
+
+                if (pedited) {
+                    pedited->localrgb.psthreshold = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "ProtectSkins")) {
+                localrgb.protectskins       = keyFile.get_boolean ("Localrgb", "ProtectSkins");
+
+                if (pedited) {
+                    pedited->localrgb.protectskins = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "AvoidColorShift")) {
+                localrgb.avoidcolorshift    = keyFile.get_boolean ("Localrgb", "AvoidColorShift");
+
+                if (pedited) {
+                    pedited->localrgb.avoidcolorshift = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "PastSatTog")) {
+                localrgb.pastsattog         = keyFile.get_boolean ("Localrgb", "PastSatTog");
+
+                if (pedited) {
+                    pedited->localrgb.pastsattog = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "SkinTonesCurve")) {
+                localrgb.skintonescurve     = keyFile.get_double_list ("Localrgb", "SkinTonesCurve");
+
+                if (pedited) {
+                    pedited->localrgb.skintonescurve = true;
+                }
+            }
+
+
             if (keyFile.has_key ("Localrgb", "Smethod"))  {
                 localrgb.Smethod  = keyFile.get_string ("Localrgb", "Smethod");
 
@@ -4733,6 +4851,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->localrgb.contrast = true;
+                }
+            }
+
+            if (keyFile.has_key ("Localrgb", "Sensiv"))  {
+                localrgb.sensiv  = keyFile.get_integer ("Localrgb", "Sensiv");
+
+                if (pedited) {
+                    pedited->localrgb.sensiv = true;
                 }
             }
 
@@ -9916,6 +10042,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && localrgb.contrast == other.localrgb.contrast
         && localrgb.chroma == other.localrgb.chroma
         && localrgb.expexpose == other.localrgb.expexpose
+        && localrgb.expvibrance == other.localrgb.expvibrance
         && localrgb.sensi == other.localrgb.sensi
         && localrgb.transit == other.localrgb.transit
         && localrgb.qualityMethod == other.localrgb.qualityMethod
@@ -9940,6 +10067,14 @@ bool ProcParams::operator== (const ProcParams& other)
         && localrgb.green == other.localrgb.green
         && localrgb.equal == other.localrgb.equal
         && localrgb.gamma == other.localrgb.gamma
+        && localrgb.pastels == other.localrgb.pastels
+        && localrgb.saturated == other.localrgb.saturated
+        && localrgb.psthreshold == other.localrgb.psthreshold
+        && localrgb.protectskins == other.localrgb.protectskins
+        && localrgb.avoidcolorshift == other.localrgb.avoidcolorshift
+        && localrgb.pastsattog == other.localrgb.pastsattog
+        && localrgb.skintonescurve == other.localrgb.skintonescurve
+
         && locallab.enabled == other.locallab.enabled
         && locallab.avoid == other.locallab.avoid
         && locallab.invers == other.locallab.invers

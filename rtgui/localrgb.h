@@ -15,6 +15,7 @@
 #include "options.h"
 #include <string>
 #include "../rtengine/improcfun.h"
+#include "thresholdadjuster.h"
 
 
 class Localrgb :
@@ -25,8 +26,9 @@ class Localrgb :
     public CurveListener,
     public EditSubscriber,
     public ColorProvider,
-    public rtengine::localrgbListener
-
+    public rtengine::localrgbListener,
+    public ThresholdCurveProvider,
+    public ThresholdAdjusterListener
 {
 private:
     int lastObject;
@@ -42,6 +44,7 @@ private:
 
     MyExpander* const expexpose;
     MyExpander* const expsettings;
+    MyExpander* const expvibrance;
     MyExpander* const expwb;
 
     Adjuster* nbspot;
@@ -100,11 +103,29 @@ private:
     CurveEditorGroup* curveEditorG2;
     DiagonalCurveEditor* shape;
     DiagonalCurveEditor* shape2;
+    CurveEditorGroup* curveEditorGG;
+    Adjuster* pastels;
+    Adjuster* saturated;
+    ThresholdAdjuster* psThreshold;
+    Gtk::CheckButton* protectSkins;
+    Gtk::CheckButton* avoidColorShift;
+    Gtk::CheckButton* pastSatTog;
+    DiagonalCurveEditor* skinTonesCurve;
+    Adjuster* sensiv;
+
+    bool lastProtectSkins;
+    bool lastAvoidColorShift;
+    bool lastPastSatTog;
+
+    sigc::connection pskinsconn;
+    sigc::connection ashiftconn;
+    sigc::connection pastsattogconn;
 
 
     Gtk::Button* spotbutton;
 
     sigc::connection enableexposeConn;
+    sigc::connection enablevibranceConn;
     sigc::connection  editConn;
     sigc::connection enablewbConn;
 
@@ -168,6 +189,8 @@ public:
     void updateToolState (std::vector<int> &tpOpen);
 
     void adjusterChanged (Adjuster* a, double newval);
+    void adjusterChanged     (ThresholdAdjuster* a, int newBottom, int newTop);
+
     void enabledChanged ();
     void setAdjusterBehavior (bool degreeadd, bool locYadd, bool locXadd, bool locYTadd, bool locXLadd, bool centeradd, bool lightnessadd, bool contrastadd, bool chromaadd, bool sensiadd, bool transitadd, bool radiusadd, bool strengthadd);
     void trimValues          (rtengine::procparams::ProcParams* pp);
@@ -184,6 +207,10 @@ public:
     void curveMode2Changed ();
     bool curveMode2Changed_ ();
     void gamma_toggled ();
+    void protectskins_toggled    ();
+    void avoidcolorshift_toggled ();
+    void pastsattog_toggled      ();
+    std::vector<double> getCurvePoints (ThresholdSelector* tAdjuster) const;
 
 //   void autoOpenCurve ();
 //   void localChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat);

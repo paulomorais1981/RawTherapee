@@ -611,7 +611,15 @@ enum ProcEvent {
     Evlocalrgbequal = 581,
     EvlocalrgbwbMethod = 582,
     Evlocalrgbgamma = 583,
-
+    EvLocrgbenavibrance = 584,
+    EvlocalrgbSkinTonesCurve = 585,
+    EvlocalrgbProtectSkins = 586,
+    EvlocalrgbAvoidColorShift = 587,
+    EvlocalrgbPastSatTog = 588,
+    EvlocalrgbPastels = 589,
+    EvlocalrgbSaturated = 590,
+    EvlocalrgbPastSatThreshold = 591,
+    Evlocalrgbsensiv = 592,
     NUMOFEVENTS
 
 

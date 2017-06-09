@@ -316,6 +316,15 @@ void ParamsEdited::set (bool v)
     localrgb.hlcomprthresh = v;
     localrgb.black = v;
     localrgb.shcompr = v;
+    localrgb.expvibrance = v;
+    localrgb.pastels          = v;
+    localrgb.saturated        = v;
+    localrgb.psthreshold      = v;
+    localrgb.protectskins     = v;
+    localrgb.avoidcolorshift  = v;
+    localrgb.pastsattog       = v;
+    localrgb.skintonescurve   = v;
+    localrgb.sensiv = v;
 
     localrgb.hueref = v;
     localrgb.chromaref = v;
@@ -967,6 +976,15 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         localrgb.curve2 = localrgb.curve2 && p.localrgb.curve2 == other.localrgb.curve2;
         localrgb.curveMode = localrgb.curveMode && p.localrgb.curveMode == other.localrgb.curveMode;
         localrgb.curveMode2 = localrgb.curveMode2 && p.localrgb.curveMode2 == other.localrgb.curveMode2;
+        localrgb.expvibrance = localrgb.expvibrance && p.localrgb.expvibrance == other.localrgb.expvibrance;
+        localrgb.pastels = localrgb.pastels && p.localrgb.pastels == other.localrgb.pastels;
+        localrgb.saturated = localrgb.saturated && p.localrgb.saturated == other.localrgb.saturated;
+        localrgb.psthreshold = localrgb.psthreshold && p.localrgb.psthreshold == other.localrgb.psthreshold;
+        localrgb.protectskins = localrgb.protectskins && p.localrgb.protectskins == other.localrgb.protectskins;
+        localrgb.avoidcolorshift = localrgb.avoidcolorshift && p.localrgb.avoidcolorshift == other.localrgb.avoidcolorshift;
+        localrgb.pastsattog = localrgb.pastsattog && p.localrgb.pastsattog == other.localrgb.pastsattog;
+        localrgb.skintonescurve = localrgb.skintonescurve && p.localrgb.skintonescurve == other.localrgb.skintonescurve;
+        localrgb.sensiv = localrgb.sensiv && p.localrgb.sensiv == other.localrgb.sensiv;
 
         localrgb.nbspot = localrgb.nbspot && p.localrgb.nbspot == other.localrgb.nbspot;
         localrgb.anbspot = localrgb.anbspot && p.localrgb.anbspot == other.localrgb.anbspot;
@@ -2305,6 +2323,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.localrgb.expexpose   = mods.localrgb.expexpose;
     }
 
+    if (localrgb.expvibrance) {
+        toEdit.localrgb.expvibrance   = mods.localrgb.expvibrance;
+    }
+
     if (localrgb.locY) {
         toEdit.localrgb.locY  = mods.localrgb.locY;
     }
@@ -2451,6 +2473,38 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (localrgb.gamma) {
         toEdit.localrgb.gamma     = mods.localrgb.gamma;
+    }
+
+    if (localrgb.pastels) {
+        toEdit.localrgb.pastels           = mods.localrgb.pastels;
+    }
+
+    if (localrgb.saturated) {
+        toEdit.localrgb.saturated           = mods.localrgb.saturated;
+    }
+
+    if (localrgb.psthreshold) {
+        toEdit.localrgb.psthreshold       = mods.localrgb.psthreshold;
+    }
+
+    if (localrgb.protectskins) {
+        toEdit.localrgb.protectskins  = mods.localrgb.protectskins;
+    }
+
+    if (localrgb.avoidcolorshift) {
+        toEdit.localrgb.avoidcolorshift   = mods.localrgb.avoidcolorshift;
+    }
+
+    if (localrgb.pastsattog) {
+        toEdit.localrgb.pastsattog        = mods.localrgb.pastsattog;
+    }
+
+    if (localrgb.skintonescurve) {
+        toEdit.localrgb.skintonescurve    = mods.localrgb.skintonescurve;
+    }
+
+    if (localrgb.sensiv) {
+        toEdit.localrgb.sensiv     = mods.localrgb.sensiv;
     }
 
     if (locallab.enabled) {
