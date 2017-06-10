@@ -827,7 +827,7 @@ void Crop::update (int todo)
         }*/
     Imagefloat *orirgb = nullptr;
 
-    if (params.localrgb.enabled && params.localrgb.expexpose) {
+    if (params.localrgb.enabled && (params.localrgb.expexpose  || params.localrgb.expvibrance)) {
         orirgb = new Imagefloat (cropw, croph);
         laboCroploc = new LabImage (cropw, croph);
 
@@ -847,7 +847,7 @@ void Crop::update (int todo)
 
 
 
-    if (params.localrgb.enabled && params.localrgb.expexpose) {
+    if (params.localrgb.enabled && (params.localrgb.expexpose || params.localrgb.expvibrance)) {
         DCPProfile::ApplyState as;
         DCPProfile *dcpProf = parent->imgsrc->getDCP (params.icm, parent->currWB, as);
         laboCroploc->CopyFrom (laboCrop);
@@ -885,7 +885,7 @@ void Crop::update (int todo)
         //if (tutu) { //
         //I made a little change here. Rather than have luminanceCurve (and others) use in/out lab images, we can do more if we copy right here.
 
-        if (params.localrgb.enabled && params.localrgb.expexpose) {
+        if (params.localrgb.enabled && (params.localrgb.expexpose || params.localrgb.expvibrance) ) {
             labnCrop->CopyFrom (laboCroploc);
             delete laboCroploc;
         } else {

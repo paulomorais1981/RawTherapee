@@ -754,7 +754,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     Imagefloat *orirgb = nullptr;
 
-    if (params.localrgb.enabled && params.localrgb.expexpose) {
+    if (params.localrgb.enabled && (params.localrgb.expexpose  || params.localrgb.expvibrance)) {
         orirgb = new Imagefloat (pW, pH);
         nprloc = new LabImage (pW, pH);
 
@@ -906,7 +906,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
     //provisory not good solution to prevent artifacts in enhaced mode
     //TODO change that with the same solution as locallab
 
-    if (params.localrgb.enabled && params.localrgb.expexpose) {
+    if (params.localrgb.enabled && (params.localrgb.expexpose  || params.localrgb.expvibrance)) {
 
         CurveFactory::complexCurvelocal (params.localrgb.expcomp, params.localrgb.black / 65535.0,
                                          params.localrgb.hlcompr, params.localrgb.hlcomprthresh,
@@ -979,7 +979,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     //scale = 1;
     if (todo & (M_LUMINANCE + M_COLOR) ) {
-        if (params.localrgb.enabled && params.localrgb.expexpose) {
+        if (params.localrgb.enabled && (params.localrgb.expexpose  || params.localrgb.expvibrance)) {
             nprevl->CopyFrom (nprloc);
             delete nprloc;
         }   else {

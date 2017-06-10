@@ -846,8 +846,8 @@ private:
                 int begx = xcall - lxLall;
                 int yEn = ycall + lyall;
                 int xEn = xcall + lxall;
-				int bf_h = lyall + lyTall;
-				int bf_w = lxall + lxLall;
+                int bf_h = lyall + lyTall;
+                int bf_w = lxall + lxLall;
                 int cx = 0;
                 int cy = 0;
                 double rm, gm, bm;
@@ -950,7 +950,7 @@ private:
         Imagefloat *orirgb = nullptr;
         LabImage *nprloc = nullptr;
 
-        if (params.localrgb.enabled && params.localrgb.expexpose) {
+        if (params.localrgb.enabled && (params.localrgb.expexpose || params.localrgb.expvibrance)) {
             orirgb = new Imagefloat (fw, fh);
             nprloc = new LabImage (fw, fh);
 
@@ -1027,7 +1027,7 @@ private:
             printf ("Output image / Auto B&W coefs:   R=%.2f   G=%.2f   B=%.2f\n", autor, autog, autob);
         }
 
-        if (params.localrgb.enabled && params.localrgb.expexpose) {
+        if (params.localrgb.enabled && (params.localrgb.expexpose  || params.localrgb.expvibrance)) {
             hltonecurveloc (65536);
             shtonecurveloc (65536);
             tonecurveloc (65536);
@@ -1061,7 +1061,7 @@ private:
             CLUTStore::getInstance().clearCache();
         }
 
-        if (params.localrgb.enabled && params.localrgb.expexpose) {
+        if (params.localrgb.enabled && (params.localrgb.expexpose || params.localrgb.expvibrance)) {
             labView->CopyFrom (nprloc);
 
             delete nprloc ;
