@@ -3129,6 +3129,19 @@ void RawImageSource::flushRGB()
     if (blue) {
         blue (0, 0);
     }
+	
+    if (greenloc) {
+        greenloc (0, 0);
+    }
+
+    if (redloc) {
+        redloc (0, 0);
+    }
+
+    if (blueloc) {
+        blueloc (0, 0);
+    }
+	
 }
 
 void RawImageSource::HLRecovery_Global (ToneCurveParams hrp)
