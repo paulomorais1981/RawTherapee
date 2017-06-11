@@ -279,12 +279,8 @@ private:
         if (settings->leveldnautsimpl == 1 && params.dirpyrDenoise.Cmethod == "PON") {
             MyTime t1pone, t2pone;
             t1pone.set();
-            int crW, crH;
-
-            if (settings->leveldnv == 0) {
-                crW = 100;
-                crH = 100;
-            }
+            int crW = 100; // settings->leveldnv == 0
+            int crH = 100; // settings->leveldnv == 0
 
             if (settings->leveldnv == 1) {
                 crW = 250;
@@ -748,7 +744,7 @@ private:
     {
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
-        ImProcFunctions &ipf = * (ipf_p.get());
+        ImProcFunctions &ipf = *(ipf_p.get());
 
         // perform luma/chroma denoise
 //  CieImage *cieView;
@@ -816,7 +812,7 @@ private:
     {
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
-        ImProcFunctions &ipf = * (ipf_p.get());
+        ImProcFunctions &ipf = *(ipf_p.get());
         Imagefloat *imageoriginal = nullptr;
         Imagefloat *imagetransformed = nullptr;
         Imagefloat *improv = nullptr;
@@ -909,7 +905,7 @@ private:
     {
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
-        ImProcFunctions &ipf = * (ipf_p.get());
+        ImProcFunctions &ipf = *(ipf_p.get());
 
         if (params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled) {
             const int W = baseImg->getWidth();
@@ -2179,7 +2175,7 @@ private:
     {
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
-        ImProcFunctions &ipf = * (ipf_p.get());
+        ImProcFunctions &ipf = *(ipf_p.get());
 
         int imw, imh;
         double scale_factor = ipf.resizeScale (&params, fw, fh, imw, imh);
@@ -2215,7 +2211,7 @@ private:
             tmplab = std::move (resized);
         }
 
-        adjust_procparams (scale_factor);
+        adjust_procparams(scale_factor);
 
         fw = imw;
         fh = imh;

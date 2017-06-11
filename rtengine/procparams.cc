@@ -10403,20 +10403,25 @@ PartialProfile::PartialProfile (bool createInstance, bool paramsEditedValue)
         pparams = nullptr;
         pedited = nullptr;
     }
+    ownsPparams = ownsPedited = true;
 }
 
 PartialProfile::PartialProfile (ProcParams* pp, ParamsEdited* pe, bool fullCopy)
 {
     if (fullCopy && pp) {
-        pparams = new ProcParams (*pp);
+        pparams = new ProcParams(*pp);
+        ownsPparams = true;
     } else {
         pparams = pp;
+        ownsPparams = false;
     }
 
     if (fullCopy && pe) {
-        pedited = new ParamsEdited (*pe);
+        pedited = new ParamsEdited(*pe);
+        ownsPedited = true;
     } else {
         pedited = pe;
+        ownsPedited = false;
     }
 }
 
@@ -10433,6 +10438,15 @@ PartialProfile::PartialProfile (const ProcParams* pp, const ParamsEdited* pe)
     } else {
         pedited = nullptr;
     }
+    ownsPparams = ownsPedited = true;
+}
+
+PartialProfile::~PartialProfile()
+{
+    if(ownsPparams)
+        delete pparams;
+    if(ownsPedited)
+        delete pedited;
 }
 
 int PartialProfile::load (const Glib::ustring &fName)
