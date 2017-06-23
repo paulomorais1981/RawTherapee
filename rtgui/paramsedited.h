@@ -449,6 +449,7 @@ public:
     bool sensi;
     bool qualityMethod;
     bool wbMethod;
+    bool wbcamMethod;
     bool curve;
     bool curve2;
     bool curveMode;

@@ -403,6 +403,7 @@ void Ciecam02::xyz_to_cat02( double &r, double &g, double &b, double x, double y
     }
 }
 
+
 void Ciecam02::xyz_to_cat02float( float &r, float &g, float &b, float x, float y, float z, int gamu )
 {
     gamu = 1;

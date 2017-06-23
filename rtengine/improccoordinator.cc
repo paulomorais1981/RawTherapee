@@ -427,12 +427,17 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             int cx = 0;
             int cy = 0;
             bool gamma = false;
+            bool cat02 = false;
 
-            if (params.localrgb.gamma) {
+            if (params.localrgb.wbcamMethod == "gam"  || params.localrgb.wbcamMethod == "gamcat") {
                 gamma = true;
             }
 
-            imgsrc->getrgbloc (gamma, begx, begy, yEn, xEn, cx, cy, bf_h, bf_w);
+            if (params.localrgb.wbcamMethod == "cat" ||  params.localrgb.wbcamMethod == "gamcat") {
+                cat02 = true;
+            }
+
+            imgsrc->getrgbloc (gamma, cat02, begx, begy, yEn, xEn, cx, cy, bf_h, bf_w);
 
         }
 

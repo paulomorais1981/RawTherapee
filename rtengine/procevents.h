@@ -620,6 +620,8 @@ enum ProcEvent {
     EvlocalrgbSaturated = 590,
     EvlocalrgbPastSatThreshold = 591,
     Evlocalrgbsensiv = 592,
+    EvlocalrgbwbcamMethod = 593,
+
     NUMOFEVENTS
 
 

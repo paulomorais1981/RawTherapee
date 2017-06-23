@@ -28,6 +28,7 @@ namespace rtengine
 class Ciecam02
 {
 private:
+
     static double d_factor( double f, double la );
     static float d_factorfloat( float f, float la );
     static double calculate_fl_from_la_ciecam02( double la );
@@ -71,6 +72,7 @@ private:
 
 public:
     Ciecam02 () {}
+	
     static void curvecolor(double satind, double satval, double &sres, double parsat);
     static void curvecolorfloat(float satind, float satval, float &sres, float parsat);
     static void curveJ (double br, double contr, int db, LUTf & outCurve , LUTu & histogram ) ;

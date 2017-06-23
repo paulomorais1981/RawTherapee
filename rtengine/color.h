@@ -427,6 +427,8 @@ public:
     static void xyz2rgb (float x, float y, float z, float &r, float &g, float &b, const double rgb_xyz[3][3]);
     static void xyz2r (float x, float y, float z, float &r, const double rgb_xyz[3][3]);
     static void xyz2rgb (float x, float y, float z, float &r, float &g, float &b, const float rgb_xyz[3][3]);
+    static void xyz2rgbraw (float x, float y, float z, double &r, double &g, double &b, const double rgb_xyz[3][3]);
+	
 #ifdef __SSE2__
     static void xyz2rgb (vfloat x, vfloat y, vfloat z, vfloat &r, vfloat &g, vfloat &b, const vfloat rgb_xyz[3][3]);
 #endif

@@ -78,6 +78,7 @@ private:
     MyComboBoxText*   const Smethod;
     MyComboBoxText*   const qualityMethod;
     MyComboBoxText*   const wbMethod;
+    MyComboBoxText*   const wbcamMethod;
 
 
     Gtk::Frame* const shapeFrame;
@@ -86,9 +87,11 @@ private:
 
     Gtk::Label* const labqual;
     Gtk::Label* const labmS;
+    Gtk::Label* const labcam;
 
     Gtk::HBox* const ctboxS;
     Gtk::HBox* const qualbox;
+    Gtk::HBox* const cambox;
 
     Adjuster* temp;
     Adjuster* green;
@@ -138,6 +141,7 @@ private:
     sigc::connection  Smethodconn;
     sigc::connection qualityMethodConn;
     sigc::connection wbMethodConn;
+    sigc::connection wbcamMethodConn;
 
     Gtk::CheckButton* gamma;
     sigc::connection gammaconn;
@@ -222,6 +226,7 @@ public:
     void retinexMethodChanged();
     void qualityMethodChanged();
     void wbMethodChanged();
+    void wbcamMethodChanged();
     void qualitycurveMethodChanged();
     void lumaneutralPressed ();
     void lumacontrastPlusPressed ();

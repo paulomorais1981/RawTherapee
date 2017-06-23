@@ -155,7 +155,7 @@ public:
     void        WBauto (array2D<float> &redloc, array2D<float> &greenloc, array2D<float> &blueloc, int bfw, int bfh, double &avg_rm, double &avg_gm, double &avg_bm, const LocalrgbParams &localr, int begx, int begy, int yEn, int xEn, int cx, int cy);
 
     void        getAutoWBMultipliers (double &rm, double &gm, double &bm);
-    void        getrgbloc (bool gamma, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w);
+    void        getrgbloc (bool gamma, bool cat02, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w);
 
     void        getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w, double &rm, double &gm, double &bm, const LocalrgbParams &localr);
     ColorTemp   getSpotWB   (std::vector<Coord2D> &red, std::vector<Coord2D> &green, std::vector<Coord2D> &blue, int tran, double equal);
@@ -205,9 +205,9 @@ public:
     }
     static void inverse33 (const double (*coeff)[3], double (*icoeff)[3]);
 
-    void boxblur2(float** src, float** dst, float** temp, int H, int W, int box );
-    void boxblur_resamp(float **src, float **dst, float** temp, int H, int W, int box, int samp );
-    void MSR(float** luminance, float **originalLuminance, float **exLuminance,  LUTf & mapcurve, bool &mapcontlutili, int width, int height, const RetinexParams &deh, const RetinextransmissionCurve & dehatransmissionCurve, const RetinexgaintransmissionCurve & dehagaintransmissionCurve, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax);
+    void boxblur2 (float** src, float** dst, float** temp, int H, int W, int box );
+    void boxblur_resamp (float **src, float **dst, float** temp, int H, int W, int box, int samp );
+    void MSR (float** luminance, float **originalLuminance, float **exLuminance,  LUTf & mapcurve, bool &mapcontlutili, int width, int height, const RetinexParams &deh, const RetinextransmissionCurve & dehatransmissionCurve, const RetinexgaintransmissionCurve & dehagaintransmissionCurve, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax);
     void HLRecovery_inpaint (float** red, float** green, float** blue);
     static void HLRecovery_Luminance (float* rin, float* gin, float* bin, float* rout, float* gout, float* bout, int width, float maxval);
     static void HLRecovery_CIELab (float* rin, float* gin, float* bin, float* rout, float* gout, float* bout, int width, float maxval, double cam[3][3], double icam[3][3]);

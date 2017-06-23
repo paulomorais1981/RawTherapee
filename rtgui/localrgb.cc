@@ -169,6 +169,7 @@ Localrgb::Localrgb ():
     Smethod (Gtk::manage (new MyComboBoxText ())),
     qualityMethod (Gtk::manage (new MyComboBoxText ())),
     wbMethod (Gtk::manage (new MyComboBoxText ())),
+    wbcamMethod (Gtk::manage (new MyComboBoxText ())),
     shapeFrame (Gtk::manage (new Gtk::Frame (M ("TP_LOCALLAB_SHFR")))),
     artifFrame (Gtk::manage (new Gtk::Frame (M ("TP_LOCALLAB_ARTIF")))),
     superFrame (Gtk::manage (new Gtk::Frame ())),
@@ -180,8 +181,12 @@ Localrgb::Localrgb ():
     labqual (Gtk::manage (new Gtk::Label (M ("TP_LOCALLAB_QUAL_METHOD") + ":"))),
 
     labmS (Gtk::manage (new Gtk::Label (M ("TP_LOCALLAB_STYPE") + ":"))),
+    labcam (Gtk::manage (new Gtk::Label (M ("TP_LOCALRGB_CAM") + ":"))),
+
     ctboxS (Gtk::manage (new Gtk::HBox ())),
     qualbox (Gtk::manage (new Gtk::HBox ())),
+    cambox (Gtk::manage (new Gtk::HBox ())),
+
     draggedPointOldAngle (-1000.)
 
 {
@@ -536,6 +541,13 @@ Localrgb::Localrgb ():
     wbMethod->set_active (0);
     wbMethodConn = wbMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbMethodChanged) );
 
+    wbcamMethod->append (M ("TP_LOCALWBCAM_NONE"));
+    wbcamMethod->append (M ("TP_LOCALWBCAM_GAM"));
+    wbcamMethod->append (M ("TP_LOCALWBCAM_CAT02"));
+    wbcamMethod->append (M ("TP_LOCALWBCAM_GACAT"));
+    wbcamMethod->set_active (0);
+    wbcamMethodConn = wbcamMethod->signal_changed().connect ( sigc::mem_fun (*this, &Localrgb::wbcamMethodChanged) );
+    wbcamMethod->set_tooltip_markup (M ("TP_LOCALWBCAM_TOOLTIP"));
 
     Gtk::Image* itempL =  Gtk::manage (new RTImage ("ajd-wb-temp1.png"));
     Gtk::Image* itempR =  Gtk::manage (new RTImage ("ajd-wb-temp2.png"));
@@ -558,6 +570,7 @@ Localrgb::Localrgb ():
     green = Gtk::manage (new Adjuster (M ("TP_WBALANCE_GREEN"), MINGREEN, MAXGREEN, 0.001, 1.0, igreenL, igreenR));
     equal = Gtk::manage (new Adjuster (M ("TP_WBALANCE_EQBLUERED"), MINEQUAL, MAXEQUAL, 0.001, 1.0, iblueredL, iblueredR));
     wbMethod->show ();
+    wbcamMethod->show ();
     temp->show ();
     green->show ();
     equal->show ();
@@ -569,13 +582,17 @@ Localrgb::Localrgb ():
     wbBox->pack_start (*temp);
     wbBox->pack_start (*green);
     wbBox->pack_start (*equal);
+    cambox->pack_start (*labcam, Gtk::PACK_SHRINK, 4);
+    cambox->pack_start (*wbcamMethod);
+
+    wbBox->pack_start (*cambox);
 
     temp->setAdjusterListener (this);
     green->setAdjusterListener (this);
     equal->setAdjusterListener (this);
 
     gamma = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALRGBWB_GAMMA")));
-    wbBox->pack_start (*gamma);
+    //  wbBox->pack_start (*gamma);
     gammaconn = gamma->signal_toggled().connect ( sigc::mem_fun (*this, &Localrgb::gamma_toggled) );
 
 
@@ -1592,6 +1609,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     Smethodconn.block (true);
     qualityMethodConn.block (true);
     wbMethodConn.block (true);
+    wbcamMethodConn.block (true);
 
     degree->setValue (pp->localrgb.degree);
     locY->setValue (pp->localrgb.locY);
@@ -1692,6 +1710,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     qualityMethodChanged ();
 
     wbMethodConn.block (false);
+    wbcamMethodConn.block (false);
 
 //   if (pp->localrgb.wbMethod == "none") {
 //       wbMethod->set_active (0);
@@ -1715,6 +1734,18 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     }
 
     wbMethodChanged ();
+
+    if (pp->localrgb.wbcamMethod == "none") {
+        wbcamMethod->set_active (0);
+    } else if (pp->localrgb.wbcamMethod == "gam") {
+        wbcamMethod->set_active (1);
+    } else if (pp->localrgb.wbcamMethod == "cat") {
+        wbcamMethod->set_active (2);
+    } else if (pp->localrgb.wbcamMethod == "gamcat") {
+        wbcamMethod->set_active (3);
+    }
+
+    wbcamMethodChanged ();
 
     anbspot->hide();
     hueref->hide();
@@ -1741,6 +1772,7 @@ void Localrgb::read (const ProcParams* pp, const ParamsEdited* pedited)
     tcmodeconn.block (false);
     qualityMethodConn.block (false);
     wbMethodConn.block (false);
+    wbcamMethodConn.block (false);
 
     enableexposeConn.block (false);
     enablevibranceConn.block (false);
@@ -2083,6 +2115,7 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->localrgb.Smethod  = Smethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->localrgb.qualityMethod    = qualityMethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->localrgb.wbMethod    = wbMethod->get_active_text() != M ("GENERAL_UNCHANGED");
+        pedited->localrgb.wbcamMethod    = wbcamMethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->localrgb.locY = locY->getEditedState ();
         pedited->localrgb.locX = locX->getEditedState ();
         pedited->localrgb.locYT = locYT->getEditedState ();
@@ -2162,6 +2195,16 @@ void Localrgb::write (ProcParams* pp, ParamsEdited* pedited)
         pp->localrgb.wbMethod = "autedgsdw";
     }
 
+    if (wbcamMethod->get_active_row_number() == 0) {
+        pp->localrgb.wbcamMethod = "none";
+    } else if (wbcamMethod->get_active_row_number() == 1) {
+        pp->localrgb.wbcamMethod = "gam";
+    } else if (wbcamMethod->get_active_row_number() == 2) {
+        pp->localrgb.wbcamMethod = "cat";
+    } else if (wbcamMethod->get_active_row_number() == 3) {
+        pp->localrgb.wbcamMethod = "gamcat";
+    }
+
     if (Smethod->get_active_row_number() == 0) {
         pp->localrgb.Smethod = "IND";
     } else if (Smethod->get_active_row_number() == 1) {
@@ -2205,6 +2248,16 @@ void Localrgb::wbMethodChanged()
 
     if (listener) {
         listener->panelChanged (EvlocalrgbwbMethod, wbMethod->get_active_text ());
+    }
+}
+
+void Localrgb::wbcamMethodChanged()
+{
+    if (!batchMode) {
+    }
+
+    if (listener) {
+        listener->panelChanged (EvlocalrgbwbcamMethod, wbcamMethod->get_active_text ());
     }
 }
 

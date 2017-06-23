@@ -917,6 +917,7 @@ public:
     bool expwb;
     Glib::ustring wbMethod;
     bool    gamma;
+    Glib::ustring wbcamMethod;
 
     int            pastels;
     int            saturated;

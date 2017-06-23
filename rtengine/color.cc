@@ -981,6 +981,7 @@ void Color::rgbxyz (float r, float g, float b, float &x, float &y, float &z, con
     z = ((xyz_rgb[2][0] * r + xyz_rgb[2][1] * g + xyz_rgb[2][2] * b)) ;
 }
 
+
 void Color::rgbxyz (float r, float g, float b, float &x, float &y, float &z, const float xyz_rgb[3][3])
 {
     x = ((xyz_rgb[0][0] * r + xyz_rgb[0][1] * g + xyz_rgb[0][2] * b)) ;
@@ -1027,6 +1028,14 @@ void Color::xyz2r (float x, float y, float z, float &r, const double rgb_xyz[3][
     r = ((rgb_xyz[0][0] * x + rgb_xyz[0][1] * y + rgb_xyz[0][2] * z)) ;
 }
 
+void Color::xyz2rgbraw (float x, float y, float z, double &r, double &g, double &b, const double rgb_xyz[3][3])
+{
+    r = ((rgb_xyz[0][0] * x + rgb_xyz[0][1] * y + rgb_xyz[0][2] * z)) ;
+    g = ((rgb_xyz[1][0] * x + rgb_xyz[1][1] * y + rgb_xyz[1][2] * z)) ;
+    b = ((rgb_xyz[2][0] * x + rgb_xyz[2][1] * y + rgb_xyz[2][2] * z)) ;
+}
+
+
 // same for float
 void Color::xyz2rgb (float x, float y, float z, float &r, float &g, float &b, const float rgb_xyz[3][3])
 {
@@ -1034,6 +1043,8 @@ void Color::xyz2rgb (float x, float y, float z, float &r, float &g, float &b, co
     g = ((rgb_xyz[1][0] * x + rgb_xyz[1][1] * y + rgb_xyz[1][2] * z)) ;
     b = ((rgb_xyz[2][0] * x + rgb_xyz[2][1] * y + rgb_xyz[2][2] * z)) ;
 }
+
+
 
 #ifdef __SSE2__
 void Color::xyz2rgb (vfloat x, vfloat y, vfloat z, vfloat &r, vfloat &g, vfloat &b, const vfloat rgb_xyz[3][3])

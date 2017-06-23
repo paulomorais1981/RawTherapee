@@ -331,7 +331,7 @@ void StdImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
 
 }
 
-void  StdImageSource::getrgbloc (bool gamma, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w)
+void  StdImageSource::getrgbloc (bool gamma, bool cat02, int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w)
 {}
 
 void StdImageSource::getAutoWBMultipliersloc (int begx, int begy, int yEn, int xEn, int cx, int cy, int bf_h, int bf_w, double &rm, double &gm, double &bm, const LocalrgbParams &localr)
