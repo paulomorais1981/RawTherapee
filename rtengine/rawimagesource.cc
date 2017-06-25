@@ -5350,7 +5350,7 @@ static void RobustWB (array2D<float> &redloc, array2D<float> &greenloc, array2D<
     // inspired by "Robust automatic WB algorithm using gray color points in Images"
     // Jy Huo, Yl Chang, J.Wang Xx Wei
     //  robust = true;
-
+	printf("Robust WB\n");
     array2D<float> Y0;
     array2D<float> U0;
     array2D<float> V0;
@@ -5716,13 +5716,13 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
 
     if (localr.wbMethod == "autedgsdw") {
         SobelWB (redsobel, greensobel, bluesobel, redloc, greenloc, blueloc, bfw, bfh);
-        RobustWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm);
+        SdwWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm,  begx, begy, yEn,  xEn,  cx,  cy);
 
     }
 
     if (localr.wbMethod == "autedgrob") {
         SobelWB (redsobel, greensobel, bluesobel, redloc, greenloc, blueloc, bfw, bfh);
-        SdwWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm,  begx, begy, yEn,  xEn,  cx,  cy);
+        RobustWB (redsobel, greensobel, bluesobel, bfw, bfh, avg_rm, avg_gm, avg_bm);
 
     }
 
