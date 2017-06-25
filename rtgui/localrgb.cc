@@ -841,7 +841,7 @@ Localrgb::Localrgb ():
     }
 
     show_all();
-}
+}    
 
 Localrgb::~Localrgb()
 {
@@ -858,6 +858,7 @@ Localrgb::~Localrgb()
 
     delete curveEditorG;
     delete curveEditorG2;
+	
 }
 void Localrgb::foldAllButMe (GdkEventButton* event, MyExpander *expander)
 {

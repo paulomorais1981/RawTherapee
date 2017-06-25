@@ -5667,23 +5667,23 @@ void RawImageSource::WBauto (array2D<float> &redloc, array2D<float> &greenloc, a
     ColorManagementParams cmp;
 //    TMatrix wprof = ICCStore::getInstance()->workingSpaceMatrix (cmp.working);
     TMatrix wiprof = ICCStore::getInstance()->workingSpaceInverseMatrix (cmp.working);
-/*
-    float toxyz[3][3] = {
-        {
-            static_cast<float> ( wprof[0][0] / Color::D50x),
-            static_cast<float> ( wprof[0][1] / Color::D50x),
-            static_cast<float> ( wprof[0][2] / Color::D50x)
-        }, {
-            static_cast<float> ( wprof[1][0]),
-            static_cast<float> ( wprof[1][1]),
-            static_cast<float> ( wprof[1][2])
-        }, {
-            static_cast<float> ( wprof[2][0] / Color::D50z),
-            static_cast<float> ( wprof[2][1] / Color::D50z),
-            static_cast<float> ( wprof[2][2] / Color::D50z)
-        }
-    };
-*/
+    /*
+        float toxyz[3][3] = {
+            {
+                static_cast<float> ( wprof[0][0] / Color::D50x),
+                static_cast<float> ( wprof[0][1] / Color::D50x),
+                static_cast<float> ( wprof[0][2] / Color::D50x)
+            }, {
+                static_cast<float> ( wprof[1][0]),
+                static_cast<float> ( wprof[1][1]),
+                static_cast<float> ( wprof[1][2])
+            }, {
+                static_cast<float> ( wprof[2][0] / Color::D50z),
+                static_cast<float> ( wprof[2][1] / Color::D50z),
+                static_cast<float> ( wprof[2][2] / Color::D50z)
+            }
+        };
+    */
     //inverse matrix user select
     double wip[3][3] = {
         {wiprof[0][0], wiprof[0][1], wiprof[0][2]},
@@ -5818,24 +5818,24 @@ void  RawImageSource::getrgbloc (bool gamma, bool cat02, int begx, int begy, int
     //  printf ("bfh=%i bfw=%i H=%i W=%i \n", bf_h, bf_w, H, W);
     ColorManagementParams cmp;
     TMatrix wprof = ICCStore::getInstance()->workingSpaceMatrix (cmp.working);
-  //  TMatrix wiprof = ICCStore::getInstance()->workingSpaceInverseMatrix (cmp.working);
-/*
-    float toxyz[3][3] = {
-        {
-            static_cast<float> ( wprof[0][0] / Color::D50x),
-            static_cast<float> ( wprof[0][1] / Color::D50x),
-            static_cast<float> ( wprof[0][2] / Color::D50x)
-        }, {
-            static_cast<float> ( wprof[1][0]),
-            static_cast<float> ( wprof[1][1]),
-            static_cast<float> ( wprof[1][2])
-        }, {
-            static_cast<float> ( wprof[2][0] / Color::D50z),
-            static_cast<float> ( wprof[2][1] / Color::D50z),
-            static_cast<float> ( wprof[2][2] / Color::D50z)
-        }
-    };
-*/
+    //  TMatrix wiprof = ICCStore::getInstance()->workingSpaceInverseMatrix (cmp.working);
+    /*
+        float toxyz[3][3] = {
+            {
+                static_cast<float> ( wprof[0][0] / Color::D50x),
+                static_cast<float> ( wprof[0][1] / Color::D50x),
+                static_cast<float> ( wprof[0][2] / Color::D50x)
+            }, {
+                static_cast<float> ( wprof[1][0]),
+                static_cast<float> ( wprof[1][1]),
+                static_cast<float> ( wprof[1][2])
+            }, {
+                static_cast<float> ( wprof[2][0] / Color::D50z),
+                static_cast<float> ( wprof[2][1] / Color::D50z),
+                static_cast<float> ( wprof[2][2] / Color::D50z)
+            }
+        };
+    */
 
     double wp[3][3] = {
         {wprof[0][0], wprof[0][1], wprof[0][2]},
@@ -5857,8 +5857,8 @@ void  RawImageSource::getrgbloc (bool gamma, bool cat02, int begx, int begy, int
     }
 
     if (gamma) {
-        for (int i = 32; i < H - 32; i += 2)
-            for (int j = 32; j < W - 32; j += 2) {
+        for (int i = 0; i < H; i ++)
+            for (int j = 0; j < W; j++) {
                 int lox = cx + j;
                 int loy = cy + i;
 
@@ -5870,8 +5870,8 @@ void  RawImageSource::getrgbloc (bool gamma, bool cat02, int begx, int begy, int
             }
     } else {
 
-        for (int i = 32; i < H - 32; i += 2)
-            for (int j = 32; j < W - 32; j += 2) {
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j < W; j++) {
                 int lox = cx + j;
                 int loy = cy + i;
 
@@ -5889,8 +5889,18 @@ void  RawImageSource::getrgbloc (bool gamma, bool cat02, int begx, int begy, int
     if (cat02) {//CAT02
         for (int i = 0; i < bfh; i++)
             for (int j = 0; j < bfw; j++) {
-                float X, Y, Z;
+                float X = 0.f, Y = 0.f, Z = 0.f;
                 Color::rgbxyz (redloc[i][j], greenloc[i][j], blueloc[i][j] , X, Y, Z, wp);
+                double temp;
+                double Xr = X / 65535.;
+                double Yr = Y / 65535.;
+                double Zr = Z / 65535.;
+
+                //  ColorTemp::XYZtoCorColorTemp(Xwb, Ywb, Zwb, temp);
+                //  printf("X=%f Y=%f Z=%f Xwb=%f Zwb=%f", X, Y, Z, Xwb, Zwb);
+                //  ColorTemp::XYZtoCorColorTemp(Xr, Yr, Zr, temp);
+                //  printf("Xr=%f Yr=%f Zr=%f temp=%f", Xr, Yr, Zr, temp);
+
                 xyz_to_cat02floatraw ( redloc[i][j], greenloc[i][j], blueloc[i][j], X, Y, Z);
 
             }

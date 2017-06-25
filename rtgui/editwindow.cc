@@ -42,6 +42,7 @@ EditWindow* EditWindow::getInstance(RTWindow* p)
         {
             // Determine the other display and maximize the window on that
             const Glib::RefPtr< Gdk::Window >& wnd = p->get_window();
+	   
             int monNo = p->get_screen()->get_monitor_at_window (wnd);
 
             Gdk::Rectangle lMonitorRect;
@@ -224,7 +225,7 @@ bool EditWindow::on_delete_event(GdkEventAny* event)
 {
     // Check if any editor is still processing, and do NOT quit if so. Otherwise crashes and inconsistent caches
     bool isProcessing = false;
-
+	printf("Editwin\n");
     for ( std::set <Glib::ustring>::iterator iter = filesEdited.begin(); iter != filesEdited.end() && !isProcessing; ++iter ) {
         if (epanels[*iter]->getIsProcessing()) {
             isProcessing = true;

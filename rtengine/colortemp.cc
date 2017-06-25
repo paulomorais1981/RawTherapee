@@ -70,7 +70,7 @@ static const double cie_colour_match_jd[97][3] = {//350nm to 830nm   5 nm J.Desm
     {0.000001251141, 0.00000045181, 0.000000}
 };
 
-ColorTemp::ColorTemp (double t, double g, double e, const Glib::ustring &m) : temp(t), green(g), equal(e), method(m)
+ColorTemp::ColorTemp (double t, double g, double e, const Glib::ustring &m) : temp (t), green (g), equal (e), method (m)
 {
 
     clip (temp, green, equal);
@@ -107,14 +107,14 @@ void ColorTemp::clip (double &temp, double &green, double &equal)
         green = MAXGREEN;
     }
 
-    if(equal < MINEQUAL) {
+    if (equal < MINEQUAL) {
         equal = MINEQUAL;
-    } else if(equal > MAXEQUAL) {
+    } else if (equal > MAXEQUAL) {
         equal = MAXEQUAL;
     }
 }
 
-ColorTemp::ColorTemp (double mulr, double mulg, double mulb, double e) : equal(e), method("Custom")
+ColorTemp::ColorTemp (double mulr, double mulg, double mulb, double e) : equal (e), method ("Custom")
 {
     mul2temp (mulr, mulg, mulb, equal, temp, green);
 }
@@ -122,7 +122,7 @@ ColorTemp::ColorTemp (double mulr, double mulg, double mulb, double e) : equal(e
 void ColorTemp::mul2temp (const double rmul, const double gmul, const double bmul, const double equal, double& temp, double& green) const
 {
 
-    double maxtemp = double(MAXTEMP), mintemp = double(MINTEMP);
+    double maxtemp = double (MAXTEMP), mintemp = double (MINTEMP);
     double tmpr, tmpg, tmpb;
     temp = (maxtemp + mintemp) / 2;
 
@@ -848,7 +848,7 @@ const double ColorTemp::ColabSky42_0_m24_spect[97] = {
 
 /* LERP(a,b,c) = linear interpolation macro, is 'a' when c == 0.0 and 'b' when c == 1.0 */
 #define LERP(a,b,c)     (((b) - (a)) * (c) + (a))
-int ColorTemp::XYZtoCorColorTemp(double x0, double y0, double z0, double &temp) const
+void ColorTemp::XYZtoCorColorTemp (double x0, double y0, double z0, double &temp)
 {
 
     typedef struct UVT {
@@ -904,7 +904,7 @@ int ColorTemp::XYZtoCorColorTemp(double x0, double y0, double z0, double &temp) 
     int i;
 
     if ((x0 < 1.0e-20) && (y0 < 1.0e-20) && (z0 < 1.0e-20)) {
-        return -1;    /* protect against possible divide-by-zero failure */
+        return;    /* -1 protect against possible divide-by-zero failure */
     }
 
     us = (4.0 * x0) / (x0 + 15.0 * y0 + 3.0 * z0);
@@ -922,18 +922,18 @@ int ColorTemp::XYZtoCorColorTemp(double x0, double y0, double z0, double &temp) 
     }
 
     if (i == 31) {
-        return(-1);    /* bad XYZ input, color temp would be less than minimum of 1666.7 degrees, or too far towards blue */
+        return;    /*  (-1) bad XYZ input, color temp would be less than minimum of 1666.7 degrees, or too far towards blue */
     }
 
-    di = di / sqrt(1.0 + uvt[i    ].t * uvt[i    ].t);
-    dm = dm / sqrt(1.0 + uvt[i - 1].t * uvt[i - 1].t);
+    di = di / sqrt (1.0 + uvt[i    ].t * uvt[i    ].t);
+    dm = dm / sqrt (1.0 + uvt[i - 1].t * uvt[i - 1].t);
     p = dm / (dm - di);     /* p = interpolation parameter, 0.0 : i-1, 1.0 : i */
-    p = 1.0 / (LERP(rt[i - 1], rt[i], p));
+    p = 1.0 / (LERP (rt[i - 1], rt[i], p));
     temp = p;
-    return 0;      /* success */
+//   return ;      /* success */
 }
 
-void ColorTemp::cieCAT02(double Xw, double Yw, double Zw, double &CAM02BB00, double &CAM02BB01, double &CAM02BB02, double &CAM02BB10, double &CAM02BB11, double &CAM02BB12, double &CAM02BB20, double &CAM02BB21, double &CAM02BB22, double adap )
+void ColorTemp::cieCAT02 (double Xw, double Yw, double Zw, double &CAM02BB00, double &CAM02BB01, double &CAM02BB02, double &CAM02BB10, double &CAM02BB11, double &CAM02BB12, double &CAM02BB20, double &CAM02BB21, double &CAM02BB22, double adap )
 {
 
 // CIECAT02  - J.Desmis January 2012 review September 2012
@@ -985,20 +985,20 @@ void ColorTemp::cieCAT02(double Xw, double Yw, double Zw, double &CAM02BB00, dou
     inv_white_orig[2][2] = 1. / cam_orig[2]; // 1/BeS
 
     //intermediates computation
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3 ; j++) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3 ; j++) {
             intermed[i][j] = inv_white_orig[i][i] * CAT02[i][j];
         }
 
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3 ; j++) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3 ; j++) {
             intermed_2[i][j] = cam_dest[i] * intermed[i][j];
         }
 
     //and CAM02
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-            for(int k = 0; k < 3; k++) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++) {
                 CAM02[i][j] += INVCAT02[i][k] * intermed_2[k][j];
             }
 
@@ -1031,67 +1031,67 @@ void ColorTemp::temp2mulxyz (double tem, double gree, const std::string &method,
     double x, y, z;
 
     if     (method == "Daylight"            ) {
-        spectrum_to_xyz_preset(Daylight5300_spect,     x, y, z);
-    } else if(method == "Cloudy"              ) {
-        spectrum_to_xyz_preset(Cloudy6200_spect,       x, y, z);
-    } else if(method == "Shade"               ) {
-        spectrum_to_xyz_preset(Shade7600_spect,        x, y, z);
-    } else if(method == "Tungsten"            ) {
-        spectrum_to_xyz_preset(A2856_spect,            x, y, z);
-    } else if(method == "Fluo F1"             ) {
-        spectrum_to_xyz_preset(FluoF1_spect,           x, y, z);
-    } else if(method == "Fluo F2"             ) {
-        spectrum_to_xyz_preset(FluoF2_spect,           x, y, z);
-    } else if(method == "Fluo F3"             ) {
-        spectrum_to_xyz_preset(FluoF3_spect,           x, y, z);
-    } else if(method == "Fluo F4"             ) {
-        spectrum_to_xyz_preset(FluoF4_spect,           x, y, z);
-    } else if(method == "Fluo F5"             ) {
-        spectrum_to_xyz_preset(FluoF5_spect,           x, y, z);
-    } else if(method == "Fluo F6"             ) {
-        spectrum_to_xyz_preset(FluoF6_spect,           x, y, z);
-    } else if(method == "Fluo F7"             ) {
-        spectrum_to_xyz_preset(FluoF7_spect,           x, y, z);
-    } else if(method == "Fluo F8"             ) {
-        spectrum_to_xyz_preset(FluoF8_spect,           x, y, z);
-    } else if(method == "Fluo F9"             ) {
-        spectrum_to_xyz_preset(FluoF9_spect,           x, y, z);
-    } else if(method == "Fluo F10"            ) {
-        spectrum_to_xyz_preset(FluoF10_spect,          x, y, z);
-    } else if(method == "Fluo F11"            ) {
-        spectrum_to_xyz_preset(FluoF11_spect,          x, y, z);
-    } else if(method == "Fluo F12"            ) {
-        spectrum_to_xyz_preset(FluoF12_spect,          x, y, z);
-    } else if(method == "HMI Lamp"            ) {
-        spectrum_to_xyz_preset(HMI_spect,              x, y, z);
-    } else if(method == "GTI Lamp"            ) {
-        spectrum_to_xyz_preset(GTI_spect,              x, y, z);
-    } else if(method == "JudgeIII Lamp"       ) {
-        spectrum_to_xyz_preset(JudgeIII_spect,         x, y, z);
-    } else if(method == "Solux Lamp 3500K"    ) {
-        spectrum_to_xyz_preset(Solux3500_spect,        x, y, z);
-    } else if(method == "Solux Lamp 4100K"    ) {
-        spectrum_to_xyz_preset(Solux4100_spect,        x, y, z);
-    } else if(method == "Solux Lamp 4700K"    ) {
-        spectrum_to_xyz_preset(Solux4700_spect,        x, y, z);
-    } else if(method == "NG Solux Lamp 4700K" ) {
-        spectrum_to_xyz_preset(NG_Solux4700_spect,     x, y, z);
-    } else if(method == "LED LSI Lumelex 2040") {
-        spectrum_to_xyz_preset(NG_LEDLSI2040_spect,    x, y, z);
-    } else if(method == "LED CRS SP12 WWMR16" ) {
-        spectrum_to_xyz_preset(NG_CRSSP12WWMR16_spect, x, y, z);
-    } else if(method == "Flash 5500K"         ) {
-        spectrum_to_xyz_preset(Flash5500_spect,        x, y, z);
-    } else if(method == "Flash 6000K"         ) {
-        spectrum_to_xyz_preset(Flash6000_spect,        x, y, z);
-    } else if(method == "Flash 6500K"         ) {
-        spectrum_to_xyz_preset(Flash6500_spect,        x, y, z);
+        spectrum_to_xyz_preset (Daylight5300_spect,     x, y, z);
+    } else if (method == "Cloudy"              ) {
+        spectrum_to_xyz_preset (Cloudy6200_spect,       x, y, z);
+    } else if (method == "Shade"               ) {
+        spectrum_to_xyz_preset (Shade7600_spect,        x, y, z);
+    } else if (method == "Tungsten"            ) {
+        spectrum_to_xyz_preset (A2856_spect,            x, y, z);
+    } else if (method == "Fluo F1"             ) {
+        spectrum_to_xyz_preset (FluoF1_spect,           x, y, z);
+    } else if (method == "Fluo F2"             ) {
+        spectrum_to_xyz_preset (FluoF2_spect,           x, y, z);
+    } else if (method == "Fluo F3"             ) {
+        spectrum_to_xyz_preset (FluoF3_spect,           x, y, z);
+    } else if (method == "Fluo F4"             ) {
+        spectrum_to_xyz_preset (FluoF4_spect,           x, y, z);
+    } else if (method == "Fluo F5"             ) {
+        spectrum_to_xyz_preset (FluoF5_spect,           x, y, z);
+    } else if (method == "Fluo F6"             ) {
+        spectrum_to_xyz_preset (FluoF6_spect,           x, y, z);
+    } else if (method == "Fluo F7"             ) {
+        spectrum_to_xyz_preset (FluoF7_spect,           x, y, z);
+    } else if (method == "Fluo F8"             ) {
+        spectrum_to_xyz_preset (FluoF8_spect,           x, y, z);
+    } else if (method == "Fluo F9"             ) {
+        spectrum_to_xyz_preset (FluoF9_spect,           x, y, z);
+    } else if (method == "Fluo F10"            ) {
+        spectrum_to_xyz_preset (FluoF10_spect,          x, y, z);
+    } else if (method == "Fluo F11"            ) {
+        spectrum_to_xyz_preset (FluoF11_spect,          x, y, z);
+    } else if (method == "Fluo F12"            ) {
+        spectrum_to_xyz_preset (FluoF12_spect,          x, y, z);
+    } else if (method == "HMI Lamp"            ) {
+        spectrum_to_xyz_preset (HMI_spect,              x, y, z);
+    } else if (method == "GTI Lamp"            ) {
+        spectrum_to_xyz_preset (GTI_spect,              x, y, z);
+    } else if (method == "JudgeIII Lamp"       ) {
+        spectrum_to_xyz_preset (JudgeIII_spect,         x, y, z);
+    } else if (method == "Solux Lamp 3500K"    ) {
+        spectrum_to_xyz_preset (Solux3500_spect,        x, y, z);
+    } else if (method == "Solux Lamp 4100K"    ) {
+        spectrum_to_xyz_preset (Solux4100_spect,        x, y, z);
+    } else if (method == "Solux Lamp 4700K"    ) {
+        spectrum_to_xyz_preset (Solux4700_spect,        x, y, z);
+    } else if (method == "NG Solux Lamp 4700K" ) {
+        spectrum_to_xyz_preset (NG_Solux4700_spect,     x, y, z);
+    } else if (method == "LED LSI Lumelex 2040") {
+        spectrum_to_xyz_preset (NG_LEDLSI2040_spect,    x, y, z);
+    } else if (method == "LED CRS SP12 WWMR16" ) {
+        spectrum_to_xyz_preset (NG_CRSSP12WWMR16_spect, x, y, z);
+    } else if (method == "Flash 5500K"         ) {
+        spectrum_to_xyz_preset (Flash5500_spect,        x, y, z);
+    } else if (method == "Flash 6000K"         ) {
+        spectrum_to_xyz_preset (Flash6000_spect,        x, y, z);
+    } else if (method == "Flash 6500K"         ) {
+        spectrum_to_xyz_preset (Flash6500_spect,        x, y, z);
     } else {
         // otherwise we use the Temp+Green generic solution
         if (tem <= INITIALBLACKBODY) {
             // if temperature is between 2000K and 4000K we use blackbody, because there will be no Daylight reference below 4000K...
             // of course, the previous version of RT used the "magical" but wrong formula of U.Fuchs (Ufraw).
-            spectrum_to_xyz_blackbody(tem, x, y, z);
+            spectrum_to_xyz_blackbody (tem, x, y, z);
         } else {
             // from 4000K up to 25000K: using the D illuminant (daylight) which is standard
             double m1, m2;
@@ -1100,7 +1100,7 @@ void ColorTemp::temp2mulxyz (double tem, double gree, const std::string &method,
                 x_D = -4.6070e9 / (tem * tem * tem) + 2.9678e6 / (tem * tem) + 0.09911e3 / tem + 0.244063;
             } else if (tem <= 25000) {
                 x_D = -2.0064e9 / (tem * tem * tem) + 1.9018e6 / (tem * tem) + 0.24748e3 / tem + 0.237040;
-            } else /*if (tem > 25000)*/ {
+            } else { /*if (tem > 25000)*/
                 x_D = -2.0064e9 / (tem * tem * tem) + 1.9018e6 / (tem * tem) + 0.24748e3 / tem + 0.237040 - ((tem - 25000) / 25000) * 0.025;    //Jacques empirical adjustemnt for very high temp (underwater !)
             }
 
@@ -1110,7 +1110,7 @@ void ColorTemp::temp2mulxyz (double tem, double gree, const std::string &method,
             interm = (0.0241 + 0.2562 * x_D - 0.734 * y_D);
             m1 = (-1.3515 - 1.7703 * x_D + 5.9114 * y_D) / interm;
             m2 = (0.03 - 31.4424 * x_D + 30.0717 * y_D) / interm;
-            spectrum_to_xyz_daylight(m1, m2, x, y, z);
+            spectrum_to_xyz_daylight (m1, m2, x, y, z);
             xD = x;
             yD = y;
         }
@@ -1156,67 +1156,67 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
 
     // We first test for specially handled methods
     if     (method == "Daylight"            ) {
-        spectrum_to_xyz_preset(Daylight5300_spect,     x, y, z);
-    } else if(method == "Cloudy"              ) {
-        spectrum_to_xyz_preset(Cloudy6200_spect,       x, y, z);
-    } else if(method == "Shade"               ) {
-        spectrum_to_xyz_preset(Shade7600_spect,        x, y, z);
-    } else if(method == "Tungsten"            ) {
-        spectrum_to_xyz_preset(A2856_spect,            x, y, z);
-    } else if(method == "Fluo F1"             ) {
-        spectrum_to_xyz_preset(FluoF1_spect,           x, y, z);
-    } else if(method == "Fluo F2"             ) {
-        spectrum_to_xyz_preset(FluoF2_spect,           x, y, z);
-    } else if(method == "Fluo F3"             ) {
-        spectrum_to_xyz_preset(FluoF3_spect,           x, y, z);
-    } else if(method == "Fluo F4"             ) {
-        spectrum_to_xyz_preset(FluoF4_spect,           x, y, z);
-    } else if(method == "Fluo F5"             ) {
-        spectrum_to_xyz_preset(FluoF5_spect,           x, y, z);
-    } else if(method == "Fluo F6"             ) {
-        spectrum_to_xyz_preset(FluoF6_spect,           x, y, z);
-    } else if(method == "Fluo F7"             ) {
-        spectrum_to_xyz_preset(FluoF7_spect,           x, y, z);
-    } else if(method == "Fluo F8"             ) {
-        spectrum_to_xyz_preset(FluoF8_spect,           x, y, z);
-    } else if(method == "Fluo F9"             ) {
-        spectrum_to_xyz_preset(FluoF9_spect,           x, y, z);
-    } else if(method == "Fluo F10"            ) {
-        spectrum_to_xyz_preset(FluoF10_spect,          x, y, z);
-    } else if(method == "Fluo F11"            ) {
-        spectrum_to_xyz_preset(FluoF11_spect,          x, y, z);
-    } else if(method == "Fluo F12"            ) {
-        spectrum_to_xyz_preset(FluoF12_spect,          x, y, z);
-    } else if(method == "HMI Lamp"            ) {
-        spectrum_to_xyz_preset(HMI_spect,              x, y, z);
-    } else if(method == "GTI Lamp"            ) {
-        spectrum_to_xyz_preset(GTI_spect,              x, y, z);
-    } else if(method == "JudgeIII Lamp"       ) {
-        spectrum_to_xyz_preset(JudgeIII_spect,         x, y, z);
-    } else if(method == "Solux Lamp 3500K"    ) {
-        spectrum_to_xyz_preset(Solux3500_spect,        x, y, z);
-    } else if(method == "Solux Lamp 4100K"    ) {
-        spectrum_to_xyz_preset(Solux4100_spect,        x, y, z);
-    } else if(method == "Solux Lamp 4700K"    ) {
-        spectrum_to_xyz_preset(Solux4700_spect,        x, y, z);
-    } else if(method == "NG Solux Lamp 4700K" ) {
-        spectrum_to_xyz_preset(NG_Solux4700_spect,     x, y, z);
-    } else if(method == "LED LSI Lumelex 2040") {
-        spectrum_to_xyz_preset(NG_LEDLSI2040_spect,    x, y, z);
-    } else if(method == "LED CRS SP12 WWMR16" ) {
-        spectrum_to_xyz_preset(NG_CRSSP12WWMR16_spect, x, y, z);
-    } else if(method == "Flash 5500K"         ) {
-        spectrum_to_xyz_preset(Flash5500_spect,        x, y, z);
-    } else if(method == "Flash 6000K"         ) {
-        spectrum_to_xyz_preset(Flash6000_spect,        x, y, z);
-    } else if(method == "Flash 6500K"         ) {
-        spectrum_to_xyz_preset(Flash6500_spect,        x, y, z);
+        spectrum_to_xyz_preset (Daylight5300_spect,     x, y, z);
+    } else if (method == "Cloudy"              ) {
+        spectrum_to_xyz_preset (Cloudy6200_spect,       x, y, z);
+    } else if (method == "Shade"               ) {
+        spectrum_to_xyz_preset (Shade7600_spect,        x, y, z);
+    } else if (method == "Tungsten"            ) {
+        spectrum_to_xyz_preset (A2856_spect,            x, y, z);
+    } else if (method == "Fluo F1"             ) {
+        spectrum_to_xyz_preset (FluoF1_spect,           x, y, z);
+    } else if (method == "Fluo F2"             ) {
+        spectrum_to_xyz_preset (FluoF2_spect,           x, y, z);
+    } else if (method == "Fluo F3"             ) {
+        spectrum_to_xyz_preset (FluoF3_spect,           x, y, z);
+    } else if (method == "Fluo F4"             ) {
+        spectrum_to_xyz_preset (FluoF4_spect,           x, y, z);
+    } else if (method == "Fluo F5"             ) {
+        spectrum_to_xyz_preset (FluoF5_spect,           x, y, z);
+    } else if (method == "Fluo F6"             ) {
+        spectrum_to_xyz_preset (FluoF6_spect,           x, y, z);
+    } else if (method == "Fluo F7"             ) {
+        spectrum_to_xyz_preset (FluoF7_spect,           x, y, z);
+    } else if (method == "Fluo F8"             ) {
+        spectrum_to_xyz_preset (FluoF8_spect,           x, y, z);
+    } else if (method == "Fluo F9"             ) {
+        spectrum_to_xyz_preset (FluoF9_spect,           x, y, z);
+    } else if (method == "Fluo F10"            ) {
+        spectrum_to_xyz_preset (FluoF10_spect,          x, y, z);
+    } else if (method == "Fluo F11"            ) {
+        spectrum_to_xyz_preset (FluoF11_spect,          x, y, z);
+    } else if (method == "Fluo F12"            ) {
+        spectrum_to_xyz_preset (FluoF12_spect,          x, y, z);
+    } else if (method == "HMI Lamp"            ) {
+        spectrum_to_xyz_preset (HMI_spect,              x, y, z);
+    } else if (method == "GTI Lamp"            ) {
+        spectrum_to_xyz_preset (GTI_spect,              x, y, z);
+    } else if (method == "JudgeIII Lamp"       ) {
+        spectrum_to_xyz_preset (JudgeIII_spect,         x, y, z);
+    } else if (method == "Solux Lamp 3500K"    ) {
+        spectrum_to_xyz_preset (Solux3500_spect,        x, y, z);
+    } else if (method == "Solux Lamp 4100K"    ) {
+        spectrum_to_xyz_preset (Solux4100_spect,        x, y, z);
+    } else if (method == "Solux Lamp 4700K"    ) {
+        spectrum_to_xyz_preset (Solux4700_spect,        x, y, z);
+    } else if (method == "NG Solux Lamp 4700K" ) {
+        spectrum_to_xyz_preset (NG_Solux4700_spect,     x, y, z);
+    } else if (method == "LED LSI Lumelex 2040") {
+        spectrum_to_xyz_preset (NG_LEDLSI2040_spect,    x, y, z);
+    } else if (method == "LED CRS SP12 WWMR16" ) {
+        spectrum_to_xyz_preset (NG_CRSSP12WWMR16_spect, x, y, z);
+    } else if (method == "Flash 5500K"         ) {
+        spectrum_to_xyz_preset (Flash5500_spect,        x, y, z);
+    } else if (method == "Flash 6000K"         ) {
+        spectrum_to_xyz_preset (Flash6000_spect,        x, y, z);
+    } else if (method == "Flash 6500K"         ) {
+        spectrum_to_xyz_preset (Flash6500_spect,        x, y, z);
     } else {
         // otherwise we use the Temp+Green generic solution
         if (temp <= INITIALBLACKBODY) {
             // if temperature is between 2000K and 4000K we use blackbody, because there will be no Daylight reference below 4000K...
             // of course, the previous version of RT used the "magical" but wrong formula of U.Fuchs (Ufraw).
-            spectrum_to_xyz_blackbody(temp, x, y, z);
+            spectrum_to_xyz_blackbody (temp, x, y, z);
         } else {
             // from 4000K up to 25000K: using the D illuminant (daylight) which is standard
 
@@ -1224,7 +1224,7 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
                 x_D = -4.6070e9 / (temp * temp * temp) + 2.9678e6 / (temp * temp) + 0.09911e3 / temp + 0.244063;
             } else if (temp <= 25000) {
                 x_D = -2.0064e9 / (temp * temp * temp) + 1.9018e6 / (temp * temp) + 0.24748e3 / temp + 0.237040;
-            } else /*if (temp > 25000)*/ { // above 25000 it's unknown..then I have modified to adjust for underwater
+            } else { /*if (temp > 25000)*/  // above 25000 it's unknown..then I have modified to adjust for underwater
                 x_D = -2.0064e9 / (temp * temp * temp) + 1.9018e6 / (temp * temp) + 0.24748e3 / temp + 0.237040 - ((temp - 25000) / 25000) * 0.025;    //Jacques empirical adjustemnt for very high temp (underwater !)
             }
 
@@ -1234,7 +1234,7 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
             interm = (0.0241 + 0.2562 * x_D - 0.734 * y_D);
             m1 = (-1.3515 - 1.7703 * x_D + 5.9114 * y_D) / interm;
             m2 = (0.03 - 31.4424 * x_D + 30.0717 * y_D) / interm;
-            spectrum_to_xyz_daylight(m1, m2, x, y, z);
+            spectrum_to_xyz_daylight (m1, m2, x, y, z);
             xD = x;
             yD = y;
         }
@@ -1244,7 +1244,7 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
     yD = y;
     float adj = 1.f;
 
-    if(equal < 0.9999 || equal > 1.0001 ) {
+    if (equal < 0.9999 || equal > 1.0001 ) {
         adj = (100.f + ( 1000.f - (1000.f * (float)equal) ) / 20.f) / 100.f;
     }
 
@@ -1257,8 +1257,8 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
         // double u=4*xD/(-2*xD+12*yD+3);
         // double v=6*yD/(-2*xD+12*yD+3);
         // printf("xD=%f yD=%f u=%f v=%f\n",xD,yD,u,v);
-        if(settings->CRI_color != 0) {
-            printf("xD=%f yD=%f === Xwb=%f Ywb=%f Zwb=%f\n", xD, yD, Xwb, Ywb, Zwb);
+        if (settings->CRI_color != 0) {
+            printf ("xD=%f yD=%f === Xwb=%f Ywb=%f Zwb=%f\n", xD, yD, Xwb, Ywb, Zwb);
         }
     }
 
@@ -1295,7 +1295,7 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
     //first calcul with illuminant (choice)
     // and calcul with : blackbody at equivalent temp of lamp
 
-    if(settings->CRI_color != 0) //activate if CRi_color !=0
+    if (settings->CRI_color != 0) //activate if CRi_color !=0
         // CRI_color-1 = dispaly Lab values of color CRI_color -1
     {
         int illum;
@@ -1310,7 +1310,7 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
             JDC468_GraK14_44_spect, JDC468_BluH10_spect
         };
 
-        int N_c = sizeof(spec_color) / sizeof(spec_color[0]); //number of color
+        int N_c = sizeof (spec_color) / sizeof (spec_color[0]); //number of color
 
         bool CRI_type = false;
         double tempw;
@@ -1416,17 +1416,17 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
             float CRI_RT = 0.0, CRI[50];
             float CRI_RTs = 0.0, CRIs[8];
 
-            for(int i = 0; i < N_c; i++) {
-                spectrum_to_color_xyz_preset(spec_color[i], spect_illum[illum + 3], XchkLamp[i], YchkLamp[i], ZchkLamp[i]);
+            for (int i = 0; i < N_c; i++) {
+                spectrum_to_color_xyz_preset (spec_color[i], spect_illum[illum + 3], XchkLamp[i], YchkLamp[i], ZchkLamp[i]);
             }
 
             //calculate XYZ for each color : for Blackbody and Daylight at tempw
-            if(tempw <= INITIALBLACKBODY) {
-                for(int i = 0; i < N_c; i++) {
-                    spectrum_to_color_xyz_blackbody(spec_color[i], tempw, Xchk[i], Ychk[i], Zchk[i]);
+            if (tempw <= INITIALBLACKBODY) {
+                for (int i = 0; i < N_c; i++) {
+                    spectrum_to_color_xyz_blackbody (spec_color[i], tempw, Xchk[i], Ychk[i], Zchk[i]);
                 }
 
-                spectrum_to_xyz_blackbody(tempw, x, y, z);//for white point
+                spectrum_to_xyz_blackbody (tempw, x, y, z); //for white point
             } else { // after 6600K (arbitrary) I use daylight...because ...but there is no lamp...
                 double m11, m22, x_DD, y_DD, interm2;
 
@@ -1443,17 +1443,17 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
                 m11 = (-1.3515 - 1.7703 * x_DD + 5.9114 * y_DD) / interm2;
                 m22 = (0.03 - 31.4424 * x_DD + 30.0717 * y_DD) / interm2;
 
-                for(int i = 0; i < N_c; i++) {
-                    spectrum_to_color_xyz_daylight(spec_color[i], m11, m22, Xchk[i], Ychk[i], Zchk[i]);
+                for (int i = 0; i < N_c; i++) {
+                    spectrum_to_color_xyz_daylight (spec_color[i], m11, m22, Xchk[i], Ychk[i], Zchk[i]);
                 }
 
-                spectrum_to_xyz_daylight(m11, m22, x, y, z);
+                spectrum_to_xyz_daylight (m11, m22, x, y, z);
             }
 
             if (settings->verbose) {
                 double correl_temp;
-                XYZtoCorColorTemp(Xwb, Ywb, Zwb, correl_temp);
-                printf("Correlated temperature (lamp)=%i\n", (int) correl_temp); //use only for lamp...otherwise It give an information!!
+                ColorTemp::XYZtoCorColorTemp (Xwb, Ywb, Zwb, correl_temp);
+                printf ("Correlated temperature (lamp)=%i\n", (int) correl_temp); //use only for lamp...otherwise It give an information!!
             }
 
             double Xwb_bb = x / y; //white balance for blackbody
@@ -1462,10 +1462,10 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
 
             //calculate Matrix CAM02 : better than Von Kries and Bradford==> for Lamp
             double  adap = 1.0;
-            cieCAT02(Xwb, Ywb, Zwb, CAM02BB00, CAM02BB01, CAM02BB02, CAM02BB10, CAM02BB11, CAM02BB12, CAM02BB20, CAM02BB21, CAM02BB22, adap);
+            cieCAT02 (Xwb, Ywb, Zwb, CAM02BB00, CAM02BB01, CAM02BB02, CAM02BB10, CAM02BB11, CAM02BB12, CAM02BB20, CAM02BB21, CAM02BB22, adap);
 
             //here new value of X,Y,Z for lamp with chromatic CAM02 adaptation
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 Xcam02Lamp[i] = CAM02BB00 * XchkLamp[i] + CAM02BB01 * YchkLamp[i] + CAM02BB02 * ZchkLamp[i] ;
                 Ycam02Lamp[i] = CAM02BB10 * XchkLamp[i] + CAM02BB11 * YchkLamp[i] + CAM02BB12 * ZchkLamp[i] ;
                 Zcam02Lamp[i] = CAM02BB20 * XchkLamp[i] + CAM02BB21 * YchkLamp[i] + CAM02BB22 * ZchkLamp[i] ;
@@ -1473,11 +1473,11 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
 
             //now calculate CAM02 for Blackbody (or Daylight) at tempx
 
-            cieCAT02(Xwb_bb, Ywb_bb, Zwb_bb, CAM02BB00, CAM02BB01, CAM02BB02, CAM02BB10, CAM02BB11, CAM02BB12, CAM02BB20, CAM02BB21, CAM02BB22, adap);
+            cieCAT02 (Xwb_bb, Ywb_bb, Zwb_bb, CAM02BB00, CAM02BB01, CAM02BB02, CAM02BB10, CAM02BB11, CAM02BB12, CAM02BB20, CAM02BB21, CAM02BB22, adap);
 
             //here new value of X,Y,Z for blackbody with chromatic CAM02 adaptation
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 Xcam02[i] = CAM02BB00 * Xchk[i] + CAM02BB01 * Ychk[i] + CAM02BB02 * Zchk[i] ;
                 Ycam02[i] = CAM02BB10 * Xchk[i] + CAM02BB11 * Ychk[i] + CAM02BB12 * Zchk[i] ;
                 Zcam02[i] = CAM02BB20 * Xchk[i] + CAM02BB21 * Ychk[i] + CAM02BB22 * Zchk[i] ;
@@ -1488,59 +1488,60 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
             //now conversion to Lab
             // Lamp
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 xr[i] = Xcam02Lamp[i] / whiteD50[0];
                 yr[i] = Ycam02Lamp[i] / whiteD50[1];
                 zr[i] = Zcam02Lamp[i] / whiteD50[2];
 
                 // xr, yr , zr > epsilon
-                if(xr[i] > epsilon) {
-                    fx[i] = std::cbrt(xr[i]);
+                if (xr[i] > epsilon) {
+                    fx[i] = std::cbrt (xr[i]);
                 } else {
                     fx[i] = (903.3 * xr[i] + 16.0) / 116.0;
                 }
 
-                if(yr[i] > epsilon) {
-                    fy[i] = std::cbrt(yr[i]);
+                if (yr[i] > epsilon) {
+                    fy[i] = std::cbrt (yr[i]);
                 } else {
                     fy[i] = (903.3 * yr[i] + 16.0) / 116.0;
                 }
 
-                if(zr[i] > epsilon) {
-                    fz[i] = std::cbrt(zr[i]);
+                if (zr[i] > epsilon) {
+                    fz[i] = std::cbrt (zr[i]);
                 } else {
                     fz[i] = (903.3 * zr[i] + 16.0) / 116.0;
                 }
             }
 
             double Llamp[50], alamp[50], blamp[50];
-            for(int i = 0; i < N_c; i++) {
+
+            for (int i = 0; i < N_c; i++) {
                 Llamp[i] = 116.0 * fy[i] - 16.0;
                 alamp[i] = 500.0 * (fx[i] - fy[i]);
                 blamp[i] = 200.0 * (fy[i] - fz[i]);
             }
 
             //blackbody at tempx
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 xr[i] = Xcam02[i] / whiteD50[0];
                 yr[i] = Ycam02[i] / whiteD50[1];
                 zr[i] = Zcam02[i] / whiteD50[2];
 
                 //
-                if(xr[i] > epsilon) {
-                    fx[i] = std::cbrt(xr[i]);
+                if (xr[i] > epsilon) {
+                    fx[i] = std::cbrt (xr[i]);
                 } else {
                     fx[i] = (903.3 * xr[i] + 16.0) / 116.0;
                 }
 
-                if(yr[i] > epsilon) {
-                    fy[i] = std::cbrt(yr[i]);
+                if (yr[i] > epsilon) {
+                    fy[i] = std::cbrt (yr[i]);
                 } else {
                     fy[i] = (903.3 * yr[i] + 16.0) / 116.0;
                 }
 
-                if(zr[i] > epsilon) {
-                    fz[i] = std::cbrt(zr[i]);
+                if (zr[i] > epsilon) {
+                    fz[i] = std::cbrt (zr[i]);
                 } else {
                     fz[i] = (903.3 * zr[i] + 16.0) / 116.0;
                 }
@@ -1548,63 +1549,63 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
 
             double Lbb[50], abb[50], bbb[50];
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 Lbb[i] = 116.*fy[i] - 16.;
-                abb[i] = 500.*(fx[i] - fy[i]);
-                bbb[i] = 200.*(fy[i] - fz[i]);
+                abb[i] = 500.* (fx[i] - fy[i]);
+                bbb[i] = 200.* (fy[i] - fz[i]);
             }
 
             //display value to verify calculs
-            if(settings->CRI_color != 0) {
-                printf("Color Number %i\n", numero_color);
-                printf("L_refer=%2.2f a=%2.2f b=%2.2f\n", Lbb[numero_color], abb[numero_color], bbb[numero_color]);
-                printf("L_lamp=%2.2f al=%2.2f bl=%2.2f\n", Llamp[numero_color], alamp[numero_color], blamp[numero_color]);
+            if (settings->CRI_color != 0) {
+                printf ("Color Number %i\n", numero_color);
+                printf ("L_refer=%2.2f a=%2.2f b=%2.2f\n", Lbb[numero_color], abb[numero_color], bbb[numero_color]);
+                printf ("L_lamp=%2.2f al=%2.2f bl=%2.2f\n", Llamp[numero_color], alamp[numero_color], blamp[numero_color]);
             }
 
             //then calculate DeltaE CIE 1976
-            for(int i = 0; i < 8; i++) {
-                DeltaEs[i] = sqrt((Lbb[i] - Llamp[i]) * (Lbb[i] - Llamp[i]) + (abb[i] - alamp[i]) * (abb[i] - alamp[i]) + (bbb[i] - blamp[i]) * (bbb[i] - blamp[i]));
+            for (int i = 0; i < 8; i++) {
+                DeltaEs[i] = sqrt ((Lbb[i] - Llamp[i]) * (Lbb[i] - Llamp[i]) + (abb[i] - alamp[i]) * (abb[i] - alamp[i]) + (bbb[i] - blamp[i]) * (bbb[i] - blamp[i]));
             }
 
-            for(int i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 CRIs[i] = 100 - 3.0 * DeltaEs[i];    //3.0 coef to adapt ==> same results than CRI "official"
             }
 
-            for(int i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 CRI_RTs += CRIs[i];
             }
 
             CRI_RTs /= 8;
 
-            for(int i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 quadCRIs += (CRIs[i] - CRI_RTs) * (CRIs[i] - CRI_RTs);
             }
 
             quadCRIs /= 8;
 
-            for(int i = 0; i < N_c; i++) {
-                DeltaE[i] = sqrt((Lbb[i] - Llamp[i]) * (Lbb[i] - Llamp[i]) + (abb[i] - alamp[i]) * (abb[i] - alamp[i]) + (bbb[i] - blamp[i]) * (bbb[i] - blamp[i]));
+            for (int i = 0; i < N_c; i++) {
+                DeltaE[i] = sqrt ((Lbb[i] - Llamp[i]) * (Lbb[i] - Llamp[i]) + (abb[i] - alamp[i]) * (abb[i] - alamp[i]) + (bbb[i] - blamp[i]) * (bbb[i] - blamp[i]));
             }
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 CRI[i] = 100 - 3.0 * DeltaE[i];    //3.0 coef to adapt ==> same results than CRI "official"
             }
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 CRI_RT += CRI[i];
             }
 
             CRI_RT /= N_c;
 
-            for(int i = 0; i < N_c; i++) {
+            for (int i = 0; i < N_c; i++) {
                 quadCRI += (CRI[i] - CRI_RT) * (CRI[i] - CRI_RT);
             }
 
             quadCRI /= N_c;
 
-            if(settings->CRI_color != 0) {
-                printf("CRI_standard=%i CRI:1->8=%i %i %i %i %i %i %i %i  Sigma=%2.1f\n", (int) CRI_RTs, (int) CRIs[0], (int) CRIs[1], (int) CRIs[2], (int) CRIs[3], (int) CRIs[4], (int) CRIs[5], (int) CRIs[6], (int) CRIs[7], sqrt(quadCRIs));
-                printf("CRI_RT_exten=%i CRI:9->20=%i %i %i %i %i %i %i %i %i %i %i %i Sigma=%2.1f\n", (int) CRI_RT, (int) CRI[8], (int) CRI[9], (int) CRI[10], (int) CRI[11], (int) CRI[12], (int) CRI[13], (int) CRI[14], (int) CRI[15], (int) CRI[16], (int) CRI[17], (int) CRI[18], (int) CRI[19], sqrt(quadCRI));
+            if (settings->CRI_color != 0) {
+                printf ("CRI_standard=%i CRI:1->8=%i %i %i %i %i %i %i %i  Sigma=%2.1f\n", (int) CRI_RTs, (int) CRIs[0], (int) CRIs[1], (int) CRIs[2], (int) CRIs[3], (int) CRIs[4], (int) CRIs[5], (int) CRIs[6], (int) CRIs[7], sqrt (quadCRIs));
+                printf ("CRI_RT_exten=%i CRI:9->20=%i %i %i %i %i %i %i %i %i %i %i %i Sigma=%2.1f\n", (int) CRI_RT, (int) CRI[8], (int) CRI[9], (int) CRI[10], (int) CRI[11], (int) CRI[12], (int) CRI[13], (int) CRI[14], (int) CRI[15], (int) CRI[16], (int) CRI[17], (int) CRI[18], (int) CRI[19], sqrt (quadCRI));
             }
         }
     }
@@ -1614,11 +1615,11 @@ void ColorTemp::temp2mul (double temp, double green, double equal, double& rmul,
     Calculate Planck's radiation
 */
 //calculate spectral data for blackbody at temp!
-double ColorTemp::blackbody_spect(double wavelength, double temperature)
+double ColorTemp::blackbody_spect (double wavelength, double temperature)
 {
     double wlm = wavelength * 1e-9;   /* Wavelength in meters */
-    return (3.7417715247e-16 / pow(wlm, 5)) /              //3.7417..= c1 = 2*Pi*h*c2  where h=Planck constant, c=velocity of light
-           (xexp(1.438786e-2 / (wlm * temperature)) - 1.0); //1.4387..= c2 = h*c/k  where k=Boltzmann constant
+    return (3.7417715247e-16 / pow (wlm, 5)) /             //3.7417..= c1 = 2*Pi*h*c2  where h=Planck constant, c=velocity of light
+           (xexp (1.438786e-2 / (wlm * temperature)) - 1.0); //1.4387..= c2 = h*c/k  where k=Boltzmann constant
 }
 
 /*
@@ -1638,13 +1639,13 @@ E.g. for 380nm: x2=0.001368  y2=0.000039  z2=0.006451  round in J.Walker to 0.00
 I have increase precision used by J.Walker  and pass to 350nm to 830nm
 */
 
-void ColorTemp::spectrum_to_xyz_daylight(double _m1, double _m2, double &x, double &y, double &z)
+void ColorTemp::spectrum_to_xyz_daylight (double _m1, double _m2, double &x, double &y, double &z)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, XYZ;
 
     for (i = 0, lambda = 350.; lambda < 830.1; i++, lambda += 5.) {
-        double Me = daylight_spect(lambda, _m1, _m2);
+        double Me = daylight_spect (lambda, _m1, _m2);
         X += Me * cie_colour_match_jd[i][0];
         Y += Me * cie_colour_match_jd[i][1];
         Z += Me * cie_colour_match_jd[i][2];
@@ -1656,13 +1657,13 @@ void ColorTemp::spectrum_to_xyz_daylight(double _m1, double _m2, double &x, doub
     z = Z / XYZ;
 }
 
-void ColorTemp::spectrum_to_xyz_blackbody(double _temp, double &x, double &y, double &z)
+void ColorTemp::spectrum_to_xyz_blackbody (double _temp, double &x, double &y, double &z)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, XYZ;
 
     for (i = 0, lambda = 350.; lambda < 830.1; i++, lambda += 5.) {
-        double Me = blackbody_spect(lambda, _temp);
+        double Me = blackbody_spect (lambda, _temp);
         X += Me * cie_colour_match_jd[i][0];
         Y += Me * cie_colour_match_jd[i][1];
         Z += Me * cie_colour_match_jd[i][2];
@@ -1674,7 +1675,7 @@ void ColorTemp::spectrum_to_xyz_blackbody(double _temp, double &x, double &y, do
     z = Z / XYZ;
 }
 
-void ColorTemp::spectrum_to_xyz_preset(const double* spec_intens, double &x, double &y, double &z)
+void ColorTemp::spectrum_to_xyz_preset (const double* spec_intens, double &x, double &y, double &z)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, XYZ;
@@ -1696,7 +1697,7 @@ void ColorTemp::spectrum_to_xyz_preset(const double* spec_intens, double &x, dou
     I have increased the precision used by J.Walker and pass from 350nm to 830nm
     */
     for (i = 0, lambda = 350.; lambda < 830.1; i++, lambda += 5.) {
-        double Me = get_spectral_color(lambda, spec_intens);
+        double Me = get_spectral_color (lambda, spec_intens);
         X += Me * cie_colour_match_jd[i][0];
         Y += Me * cie_colour_match_jd[i][1];
         Z += Me * cie_colour_match_jd[i][2];
@@ -1709,7 +1710,7 @@ void ColorTemp::spectrum_to_xyz_preset(const double* spec_intens, double &x, dou
 }
 
 //calculate XYZ from spectrum data (color) and illuminant : J.Desmis December 2011
-void ColorTemp::spectrum_to_color_xyz_preset(const double* spec_color, const double* spec_intens, double &xx, double &yy, double &zz)
+void ColorTemp::spectrum_to_color_xyz_preset (const double* spec_color, const double* spec_intens, double &xx, double &yy, double &zz)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, Yo = 0;
@@ -1719,8 +1720,8 @@ void ColorTemp::spectrum_to_color_xyz_preset(const double* spec_color, const dou
         double Me;
         double Mc;
 
-        Me = get_spectral_color(lambda, spec_color);
-        Mc = get_spectral_color(lambda, spec_intens);
+        Me = get_spectral_color (lambda, spec_color);
+        Mc = get_spectral_color (lambda, spec_intens);
         X += Mc * cie_colour_match_jd[i][0] * Me;
         Y += Mc * cie_colour_match_jd[i][1] * Me;
         Z += Mc * cie_colour_match_jd[i][2] * Me;
@@ -1730,7 +1731,7 @@ void ColorTemp::spectrum_to_color_xyz_preset(const double* spec_color, const dou
 
         double Ms;
 
-        Ms = get_spectral_color(lambda, spec_intens);
+        Ms = get_spectral_color (lambda, spec_intens);
         Yo += cie_colour_match_jd[i][1] * Ms;
     }
 
@@ -1740,7 +1741,7 @@ void ColorTemp::spectrum_to_color_xyz_preset(const double* spec_color, const dou
 }
 
 //calculate XYZ from spectrum data (color) and illuminant : J.Desmis december 2011
-void ColorTemp::spectrum_to_color_xyz_daylight(const double* spec_color, double _m1, double _m2, double &xx, double &yy, double &zz)
+void ColorTemp::spectrum_to_color_xyz_daylight (const double* spec_color, double _m1, double _m2, double &xx, double &yy, double &zz)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, Yo = 0;
@@ -1750,8 +1751,8 @@ void ColorTemp::spectrum_to_color_xyz_daylight(const double* spec_color, double 
         double Me;
         double Mc;
 
-        Me = get_spectral_color(lambda, spec_color);
-        Mc = daylight_spect(lambda, _m1, _m2);
+        Me = get_spectral_color (lambda, spec_color);
+        Mc = daylight_spect (lambda, _m1, _m2);
         X += Mc * cie_colour_match_jd[i][0] * Me;
         Y += Mc * cie_colour_match_jd[i][1] * Me;
         Z += Mc * cie_colour_match_jd[i][2] * Me;
@@ -1761,7 +1762,7 @@ void ColorTemp::spectrum_to_color_xyz_daylight(const double* spec_color, double 
 
         double Ms;
 
-        Ms = daylight_spect(lambda, _m1, _m2);
+        Ms = daylight_spect (lambda, _m1, _m2);
         Yo += cie_colour_match_jd[i][1] * Ms;
     }
 
@@ -1771,7 +1772,7 @@ void ColorTemp::spectrum_to_color_xyz_daylight(const double* spec_color, double 
 }
 
 //calculate XYZ from spectrum data (color) and illuminant : J.Desmis december 2011
-void ColorTemp::spectrum_to_color_xyz_blackbody(const double* spec_color, double _temp, double &xx, double &yy, double &zz)
+void ColorTemp::spectrum_to_color_xyz_blackbody (const double* spec_color, double _temp, double &xx, double &yy, double &zz)
 {
     int i;
     double lambda, X = 0, Y = 0, Z = 0, Yo = 0;
@@ -1781,8 +1782,8 @@ void ColorTemp::spectrum_to_color_xyz_blackbody(const double* spec_color, double
         double Me;
         double Mc;
 
-        Me = get_spectral_color(lambda, spec_color);
-        Mc = blackbody_spect(lambda, _temp);
+        Me = get_spectral_color (lambda, spec_color);
+        Mc = blackbody_spect (lambda, _temp);
         X += Mc * cie_colour_match_jd[i][0] * Me;
         Y += Mc * cie_colour_match_jd[i][1] * Me;
         Z += Mc * cie_colour_match_jd[i][2] * Me;
@@ -1792,7 +1793,7 @@ void ColorTemp::spectrum_to_color_xyz_blackbody(const double* spec_color, double
 
         double Ms;
 
-        Ms = blackbody_spect(lambda, _temp);
+        Ms = blackbody_spect (lambda, _temp);
         Yo += cie_colour_match_jd[i][1] * Ms;
     }
 
@@ -1801,7 +1802,7 @@ void ColorTemp::spectrum_to_color_xyz_blackbody(const double* spec_color, double
     zz = Z / Yo;
 }
 
-double ColorTemp::daylight_spect(double wavelength, double m1, double m2)
+double ColorTemp::daylight_spect (double wavelength, double m1, double m2)
 {
     //Values for Daylight illuminant: s0 s1 s2
     //s0

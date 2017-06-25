@@ -598,6 +598,7 @@ bool RTWindow::on_delete_event(GdkEventAny* event)
         // on Mac OSX we can get multiple events
         return false;
     }
+	printf("RTtwin\n");
 
     // Check if any editor is still processing, and do NOT quit if so. Otherwise crashes and inconsistent caches
     bool isProcessing = false;

@@ -47,20 +47,21 @@ private:
     std::string method;
     static void clip (double &temp, double &green);
     static void clip (double &temp, double &green, double &equal);
-    int XYZtoCorColorTemp(double x0, double y0 , double z0, double &temp) const;
     void temp2mul (double temp, double green, double equal, double& rmul, double& gmul, double& bmul) const;
 
 public:
 
-    ColorTemp () : temp(-1.), green(-1.), equal (1.), method("Custom") {}
-    explicit ColorTemp (double e) : temp(-1.), green(-1.), equal (e), method("Custom") {}
+    ColorTemp () : temp (-1.), green (-1.), equal (1.), method ("Custom") {}
+    explicit ColorTemp (double e) : temp (-1.), green (-1.), equal (e), method ("Custom") {}
     ColorTemp (double t, double g, double e, const Glib::ustring &m);
     ColorTemp (double mulr, double mulg, double mulb, double e);
+    static void XYZtoCorColorTemp (double x0, double y0 , double z0, double &temp);
 
-    void update (const double rmul, const double gmul, const double bmul, const double equal, const double tempBias=0.0)
+    void update (const double rmul, const double gmul, const double bmul, const double equal, const double tempBias = 0.0)
     {
         this->equal = equal;
         mul2temp (rmul, gmul, bmul, this->equal, temp, green);
+
         if (tempBias != 0.0 && tempBias >= -1.0 && tempBias <= 1.0) {
             temp += temp * tempBias;
         }
@@ -97,17 +98,17 @@ public:
     void mul2temp (const double rmul, const double gmul, const double bmul, const double equal, double& temp, double& green) const;
     static void temp2mulxyz (double tem, double gree, const std::string &method, double &Xxyz, double &Zxyz);
 
-    static void cieCAT02(double Xw, double Yw, double Zw, double &CAM02BB00, double &CAM02BB01, double &CAM02BB02, double &CAM02BB10, double &CAM02BB11, double &CAM02BB12, double &CAM02BB20, double &CAM02BB21, double &CAM02BB22, double adap );
+    static void cieCAT02 (double Xw, double Yw, double Zw, double &CAM02BB00, double &CAM02BB01, double &CAM02BB02, double &CAM02BB10, double &CAM02BB11, double &CAM02BB12, double &CAM02BB20, double &CAM02BB21, double &CAM02BB22, double adap );
     //static    void CAT02 (Imagefloat* baseImg, const ProcParams* params);
     //static void ciecam_02 (LabImage* lab, const ProcParams* params);
 
     bool operator== (const ColorTemp& other) const
     {
-        return fabs(temp - other.temp) < 1e-10 && fabs(green - other.green) < 1e-10;
+        return fabs (temp - other.temp) < 1e-10 && fabs (green - other.green) < 1e-10;
     }
     bool operator!= (const ColorTemp& other) const
     {
-        return !(*this == other);
+        return ! (*this == other);
     }
 
     static double blackbody_spect (double wavelength, double temperature);
