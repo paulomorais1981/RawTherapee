@@ -423,72 +423,72 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 ! Untranslated keys follow; remove the ! prefix after an entry is translated.
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
-!ABOUT_TAB_BUILD;Version
-!ABOUT_TAB_CREDITS;Credits
-!ABOUT_TAB_LICENSE;License
-!ABOUT_TAB_RELEASENOTES;Release Notes
+ABOUT_TAB_BUILD;Versão
+ABOUT_TAB_CREDITS;Créditos
+ABOUT_TAB_LICENSE;Licença
+ABOUT_TAB_RELEASENOTES;Notas de lançamento
 !ABOUT_TAB_SPLASH;Splash
-!BATCHQUEUE_AUTOSTART;Auto-start
-!BATCHQUEUE_DESTFILENAME;Path and file name
+BATCHQUEUE_AUTOSTART;Auto-início
+BATCHQUEUE_DESTFILENAME;Caminho e nome do arquivo
 !BATCH_PROCESSING;Batch Processing
 !CURVEEDITOR_AXIS_IN;I:
 !CURVEEDITOR_AXIS_LEFT_TAN;LT:
 !CURVEEDITOR_AXIS_OUT;O:
 !CURVEEDITOR_AXIS_RIGHT_TAN;RT:
-!CURVEEDITOR_CURVE;Curve
-!CURVEEDITOR_CURVES;Curves
-!CURVEEDITOR_CUSTOM;Custom
-!CURVEEDITOR_DARKS;Darks
+CURVEEDITOR_CURVE;Curva
+CURVEEDITOR_CURVES;Curvas
+CURVEEDITOR_CUSTOM;Custom
+CURVEEDITOR_DARKS;Escuros
 !CURVEEDITOR_EDITPOINT_HINT;Enable edition of node in/out values.\n\nRight-click on a node to select it.\nRight-click on empty space to de-select the node.
 !CURVEEDITOR_HIGHLIGHTS;Highlights
-!CURVEEDITOR_LIGHTS;Lights
-!CURVEEDITOR_MINMAXCPOINTS;Equalizer
+CURVEEDITOR_LIGHTS;Luzes
+CURVEEDITOR_MINMAXCPOINTS;Equalizador
 !CURVEEDITOR_NURBS;Control cage
-!CURVEEDITOR_PARAMETRIC;Parametric
-!CURVEEDITOR_SHADOWS;Shadows
-!CURVEEDITOR_TOOLTIPCOPY;Copy current curve to clipboard.
-!CURVEEDITOR_TOOLTIPPASTE;Paste curve from clipboard.
-!CURVEEDITOR_TYPE;Type:
-!DYNPROFILEEDITOR_DELETE;Delete
-!DYNPROFILEEDITOR_EDIT;Edit
-!DYNPROFILEEDITOR_EDIT_RULE;Edit Dynamic Profile Rule
+CURVEEDITOR_PARAMETRIC;Paramétrico
+CURVEEDITOR_SHADOWS;Sombras
+CURVEEDITOR_TOOLTIPCOPY;Copia curva para área de transferência.
+CURVEEDITOR_TOOLTIPPASTE;Cola curva da área de transferência.
+CURVEEDITOR_TYPE;Tipo
+DYNPROFILEEDITOR_DELETE;Apagar
+DYNPROFILEEDITOR_EDIT;Editar
+DYNPROFILEEDITOR_EDIT_RULE;Editar regra de perfil dinâmico
 !DYNPROFILEEDITOR_ENTRY_TOOLTIP;The matching is case insensitive.\nUse the "re:" prefix to enter\na regular expression.
-!DYNPROFILEEDITOR_MOVE_DOWN;Move Down
-!DYNPROFILEEDITOR_MOVE_UP;Move Up
-!DYNPROFILEEDITOR_NEW;New
-!DYNPROFILEEDITOR_NEW_RULE;New Dynamic Profile Rule
-!DYNPROFILEEDITOR_PROFILE;Processing Profile
-!EDITWINDOW_TITLE;Image Edit
+DYNPROFILEEDITOR_MOVE_DOWN;Mover para cima
+DYNPROFILEEDITOR_MOVE_UP;Mover para baixo
+DYNPROFILEEDITOR_NEW;Novo
+DYNPROFILEEDITOR_NEW_RULE;Nova regra de perfil dinâmico
+DYNPROFILEEDITOR_PROFILE;Processando perfil
+EDITWINDOW_TITLE;Editar imagem
 !EDIT_OBJECT_TOOLTIP;Displays a widget on the preview window which lets you adjust this tool.
 !EDIT_PIPETTE_TOOLTIP;To add an adjustment point to the curve, hold the Ctrl key while left-clicking the desired spot in the image preview.\nTo adjust the point, hold the Ctrl key while left-clicking the corresponding area in the preview, then let go of Ctrl (unless you desire fine control) and while still holding the left mouse button move the mouse up or down to move that point up or down in the curve.
-!EXIFFILTER_EXPOSURECOMPENSATION;Exposure compensation (EV)
-!EXIFFILTER_FILETYPE;File type
-!EXIFFILTER_METADATAFILTER;Enable metadata filters
+!EXIFFILTER_EXPOSURECOMPENSATION;Compensação de exposição (EV)
+EXIFFILTER_FILETYPE;Tipo de arquivo
+!EXIFFILTER_METADATAFILTER;Ativar filtro de metadados
 !EXPORT_BYPASS;Processing steps to bypass
-!EXPORT_BYPASS_ALL;Select / Unselect All
+EXPORT_BYPASS_ALL;Marcar / desmarcar tudo
 !EXPORT_BYPASS_DEFRINGE;Bypass Defringe
-!EXPORT_BYPASS_DIRPYRDENOISE;Bypass Noise Reduction
+EXPORT_BYPASS_DIRPYRDENOISE;Bypass Redução de ruído
 !EXPORT_BYPASS_DIRPYREQUALIZER;Bypass Contrast by Detail Levels
 !EXPORT_BYPASS_EQUALIZER;Bypass Wavelet Levels
-!EXPORT_BYPASS_RAW_CA;Bypass [raw] Chromatic Aberration Correction
-!EXPORT_BYPASS_RAW_CCSTEPS;Bypass [raw] False Color Suppression
+EXPORT_BYPASS_RAW_CA;Bypass [raw] Correção de aberração cromática
+EXPORT_BYPASS_RAW_CCSTEPS;Bypass [raw] Supressão de cor falsa
 !EXPORT_BYPASS_RAW_DCB_ENHANCE;Bypass [raw] DCB Enhancement Steps
 !EXPORT_BYPASS_RAW_DCB_ITERATIONS;Bypass [raw] DCB Iterations
 !EXPORT_BYPASS_RAW_DF;Bypass [raw] Dark-Frame
 !EXPORT_BYPASS_RAW_FF;Bypass [raw] Flat-Field
-!EXPORT_BYPASS_RAW_GREENTHRESH;Bypass [raw] Green Equilibration
-!EXPORT_BYPASS_RAW_LINENOISE;Bypass [raw] Line Noise Filter
+EXPORT_BYPASS_RAW_GREENTHRESH;Bypass [raw] Equilíbrio de verde
+EXPORT_BYPASS_RAW_LINENOISE;Bypass [raw] Filtro de ruído de linha
 !EXPORT_BYPASS_RAW_LMMSE_ITERATIONS;Bypass [raw] LMMSE Enhancement Steps
 !EXPORT_BYPASS_SHARPENEDGE;Bypass Edge Sharpening
 !EXPORT_BYPASS_SHARPENING;Bypass Sharpening
 !EXPORT_BYPASS_SHARPENMICRO;Bypass Microcontrast
 !EXPORT_BYPASS_SH_HQ;Bypass Sharp Mask Shadows/Highlights
-!EXPORT_FASTEXPORTOPTIONS;<b>Fast Export Options</b>
-!EXPORT_INSTRUCTIONS;Fast Export options provide overrides to bypass time and resource consuming development settings and to run queue processing using the fast export settings instead. This method is recommended for quicker generation of lower resolution images when speed is a priority or when resized output is desired for one or many images without making modifications to their saved development parameters.
-!EXPORT_MAXHEIGHT;Maximum height:
-!EXPORT_MAXWIDTH;Maximum width:
-!EXPORT_PIPELINE;Processing pipeline
-!EXPORT_PUTTOQUEUEFAST;  Put to queue for fast export
+EXPORT_FASTEXPORTOPTIONS;<b>Opções de exportação rápida</b>
+!EXPORT_INSTRUCTIONS;Exposição rápida Fast Export options provide overrides to bypass time and resource consuming development settings and to run queue processing using the fast export settings instead. This method is recommended for quicker generation of lower resolution images when speed is a priority or when resized output is desired for one or many images without making modifications to their saved development parameters.
+EXPORT_MAXHEIGHT;Altura máxima:
+EXPORT_MAXWIDTH;Largura máxima:
+!EXPORT_PIPELINE;Processando em lote
+EXPORT_PUTTOQUEUEFAST;  Colocar na fila para exportação rápida
 !EXPORT_RAW_DMETHOD;Demosaic method
 !EXPORT_USE_FAST_PIPELINE;Dedicated (full processing on resized image)
 !EXPORT_USE_FAST_PIPELINE_TIP;Use a dedicated processing pipeline for images in Fast Export mode, that trades speed for quality. Resizing of the image is done as early as possible, instead of doing it at the end like in the normal pipeline. The speedup can be significant, but be prepared to see artifacts and a general degradation of output quality.
@@ -496,95 +496,95 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 !EXTPROGTARGET_1;raw
 !EXTPROGTARGET_2;queue-processed
 !FILEBROWSER_ADDDELTEMPLATE;Add/Del templates...
-!FILEBROWSER_APPLYPROFILE_PARTIAL;Apply - partial
+FILEBROWSER_APPLYPROFILE_PARTIAL;Aplicar - parcial
 !FILEBROWSER_AUTODARKFRAME;Auto dark-frame
 !FILEBROWSER_AUTOFLATFIELD;Auto flat-field
 !FILEBROWSER_BROWSEPATHBUTTONHINT;Click to browse to the chosen path.
 !FILEBROWSER_BROWSEPATHHINT;Type a path to navigate to.\n\nKeyboard shortcuts:\n<b>Ctrl-o</b> to focus to the path text box.\n<b>Enter</b> / <b>Ctrl-Enter</b> to browse there;\n<b>Esc</b> to clear changes.\n<b>Shift-Esc</b> to remove focus.\n\nPath shortcuts:\n<b>~</b>	- user's home directory.\n<b>!</b>	- user's pictures directory
-!FILEBROWSER_CACHE;Cache
-!FILEBROWSER_CACHECLEARFROMFULL;Clear from cache - full
-!FILEBROWSER_CACHECLEARFROMPARTIAL;Clear from cache - partial
+FILEBROWSER_CACHE;Cache
+FILEBROWSER_CACHECLEARFROMFULL;Limpar do cache - total
+FILEBROWSER_CACHECLEARFROMPARTIAL;Limpar do cache - parcial
 !FILEBROWSER_COLORLABEL_TOOLTIP;Color label.\n\nUse dropdown menu or shortcuts:\n<b>Shift-Ctrl-0</b> No Color\n<b>Shift-Ctrl-1</b> Red\n<b>Shift-Ctrl-2</b> Yellow\n<b>Shift-Ctrl-3</b> Green\n<b>Shift-Ctrl-4</b> Blue\n<b>Shift-Ctrl-5</b> Purple
-!FILEBROWSER_CURRENT_NAME;Current name:
+FILEBROWSER_CURRENT_NAME;Nome atual:
 !FILEBROWSER_DARKFRAME;Dark-frame
 !FILEBROWSER_DELETEDLGMSGINCLPROC;Are you sure you want to delete the selected <b>%1</b> files <b>including</b> a queue-processed version?
-!FILEBROWSER_EXTPROGMENU;Open with
+FILEBROWSER_EXTPROGMENU;Abrir com
 !FILEBROWSER_FLATFIELD;Flat-Field
-!FILEBROWSER_MOVETODARKFDIR;Move to dark-frames directory
-!FILEBROWSER_MOVETOFLATFIELDDIR;Move to flat-fields directory
-!FILEBROWSER_NEW_NAME;New name:
-!FILEBROWSER_OPENDEFAULTVIEWER;Windows default viewer (queue-processed)
-!FILEBROWSER_POPUPCOLORLABEL;Color label
-!FILEBROWSER_POPUPCOLORLABEL0;Label: None
-!FILEBROWSER_POPUPCOLORLABEL1;Label: Red
-!FILEBROWSER_POPUPCOLORLABEL2;Label: Yellow
-!FILEBROWSER_POPUPCOLORLABEL3;Label: Green
-!FILEBROWSER_POPUPCOLORLABEL4;Label: Blue
-!FILEBROWSER_POPUPCOLORLABEL5;Label: Purple
-!FILEBROWSER_POPUPCOPYTO;Copy to...
-!FILEBROWSER_POPUPFILEOPERATIONS;File operations
-!FILEBROWSER_POPUPMOVETO;Move to...
-!FILEBROWSER_POPUPPROCESSFAST;Put to queue (Fast export)
-!FILEBROWSER_POPUPPROFILEOPERATIONS;Processing profile operations
-!FILEBROWSER_POPUPRANK;Rank
-!FILEBROWSER_POPUPRANK0;Unrank
-!FILEBROWSER_POPUPRANK1;Rank 1 *
-!FILEBROWSER_POPUPRANK2;Rank 2 **
-!FILEBROWSER_POPUPRANK3;Rank 3 ***
-!FILEBROWSER_POPUPRANK4;Rank 4 ****
-!FILEBROWSER_POPUPRANK5;Rank 5 *****
-!FILEBROWSER_POPUPREMOVEINCLPROC;Delete with output from queue
-!FILEBROWSER_QUERYBUTTONHINT;Clear the Find query
+FILEBROWSER_MOVETODARKFDIR;Mover para o diretório de dark-frames
+FILEBROWSER_MOVETOFLATFIELDDIR;Mover para o diretório de flat-fields
+FILEBROWSER_NEW_NAME;Novo nome:
+FILEBROWSER_OPENDEFAULTVIEWER;Visualizador padrão do Windows (pós-processados)
+FILEBROWSER_POPUPCOLORLABEL;Etiquetas de cores
+FILEBROWSER_POPUPCOLORLABEL0;Etiqueta: Nenhuma
+FILEBROWSER_POPUPCOLORLABEL1;Etiqueta: Vermelha
+FILEBROWSER_POPUPCOLORLABEL2;Etiqueta: Amarela
+FILEBROWSER_POPUPCOLORLABEL3;Etiqueta: Verde
+FILEBROWSER_POPUPCOLORLABEL4;Etiqueta: Azul
+FILEBROWSER_POPUPCOLORLABEL5;Etiqueta: Roxo
+FILEBROWSER_POPUPCOPYTO;Copiar para...
+FILEBROWSER_POPUPFILEOPERATIONS;Operações de arquivos
+FILEBROWSER_POPUPMOVETO;Mover para...
+FILEBROWSER_POPUPPROCESSFAST;Colocar na fila (Exportação rápida)
+FILEBROWSER_POPUPPROFILEOPERATIONS;Operações de processamento de arquivo
+FILEBROWSER_POPUPRANK;Classificar
+FILEBROWSER_POPUPRANK0;Desclassificar
+FILEBROWSER_POPUPRANK1;Rank 1 *
+FILEBROWSER_POPUPRANK2;Rank 2 **
+FILEBROWSER_POPUPRANK3;Rank 3 ***
+FILEBROWSER_POPUPRANK4;Rank 4 ****
+FILEBROWSER_POPUPRANK5;Rank 5 *****
+FILEBROWSER_POPUPREMOVEINCLPROC;Apagar tirando da fila
+!FILEBROWSER_QUERYBUTTONHINT;Limpar a busca
 !FILEBROWSER_QUERYHINT;Type filenames to search for. Supports partial filenames. Separate the search terms using commas, e.g.\n<i>1001,1004,1199</i>\n\nExclude search terms by prefixing them with <i>!=</i>\ne.g.\n<i>!=1001,1004,1199</i>\n\nShortcuts:\n<b>Ctrl-f</b> - focus the Find box,\n<b>Enter</b> - search,\n<b>Esc</b> - clear the Find box,\n<b>Shift-Esc</b> - defocus the Find box.
-!FILEBROWSER_QUERYLABEL; Find:
+FILEBROWSER_QUERYLABEL; Buscar:
 !FILEBROWSER_RANK1_TOOLTIP;Rank 1 *\nShortcut: <b>Shift-1</b>
 !FILEBROWSER_RANK2_TOOLTIP;Rank 2 *\nShortcut: <b>Shift-2</b>
 !FILEBROWSER_RANK3_TOOLTIP;Rank 3 *\nShortcut: <b>Shift-3</b>
 !FILEBROWSER_RANK4_TOOLTIP;Rank 4 *\nShortcut: <b>Shift-4</b>
 !FILEBROWSER_RANK5_TOOLTIP;Rank 5 *\nShortcut: <b>Shift-5</b>
-!FILEBROWSER_RESETDEFAULTPROFILE;Reset to default
-!FILEBROWSER_SELECTDARKFRAME;Select dark-frame...
-!FILEBROWSER_SELECTFLATFIELD;Select flat-field...
-!FILEBROWSER_SHOWCOLORLABEL1HINT;Show images labeled Red.\nShortcut: <b>Alt-1</b>
-!FILEBROWSER_SHOWCOLORLABEL2HINT;Show images labeled Yellow.\nShortcut: <b>Alt-2</b>
-!FILEBROWSER_SHOWCOLORLABEL3HINT;Show images labeled Green.\nShortcut: <b>Alt-3</b>
-!FILEBROWSER_SHOWCOLORLABEL4HINT;Show images labeled Blue.\nShortcut: <b>Alt-4</b>
-!FILEBROWSER_SHOWCOLORLABEL5HINT;Show images labeled Purple.\nShortcut: <b>Alt-5</b>
-!FILEBROWSER_SHOWEDITEDHINT;Show edited images.\nShortcut: <b>7</b>
-!FILEBROWSER_SHOWEDITEDNOTHINT;Show not edited images.\nShortcut: <b>6</b>
+FILEBROWSER_RESETDEFAULTPROFILE;Voltar ao padrão
+FILEBROWSER_SELECTDARKFRAME;Escolher dark-frame...
+FILEBROWSER_SELECTFLATFIELD;Escolher flat-field...
+FILEBROWSER_SHOWCOLORLABEL1HINT;Mostrar imagens com etiqueta vermelha.\nShortcut: <b>Alt-1</b>
+FILEBROWSER_SHOWCOLORLABEL2HINT;Mostrar imagens com etiqueta amarela.\nShortcut: <b>Alt-2</b>
+FILEBROWSER_SHOWCOLORLABEL3HINT;Mostrar imagens com etiqueta verde.\nShortcut: <b>Alt-3</b>
+FILEBROWSER_SHOWCOLORLABEL4HINT;Mostrar imagens com etiqueta azul.\nShortcut: <b>Alt-4</b>
+FILEBROWSER_SHOWCOLORLABEL5HINT;Mostrar imagens com etiqueta roxo.\nShortcut: <b>Alt-5</b>
+FILEBROWSER_SHOWEDITEDHINT;Mostrar imagens editadas.\nShortcut: <b>7</b>
+FILEBROWSER_SHOWEDITEDNOTHINT;Mostrar imagens não editadas.\nShortcut: <b>6</b>
 !FILEBROWSER_SHOWEXIFINFO;Show Exif info.\n\nShortcuts:\n<b>i</b> - Multiple Editor Tabs Mode,\n<b>Alt-i</b> - Single Editor Tab Mode.
-!FILEBROWSER_SHOWNOTTRASHHINT;Show only non-deleted images.
+FILEBROWSER_SHOWNOTTRASHHINT;Mostrar apenas imagens não apagadas.
 !FILEBROWSER_SHOWORIGINALHINT;Show only original images.\n\nWhen several images exist with the same filename but different extensions, the one considered original is the one whose extension is nearest the top of the parsed extensions list in Preferences > File Browser > Parsed Extensions.
-!FILEBROWSER_SHOWRECENTLYSAVEDHINT;Show saved images.\nShortcut: <b>Alt-7</b>
-!FILEBROWSER_SHOWRECENTLYSAVEDNOTHINT;Show unsaved images.\nShortcut: <b>Alt-6</b>
-!FILEBROWSER_SHOWUNCOLORHINT;Show images without a color label.\nShortcut: <b>Alt-0</b>
-!FILEBROWSER_TOOLTIP_STOPPROCESSING;Start processing automatically when a new job arrives.
-!FILEBROWSER_UNRANK_TOOLTIP;Unrank.\nShortcut: <b>Shift-0</b>
-!FILECHOOSER_FILTER_ANY;All files
-!FILECHOOSER_FILTER_COLPROF;Color profiles
-!FILECHOOSER_FILTER_CURVE;Curve files
-!FILECHOOSER_FILTER_LCP;Lens correction profiles
-!FILECHOOSER_FILTER_PP;Processing profiles
-!FILECHOOSER_FILTER_SAME;Same format as current photo
-!FILECHOOSER_FILTER_TIFF;TIFF files
-!GENERAL_AFTER;After
-!GENERAL_APPLY;Apply
-!GENERAL_ASIMAGE;As Image
-!GENERAL_AUTO;Automatic
-!GENERAL_BEFORE;Before
-!GENERAL_CLOSE;Close
-!GENERAL_FILE;File
-!GENERAL_NONE;None
-!GENERAL_OPEN;Open
-!GENERAL_UNCHANGED;(Unchanged)
-!GENERAL_WARNING;Warning
+FILEBROWSER_SHOWRECENTLYSAVEDHINT;Mostrar imagens salvas.\nShortcut: <b>Alt-7</b>
+FILEBROWSER_SHOWRECENTLYSAVEDNOTHINT;Mostrar imagens não salvas.\nShortcut: <b>Alt-6</b>
+FILEBROWSER_SHOWUNCOLORHINT;Mostrar imagens sem etiqueta de cor.\nShortcut: <b>Alt-0</b>
+FILEBROWSER_TOOLTIP_STOPPROCESSING;Iniciar processamento automaticamente quando o novo processo inicia.
+FILEBROWSER_UNRANK_TOOLTIP;Limpar classificação.\nShortcut: <b>Shift-0</b>
+FILECHOOSER_FILTER_ANY;Todos os arquivos
+FILECHOOSER_FILTER_COLPROF;Perfis de cor
+FILECHOOSER_FILTER_CURVE;Arquivos de curva
+FILECHOOSER_FILTER_LCP;Perfis de correção de lente
+FILECHOOSER_FILTER_PP;Perfis de processamento
+FILECHOOSER_FILTER_SAME;Mesmo formato da foto atual
+FILECHOOSER_FILTER_TIFF;Arquivos TIFF
+GENERAL_AFTER;Depois
+GENERAL_APPLY;Aplicar
+GENERAL_ASIMAGE;Como Imagem
+GENERAL_AUTO;Automático
+GENERAL_BEFORE;Antes
+GENERAL_CLOSE;Fechar
+GENERAL_FILE;Arquivo
+GENERAL_NONE;Nenhum
+GENERAL_OPEN;Aberto
+GENERAL_UNCHANGED;(Não modificado)
+GENERAL_WARNING;Aviso
 !HISTOGRAM_TOOLTIP_BAR;Show/Hide RGB indicator bar.\nRight-click on image preview to freeze/unfreeze.
 !HISTOGRAM_TOOLTIP_CHRO;Show/Hide chromaticity histogram.
 !HISTOGRAM_TOOLTIP_FULL;Toggle full (off) or scaled (on) histogram.
 !HISTOGRAM_TOOLTIP_RAW;Show/Hide raw histogram.
 !HISTORY_MSG_82;Profile changed
 !HISTORY_MSG_83;S/H - Sharp mask
-!HISTORY_MSG_84;Perspective correction
+HISTORY_MSG_84;Correção de perspectiva
 !HISTORY_MSG_85;LCP
 !HISTORY_MSG_86;RGB Curves - Luminosity mode
 !HISTORY_MSG_87;Impulse Noise Reduction
@@ -2112,7 +2112,7 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 !TP_WBALANCE_GTI;GTI
 !TP_WBALANCE_HMI;HMI
 !TP_WBALANCE_JUDGEIII;JudgeIII
-!TP_WBALANCE_LAMP_HEADER;Lamp
+TP_WBALANCE_LAMP_HEADER;Lâmpada
 !TP_WBALANCE_LED_CRS;CRS SP12 WWMR16
 !TP_WBALANCE_LED_HEADER;LED
 !TP_WBALANCE_LED_LSI;LSI Lumelex 2040
@@ -2123,11 +2123,11 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 !TP_WBALANCE_SOLUX47_NG;Solux 4700K (Nat. Gallery)
 !TP_WBALANCE_TEMPBIAS;AWB temperature bias
 !TP_WBALANCE_TEMPBIAS_TOOLTIP;Allows to alter the computation of the "auto white balance"\nby biasing it towards warmer or cooler temperatures. The bias\nis expressed as a percentage of the computed temperature,\nso that the result is given by "computedTemp + computedTemp * bias".
-!TP_WBALANCE_TUNGSTEN;Tungsten
-!TP_WBALANCE_WATER1;UnderWater 1
-!TP_WBALANCE_WATER2;UnderWater 2
-!TP_WBALANCE_WATER_HEADER;UnderWater
-!ZOOMPANEL_100;(100%)
+TP_WBALANCE_TUNGSTEN;Tungstênio
+TP_WBALANCE_WATER1;Submerso 1
+TP_WBALANCE_WATER2;Submerso 2
+TP_WBALANCE_WATER_HEADER;Submerso
+ZOOMPANEL_100;(100%)
 !ZOOMPANEL_NEWCROPWINDOW;Open (new) detail window
 !ZOOMPANEL_ZOOM100;Zoom to 100%\nShortcut: <b>z</b>
 !ZOOMPANEL_ZOOMFITCROPSCREEN;Fit crop to screen\nShortcut: <b>Alt</b>-<b>f</b>
