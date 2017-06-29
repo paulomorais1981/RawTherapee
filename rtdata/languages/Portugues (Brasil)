@@ -424,39 +424,39 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 ! Untranslated keys follow; remove the ! prefix after an entry is translated.
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
-!ABOUT_TAB_BUILD;Version
-!ABOUT_TAB_CREDITS;Credits
-!ABOUT_TAB_LICENSE;License
-!ABOUT_TAB_RELEASENOTES;Release Notes
-!ABOUT_TAB_SPLASH;Splash
-!BATCHQUEUE_AUTOSTART;Auto-start
-!BATCHQUEUE_DESTFILENAME;Path and file name
-!BATCH_PROCESSING;Batch Processing
+ABOUT_TAB_BUILD;Versão
+ABOUT_TAB_CREDITS;Créditos
+ABOUT_TAB_LICENSE;Licença
+ABOUT_TAB_RELEASENOTES;Notas de lançamento
+ABOUT_TAB_SPLASH;Splash
+BATCHQUEUE_AUTOSTART;Auto-início
+BATCHQUEUE_DESTFILENAME;Caminho e nome do arquivo
+BATCH_PROCESSING;Batch Processando
 !CURVEEDITOR_AXIS_IN;I:
 !CURVEEDITOR_AXIS_LEFT_TAN;LT:
 !CURVEEDITOR_AXIS_OUT;O:
 !CURVEEDITOR_AXIS_RIGHT_TAN;RT:
-!CURVEEDITOR_CURVE;Curve
-!CURVEEDITOR_CURVES;Curves
+CURVEEDITOR_CURVE;Curva
+CURVEEDITOR_CURVES;Curvas
 !CURVEEDITOR_CUSTOM;Custom
-!CURVEEDITOR_DARKS;Darks
+CURVEEDITOR_DARKS;Escuros
 !CURVEEDITOR_EDITPOINT_HINT;Enable edition of node in/out values.\n\nRight-click on a node to select it.\nRight-click on empty space to de-select the node.
 !CURVEEDITOR_HIGHLIGHTS;Highlights
 !CURVEEDITOR_LIGHTS;Lights
-!CURVEEDITOR_MINMAXCPOINTS;Equalizer
+CURVEEDITOR_MINMAXCPOINTS;Equalizador
 !CURVEEDITOR_NURBS;Control cage
 !CURVEEDITOR_PARAMETRIC;Parametric
-!CURVEEDITOR_SHADOWS;Shadows
-!CURVEEDITOR_TOOLTIPCOPY;Copy current curve to clipboard.
-!CURVEEDITOR_TOOLTIPPASTE;Paste curve from clipboard.
-!CURVEEDITOR_TYPE;Type:
-!EDITWINDOW_TITLE;Image Edit
-!EDIT_OBJECT_TOOLTIP;Displays a widget on the preview window which lets you adjust this tool.
+CURVEEDITOR_SHADOWS;Sombras
+CURVEEDITOR_TOOLTIPCOPY;Copiar curva atual para área de transferência.
+CURVEEDITOR_TOOLTIPPASTE;Colar curva atual da área de transferência.
+CURVEEDITOR_TYPE;Tipo:
+EDITWINDOW_TITLE;Edição de imagem
+EDIT_OBJECT_TOOLTIP;Mostra uma widget na janela origina que lhe permite ajustar esta ferramenta.
 !EDIT_PIPETTE_TOOLTIP;To add an adjustment point to the curve, hold the Ctrl key while left-clicking the desired spot in the image preview.\nTo adjust the point, hold the Ctrl key while left-clicking the corresponding area in the preview, then let go of Ctrl (unless you desire fine control) and while still holding the left mouse button move the mouse up or down to move that point up or down in the curve.
-!EXIFFILTER_EXPOSURECOMPENSATION;Exposure compensation (EV)
-!EXIFFILTER_FILETYPE;File type
-!EXIFFILTER_METADATAFILTER;Enable metadata filters
-!EXPORT_BYPASS_ALL;Select / Unselect All
+EXIFFILTER_EXPOSURECOMPENSATION;Compensação de exposição
+EXIFFILTER_FILETYPE;Tipo de arquivo
+EXIFFILTER_METADATAFILTER;Ativar filtros de metadados
+EXPORT_BYPASS_ALL;Selecionar / Desmarcar tudo
 !EXPORT_BYPASS_DEFRINGE;Bypass Defringe
 !EXPORT_BYPASS_DIRPYRDENOISE;Bypass Noise Reduction
 !EXPORT_BYPASS_DIRPYREQUALIZER;Bypass Contrast by Detail Levels
@@ -474,19 +474,19 @@ TP_WBALANCE_TEMPERATURE;Temperatura
 !EXPORT_BYPASS_SHARPENING;Bypass Sharpening
 !EXPORT_BYPASS_SHARPENMICRO;Bypass Microcontrast
 !EXPORT_BYPASS_SH_HQ;Bypass Sharp Mask Shadows/Highlights
-!EXPORT_FASTEXPORTOPTIONS;<b>Fast Export Options</b>
+EXPORT_FASTEXPORTOPTIONS;<b>Opções de exportação rápida</b>
 !EXPORT_INSTRUCTIONS;Fast Export options provide overrides to bypass time and resource consuming development settings and to run queue processing using the fast export settings instead. This method is recommended for quicker generation of lower resolution images when speed is a priority or when resized output is desired for one or many images without making modifications to their saved development parameters.
-!EXPORT_MAXHEIGHT;Maximum height:
-!EXPORT_MAXWIDTH;Maximum width:
-!EXPORT_PUTTOQUEUEFAST;  Put to queue for fast export
+EXPORT_MAXHEIGHT;Altura máxima:
+EXPORT_MAXWIDTH;Largura máxima:
+EXPORT_PUTTOQUEUEFAST;  Colocar na fila de exportação rápida
 !EXPORT_RAW_DMETHOD;Demosaic method
 !EXTPROGTARGET_1;raw
 !EXTPROGTARGET_2;queue-processed
-!FILEBROWSER_ADDDELTEMPLATE;Add/Del templates...
-!FILEBROWSER_APPLYPROFILE_PARTIAL;Apply - partial
+FILEBROWSER_ADDDELTEMPLATE;Adicionar/apagar modelos
+FILEBROWSER_APPLYPROFILE_PARTIAL;Aplicar parcialmente
 !FILEBROWSER_AUTODARKFRAME;Auto dark-frame
 !FILEBROWSER_AUTOFLATFIELD;Auto flat-field
-!FILEBROWSER_BROWSEPATHBUTTONHINT;Click to browse to the chosen path.
+FILEBROWSER_BROWSEPATHBUTTONHINT;Clique para navegar no caminho escolhido.
 !FILEBROWSER_BROWSEPATHHINT;Type a path to navigate to.\n\nKeyboard shortcuts:\n<b>Ctrl-o</b> to focus to the path text box.\n<b>Enter</b> / <b>Ctrl-Enter</b> to browse there;\n<b>Esc</b> to clear changes.\n<b>Shift-Esc</b> to remove focus.\n\nPath shortcuts:\n<b>~</b>	- user's home directory.\n<b>!</b>	- user's pictures directory
 !FILEBROWSER_CACHE;Cache
 !FILEBROWSER_CACHECLEARFROMFULL;Clear from cache - full
